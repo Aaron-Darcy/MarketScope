@@ -22,4 +22,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
   profiled rather than assumed.
 - Milestone 0 profiling script reporting concept availability, period coverage and
   fact periodicity per filer, with identity verification against the returned entity name.
+- XBRL fact extraction flattening the company facts payload into typed rows, classifying
+  each observation as instant, quarterly, semiannual, nine-month or annual.
+- Restatement precedence keeping the most recently filed value for each period, with the
+  superseded values retained separately as the input to the filing-behaviour question.
+- Fourth-quarter derivation for filers that publish no fourth 10-Q, taking the residual of
+  the fiscal year against the nine-month figure where available and against the summed
+  first three quarters otherwise.
+- Milestone 0 script answering whether average deposit balances are tagged in any
+  taxonomy, how often the fourth quarter resolves, and what quarterly coverage each
+  candidate concept achieves across the calibration and test windows.
 - Continuous integration running lint, format, type and test checks.
