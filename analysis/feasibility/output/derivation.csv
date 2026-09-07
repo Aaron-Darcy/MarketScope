@@ -1,0 +1,15 @@
+cik,bank,tag,fiscal_years,reported_directly,derived,resolved,resolved_share
+19617,JPMorgan Chase & Co.,InterestExpenseDeposits,18,0,17,17,0.9444444444444444
+70858,Bank of America Corporation,InterestExpenseDeposits,19,0,18,18,0.9473684210526315
+72971,Wells Fargo & Company,InterestExpenseDeposits,19,0,18,18,0.9473684210526315
+831001,Citigroup Inc.,InterestExpenseDeposits,18,0,17,17,0.9444444444444444
+713676,"The PNC Financial Services Group, Inc.",InterestExpenseDeposits,19,0,17,17,0.8947368421052632
+36104,U.S. Bancorp,InterestExpenseDeposits,19,0,18,18,0.9473684210526315
+92230,Truist Financial Corporation,InterestExpenseDeposits,19,0,17,17,0.8947368421052632
+36270,M&T Bank Corporation,InterestExpenseForeignDeposits,15,0,14,14,0.9333333333333333
+36270,M&T Bank Corporation,InterestExpenseSavingsDeposits,9,0,8,8,0.8888888888888888
+36270,M&T Bank Corporation,InterestExpenseTimeDeposits,19,0,18,18,0.9473684210526315
+40729,Ally Financial Inc.,InterestExpenseDeposits,17,0,16,16,0.9411764705882353
+109380,"Zions Bancorporation, National Association",InterestExpenseDeposits,18,0,15,15,0.8333333333333334
+719739,SVB Financial Group,InterestExpenseDeposits,15,0,14,14,0.9333333333333333
+1102112,PacWest Bancorp,InterestExpenseDeposits,14,10,3,13,0.9285714285714286

@@ -70,12 +70,18 @@ Different filers make different concepts available. Forcing every filer into one
 destroys comparability silently. Cost of deposits is therefore computed at the most
 precise tier each filer-quarter supports, and the tier is recorded on the row.
 
-| Tier | Numerator | Denominator |
-|---|---|---|
-| 1 | Interest expense on deposits | Average interest-bearing deposits |
-| 2 | Interest expense on deposits | Average total deposits |
-| 3 | Interest expense on deposits, reconstructed from components | Average total deposits |
-| X | — | Excluded as insufficiently comparable |
+| Tier | Numerator | Denominator | Sample availability |
+|---|---|---|---|
+| 1 | Interest expense on deposits | Interest-bearing deposits | 8 of 12 |
+| 2 | Interest expense on deposits | Total deposits | 12 of 12 |
+| 3 | Interest expense on deposits, reconstructed from components | Total deposits | Fallback |
+| X | — | Excluded as insufficiently comparable | — |
+
+All denominators are two-point averages of period-end balances. Milestone 0 established
+that no filer in the sample tags an average deposit balance in any taxonomy, including its
+own extension namespace, so reported averages are not available and every row carries
+`avg_method = 'endpoint'`. The distinction the field was intended to record does not arise
+in practice; it is retained because a filer may begin tagging averages later.
 
 Rules:
 
@@ -115,6 +121,14 @@ the effect being measured. Terminal filers are retained with `last_filed_period`
 exit reason; every headline result is reported for the full sample and for surviving banks
 only, and the difference is published.
 
+A stronger form of the same problem applies before ingestion begins. A bank that operates
+without a holding company files its periodic reports with its primary federal banking
+regulator rather than the SEC, so it has no 10-K and no XBRL facts in EDGAR at all. First
+Republic Bank and Signature Bank are both absent for this reason, and both are
+institutions where the effect under study was most acute. Universe construction therefore
+cannot assume that a listed bank has EDGAR coverage; presence must be verified per filer,
+and the gap closed from regulatory data.
+
 **Partial-cycle coverage.** Terminal filers have filings through approximately fiscal 2022
 but not through the mid-2023 cycle peak. Their cumulative beta is computed to the last
 filed quarter, marked `partial_cycle`, and excluded from any calculation requiring a
@@ -141,9 +155,15 @@ magnitude can be measured, which is the input to the secondary question.
 
 FFIEC Call Report and FDIC BankFind data carry the same deposit and interest-expense
 concepts in standardised form, quarterly, for all insured institutions including those
-that later failed. They are used as ground truth, not as the primary source: derived
-cost-of-deposits values are compared against the regulatory figure and the agreement is
-published as a measured error rate.
+that later failed. They serve two purposes.
+
+As **ground truth**, derived cost-of-deposits values are compared against the regulatory
+figure and the agreement is published as a measured error rate, so the accuracy of the tag
+mapping is stated rather than asserted.
+
+As a **coverage source**, they supply the institutions EDGAR does not hold at all. This is
+not optional: without regulatory data, First Republic and Signature are simply missing, and
+the survivorship comparison loses the two most consequential cases.
 
 The mapping is not one-to-one. FDIC data is at insured-institution level (CERT) while SEC
 filings are at holding-company level (CIK), and a holding company may own several insured
@@ -286,14 +306,18 @@ Built with Evidence.dev, deployed as a static site at no running cost.
 Proceed past Milestone 0 only if all hold across the twelve-bank sample:
 
 - **G1** At least nine banks yield a tier 1 or tier 2 cost-of-deposits series for at least
-  80 percent of quarters in 2015Q4–2019Q2.
-- **G2** The same holds for at least 80 percent of quarters in 2022Q1–2023Q4.
-- **G3** Both terminal filers are retrievable through their final filed quarter.
+  80 percent of quarters in 2015Q4–2019Q2. **Passed: 12 of 12.**
+- **G2** The same holds for at least 80 percent of quarters in 2022Q1–2023Q4. **Passed: 11
+  of 12.** The exception is SVB, whose filings end in 2022Q4 — a partial cycle by
+  construction, handled under section 4 rather than a coverage defect.
+- **G3** Every terminal filer is retrievable through its final filed quarter. **Passed:**
+  SVB to 2022-12-31, PacWest to 2023-09-30.
 - **G4** Ally Financial's test-cycle cost of deposits exceeds Zions Bancorporation's by a
   material and economically sensible margin. A direct bank with no branch network should
   reprice faster than a branch-funded regional. If this contrast is absent, the metric
-  construction is wrong and work stops until it is corrected.
-- **G5** Q4 values are derivable for at least 80 percent of bank-years.
+  construction is wrong and work stops until it is corrected. **Outstanding.**
+- **G5** Q4 values are derivable for at least 80 percent of bank-years. **Passed: 92.3
+  percent** on interest expense on deposits, 180 of 195 bank-years.
 
 ### 9.2 Fallbacks
 
@@ -328,3 +352,4 @@ Evidence.dev demonstrably constrains a feature users need.
 | Date | Change |
 |---|---|
 | 2026-09-02 | Version 1.0. Initial specification. |
+| 2026-09-04 | Milestone 0 results. Tier denominators restated as endpoint averages, since no filer tags average deposit balances. Tier availability recorded. Survivorship section extended to banks absent from EDGAR entirely. Regulatory data promoted from validation to coverage source. Gate criteria annotated with outcomes; G4 remains open. |

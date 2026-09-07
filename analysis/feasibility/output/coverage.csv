@@ -1,0 +1,129 @@
+cik,bank,category,tag,window,quarters_expected,quarters_present,coverage
+19617,JPMorgan Chase & Co.,deposit_interest_expense,InterestExpenseDeposits,calibration,15,15,1.0
+19617,JPMorgan Chase & Co.,deposit_interest_expense,InterestExpenseDeposits,test,8,8,1.0
+19617,JPMorgan Chase & Co.,deposit_balance,Deposits,calibration,15,15,1.0
+19617,JPMorgan Chase & Co.,deposit_balance,Deposits,test,8,8,1.0
+19617,JPMorgan Chase & Co.,deposit_balance,DepositsDomestic,calibration,15,15,1.0
+19617,JPMorgan Chase & Co.,deposit_balance,DepositsDomestic,test,8,8,1.0
+19617,JPMorgan Chase & Co.,deposit_balance,DepositsForeign,calibration,15,15,1.0
+19617,JPMorgan Chase & Co.,deposit_balance,DepositsForeign,test,8,8,1.0
+19617,JPMorgan Chase & Co.,deposit_balance,TimeDeposits,calibration,15,4,0.26666666666666666
+19617,JPMorgan Chase & Co.,deposit_balance,TimeDeposits,test,8,4,0.5
+70858,Bank of America Corporation,deposit_interest_expense,InterestExpenseDeposits,calibration,15,15,1.0
+70858,Bank of America Corporation,deposit_interest_expense,InterestExpenseDeposits,test,8,8,1.0
+70858,Bank of America Corporation,deposit_balance,Deposits,calibration,15,15,1.0
+70858,Bank of America Corporation,deposit_balance,Deposits,test,8,8,1.0
+70858,Bank of America Corporation,deposit_balance,InterestBearingDepositLiabilities,calibration,15,0,0.0
+70858,Bank of America Corporation,deposit_balance,InterestBearingDepositLiabilities,test,8,0,0.0
+70858,Bank of America Corporation,deposit_balance,NoninterestBearingDepositLiabilities,calibration,15,0,0.0
+70858,Bank of America Corporation,deposit_balance,NoninterestBearingDepositLiabilities,test,8,0,0.0
+70858,Bank of America Corporation,deposit_balance,TimeDeposits,calibration,15,4,0.26666666666666666
+70858,Bank of America Corporation,deposit_balance,TimeDeposits,test,8,2,0.25
+72971,Wells Fargo & Company,deposit_interest_expense,InterestExpenseDeposits,calibration,15,15,1.0
+72971,Wells Fargo & Company,deposit_interest_expense,InterestExpenseDeposits,test,8,8,1.0
+72971,Wells Fargo & Company,deposit_balance,Deposits,calibration,15,15,1.0
+72971,Wells Fargo & Company,deposit_balance,Deposits,test,8,8,1.0
+72971,Wells Fargo & Company,deposit_balance,InterestBearingDepositLiabilities,calibration,15,15,1.0
+72971,Wells Fargo & Company,deposit_balance,InterestBearingDepositLiabilities,test,8,8,1.0
+72971,Wells Fargo & Company,deposit_balance,NoninterestBearingDepositLiabilities,calibration,15,15,1.0
+72971,Wells Fargo & Company,deposit_balance,NoninterestBearingDepositLiabilities,test,8,8,1.0
+72971,Wells Fargo & Company,deposit_balance,TimeDeposits,calibration,15,4,0.26666666666666666
+72971,Wells Fargo & Company,deposit_balance,TimeDeposits,test,8,2,0.25
+831001,Citigroup Inc.,deposit_interest_expense,InterestExpenseDeposits,calibration,15,15,1.0
+831001,Citigroup Inc.,deposit_interest_expense,InterestExpenseDeposits,test,8,8,1.0
+831001,Citigroup Inc.,deposit_balance,Deposits,calibration,15,15,1.0
+831001,Citigroup Inc.,deposit_balance,Deposits,test,8,8,1.0
+831001,Citigroup Inc.,deposit_balance,DepositsDomestic,calibration,15,0,0.0
+831001,Citigroup Inc.,deposit_balance,DepositsDomestic,test,8,2,0.25
+831001,Citigroup Inc.,deposit_balance,DepositsForeign,calibration,15,0,0.0
+831001,Citigroup Inc.,deposit_balance,DepositsForeign,test,8,2,0.25
+831001,Citigroup Inc.,deposit_balance,TimeDeposits,calibration,15,0,0.0
+831001,Citigroup Inc.,deposit_balance,TimeDeposits,test,8,2,0.25
+713676,"The PNC Financial Services Group, Inc.",deposit_interest_expense,InterestExpenseDeposits,calibration,15,15,1.0
+713676,"The PNC Financial Services Group, Inc.",deposit_interest_expense,InterestExpenseDeposits,test,8,8,1.0
+713676,"The PNC Financial Services Group, Inc.",deposit_balance,Deposits,calibration,15,15,1.0
+713676,"The PNC Financial Services Group, Inc.",deposit_balance,Deposits,test,8,8,1.0
+713676,"The PNC Financial Services Group, Inc.",deposit_balance,InterestBearingDepositLiabilities,calibration,15,15,1.0
+713676,"The PNC Financial Services Group, Inc.",deposit_balance,InterestBearingDepositLiabilities,test,8,8,1.0
+713676,"The PNC Financial Services Group, Inc.",deposit_balance,NoninterestBearingDepositLiabilities,calibration,15,15,1.0
+713676,"The PNC Financial Services Group, Inc.",deposit_balance,NoninterestBearingDepositLiabilities,test,8,8,1.0
+713676,"The PNC Financial Services Group, Inc.",deposit_balance,TimeDeposits,calibration,15,4,0.26666666666666666
+713676,"The PNC Financial Services Group, Inc.",deposit_balance,TimeDeposits,test,8,2,0.25
+36104,U.S. Bancorp,deposit_interest_expense,InterestExpenseDeposits,calibration,15,15,1.0
+36104,U.S. Bancorp,deposit_interest_expense,InterestExpenseDeposits,test,8,8,1.0
+36104,U.S. Bancorp,deposit_balance,Deposits,calibration,15,15,1.0
+36104,U.S. Bancorp,deposit_balance,Deposits,test,8,8,1.0
+36104,U.S. Bancorp,deposit_balance,InterestBearingDepositLiabilities,calibration,15,15,1.0
+36104,U.S. Bancorp,deposit_balance,InterestBearingDepositLiabilities,test,8,8,1.0
+36104,U.S. Bancorp,deposit_balance,NoninterestBearingDepositLiabilities,calibration,15,15,1.0
+36104,U.S. Bancorp,deposit_balance,NoninterestBearingDepositLiabilities,test,8,8,1.0
+36104,U.S. Bancorp,deposit_balance,TimeDeposits,calibration,15,4,0.26666666666666666
+36104,U.S. Bancorp,deposit_balance,TimeDeposits,test,8,2,0.25
+92230,Truist Financial Corporation,deposit_interest_expense,InterestExpenseDeposits,calibration,15,15,1.0
+92230,Truist Financial Corporation,deposit_interest_expense,InterestExpenseDeposits,test,8,8,1.0
+92230,Truist Financial Corporation,deposit_balance,Deposits,calibration,15,15,1.0
+92230,Truist Financial Corporation,deposit_balance,Deposits,test,8,2,0.25
+92230,Truist Financial Corporation,deposit_balance,InterestBearingDepositLiabilities,calibration,15,10,0.6666666666666666
+92230,Truist Financial Corporation,deposit_balance,InterestBearingDepositLiabilities,test,8,8,1.0
+92230,Truist Financial Corporation,deposit_balance,NoninterestBearingDepositLiabilities,calibration,15,15,1.0
+92230,Truist Financial Corporation,deposit_balance,NoninterestBearingDepositLiabilities,test,8,8,1.0
+92230,Truist Financial Corporation,deposit_balance,TimeDeposits,calibration,15,12,0.8
+92230,Truist Financial Corporation,deposit_balance,TimeDeposits,test,8,2,0.25
+36270,M&T Bank Corporation,deposit_interest_expense,InterestExpenseForeignDeposits,calibration,15,15,1.0
+36270,M&T Bank Corporation,deposit_interest_expense,InterestExpenseForeignDeposits,test,8,0,0.0
+36270,M&T Bank Corporation,deposit_interest_expense,InterestExpenseSavingsDeposits,calibration,15,4,0.26666666666666666
+36270,M&T Bank Corporation,deposit_interest_expense,InterestExpenseSavingsDeposits,test,8,0,0.0
+36270,M&T Bank Corporation,deposit_interest_expense,InterestExpenseTimeDeposits,calibration,15,15,1.0
+36270,M&T Bank Corporation,deposit_interest_expense,InterestExpenseTimeDeposits,test,8,8,1.0
+36270,M&T Bank Corporation,deposit_balance,Deposits,calibration,15,15,1.0
+36270,M&T Bank Corporation,deposit_balance,Deposits,test,8,8,1.0
+36270,M&T Bank Corporation,deposit_balance,DepositsForeign,calibration,15,15,1.0
+36270,M&T Bank Corporation,deposit_balance,DepositsForeign,test,8,0,0.0
+36270,M&T Bank Corporation,deposit_balance,TimeDeposits,calibration,15,15,1.0
+36270,M&T Bank Corporation,deposit_balance,TimeDeposits,test,8,8,1.0
+40729,Ally Financial Inc.,deposit_interest_expense,InterestExpenseDeposits,calibration,15,15,1.0
+40729,Ally Financial Inc.,deposit_interest_expense,InterestExpenseDeposits,test,8,8,1.0
+40729,Ally Financial Inc.,deposit_balance,Deposits,calibration,15,15,1.0
+40729,Ally Financial Inc.,deposit_balance,Deposits,test,8,8,1.0
+40729,Ally Financial Inc.,deposit_balance,InterestBearingDepositLiabilities,calibration,15,15,1.0
+40729,Ally Financial Inc.,deposit_balance,InterestBearingDepositLiabilities,test,8,8,1.0
+40729,Ally Financial Inc.,deposit_balance,NoninterestBearingDepositLiabilities,calibration,15,15,1.0
+40729,Ally Financial Inc.,deposit_balance,NoninterestBearingDepositLiabilities,test,8,8,1.0
+40729,Ally Financial Inc.,deposit_balance,DepositsDomestic,calibration,15,0,0.0
+40729,Ally Financial Inc.,deposit_balance,DepositsDomestic,test,8,0,0.0
+40729,Ally Financial Inc.,deposit_balance,DepositsForeign,calibration,15,0,0.0
+40729,Ally Financial Inc.,deposit_balance,DepositsForeign,test,8,0,0.0
+40729,Ally Financial Inc.,deposit_balance,TimeDeposits,calibration,15,15,1.0
+40729,Ally Financial Inc.,deposit_balance,TimeDeposits,test,8,8,1.0
+109380,"Zions Bancorporation, National Association",deposit_interest_expense,InterestExpenseDeposits,calibration,15,15,1.0
+109380,"Zions Bancorporation, National Association",deposit_interest_expense,InterestExpenseDeposits,test,8,8,1.0
+109380,"Zions Bancorporation, National Association",deposit_balance,Deposits,calibration,15,15,1.0
+109380,"Zions Bancorporation, National Association",deposit_balance,Deposits,test,8,8,1.0
+109380,"Zions Bancorporation, National Association",deposit_balance,NoninterestBearingDepositLiabilities,calibration,15,15,1.0
+109380,"Zions Bancorporation, National Association",deposit_balance,NoninterestBearingDepositLiabilities,test,8,8,1.0
+109380,"Zions Bancorporation, National Association",deposit_balance,InterestBearingDomesticDepositMoneyMarket,calibration,15,0,0.0
+109380,"Zions Bancorporation, National Association",deposit_balance,InterestBearingDomesticDepositMoneyMarket,test,8,0,0.0
+109380,"Zions Bancorporation, National Association",deposit_balance,TimeDeposits,calibration,15,10,0.6666666666666666
+109380,"Zions Bancorporation, National Association",deposit_balance,TimeDeposits,test,8,8,1.0
+719739,SVB Financial Group,deposit_interest_expense,InterestExpenseDeposits,calibration,15,15,1.0
+719739,SVB Financial Group,deposit_interest_expense,InterestExpenseDeposits,test,8,4,0.5
+719739,SVB Financial Group,deposit_balance,Deposits,calibration,15,15,1.0
+719739,SVB Financial Group,deposit_balance,Deposits,test,8,4,0.5
+719739,SVB Financial Group,deposit_balance,InterestBearingDepositLiabilities,calibration,15,15,1.0
+719739,SVB Financial Group,deposit_balance,InterestBearingDepositLiabilities,test,8,4,0.5
+719739,SVB Financial Group,deposit_balance,NoninterestBearingDepositLiabilities,calibration,15,15,1.0
+719739,SVB Financial Group,deposit_balance,NoninterestBearingDepositLiabilities,test,8,4,0.5
+719739,SVB Financial Group,deposit_balance,TimeDeposits,calibration,15,4,0.26666666666666666
+719739,SVB Financial Group,deposit_balance,TimeDeposits,test,8,1,0.125
+1102112,PacWest Bancorp,deposit_interest_expense,InterestExpenseDeposits,calibration,15,15,1.0
+1102112,PacWest Bancorp,deposit_interest_expense,InterestExpenseDeposits,test,8,7,0.875
+1102112,PacWest Bancorp,deposit_balance,Deposits,calibration,15,15,1.0
+1102112,PacWest Bancorp,deposit_balance,Deposits,test,8,7,0.875
+1102112,PacWest Bancorp,deposit_balance,InterestBearingDepositLiabilities,calibration,15,15,1.0
+1102112,PacWest Bancorp,deposit_balance,InterestBearingDepositLiabilities,test,8,7,0.875
+1102112,PacWest Bancorp,deposit_balance,NoninterestBearingDepositLiabilities,calibration,15,15,1.0
+1102112,PacWest Bancorp,deposit_balance,NoninterestBearingDepositLiabilities,test,8,7,0.875
+1102112,PacWest Bancorp,deposit_balance,InterestBearingDomesticDepositMoneyMarket,calibration,15,4,0.26666666666666666
+1102112,PacWest Bancorp,deposit_balance,InterestBearingDomesticDepositMoneyMarket,test,8,1,0.125
+1102112,PacWest Bancorp,deposit_balance,TimeDeposits,calibration,15,15,1.0
+1102112,PacWest Bancorp,deposit_balance,TimeDeposits,test,8,7,0.875

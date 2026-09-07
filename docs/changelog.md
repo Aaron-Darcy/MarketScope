@@ -4,6 +4,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ## [Unreleased]
 
+### Changed
+
+- Filer identity is verified against the submissions endpoint rather than the `entityName`
+  field on company facts, which reports the entity that published a fact rather than the
+  registrant and is unusable as a filer key.
+- Deposit balance denominators are two-point averages of period-end balances throughout.
+  No filer in the sample tags an average deposit balance in any taxonomy, so reported
+  averages are unavailable and the tier hierarchy now distinguishes only the deposit base.
+- Regulatory filings are a coverage source as well as a validation source, since banks
+  operating without a holding company file with their banking regulator and are absent
+  from EDGAR entirely.
+
+### Removed
+
+- First Republic Bank, which has no company facts in EDGAR. Recorded with Signature Bank
+  and Silvergate in `EXCLUDED_FROM_EDGAR` with the reason for each. PacWest Bancorp
+  replaces it as the second terminal filer, covering both cycles.
+
 ### Added
 
 - Project specification covering scope, cycle definitions, metric comparability tiers,

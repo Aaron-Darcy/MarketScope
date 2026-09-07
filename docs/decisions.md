@@ -169,3 +169,81 @@ passes.
 it costs two weeks rather than six. The sample is deliberately constructed to include a
 direct bank and a branch-funded regional, so that the absence of the expected repricing
 contrast fails the gate rather than passing unnoticed.
+
+---
+
+## 0009 — Verify filer identity against submissions, not company facts
+
+**Date** 2026-09-04
+**Status** Accepted
+
+**Context.** Identity verification initially compared the expected name against the
+`entityName` field on the company facts payload. Two of twelve sample filers failed that
+check while having entirely correct CIKs. CIK 70858 is Bank of America Corporation, but its
+company facts payload reports `BofA Finance LLC`, a financing subsidiary filing under the
+same CIK. CIK 72971 returns `WELLS        FARGO & COMPANY/MN`, padded with repeated
+whitespace.
+
+**Decision.** Resolve the registrant name from the submissions endpoint, which returns the
+authoritative name, and normalise whitespace and casing before comparing.
+
+**Consequences.** One additional request per filer, which the cache absorbs. The wider
+lesson is recorded because it applies beyond identity: `entityName` on company facts
+describes whichever entity published a given fact, not the registrant, so it must not be
+used as a filer key anywhere in the pipeline.
+
+---
+
+## 0010 — Drop First Republic Bank; substitute PacWest Bancorp
+
+**Date** 2026-09-04
+**Status** Accepted
+
+**Context.** First Republic Bank has no company facts in EDGAR. CIK 1132979 exists under
+that name but carries only 40-6B/A and SC 13G filings, and a company search returns no
+First Republic entity with 10-K filings other than an unrelated predecessor that stopped
+filing in 2008 and Republic First Bancorp, a different institution. The cause is
+structural: First Republic was a state-chartered bank with no holding company, and such
+banks file periodic reports with their primary federal banking regulator rather than the
+SEC. Signature Bank is absent for the same reason.
+
+**Decision.** Remove First Republic from the EDGAR-sourced sample and record it, with
+Signature and Silvergate, in `EXCLUDED_FROM_EDGAR` with the reason. Substitute PacWest
+Bancorp as the second terminal filer.
+
+**Alternatives.** Silvergate Capital Corporation is present in EDGAR with XBRL, but its
+first 10-K covers fiscal 2019, so it has no calibration-window history and cannot
+contribute to the persistence test. PacWest files from fiscal 2013 through 2023Q3, spans
+both cycles, and exited by merger after sustained deposit outflow, which exercises the
+terminal-filer and entity-event paths together.
+
+**Consequences.** The sample stays at twelve and the gate arithmetic is unchanged.
+Regulatory data moves from a validation source to a coverage source, because the two most
+consequential institutions of 2023 are otherwise unreachable. Universe construction at
+Milestone 1 must verify EDGAR presence per filer rather than assuming it from listing
+status and SIC code.
+
+---
+
+## 0011 — Adopt endpoint averaging for all deposit balances
+
+**Date** 2026-09-04
+**Status** Accepted
+
+**Context.** The tier definitions assumed average interest-bearing deposits would be
+available for at least some filers. Milestone 0 scanned every taxonomy present for all
+twelve filers, including each filer's own extension namespace, for any concept combining an
+average marker with a deposit marker. None was found. Average balance sheets appear in the
+rate and volume tables of the MD&A and are not tagged.
+
+**Decision.** Compute every denominator as a two-point average of period-end balances.
+Retain the `avg_method` field, always `endpoint` for now, so a filer that begins tagging
+averages later is distinguishable without a schema change.
+
+**Consequences.** The tier hierarchy survives but now distinguishes only the deposit base
+used, not the averaging method: tier 1 uses interest-bearing deposits, available for 8 of
+12 filers; tier 2 uses total deposits, available for all 12. Endpoint averaging introduces
+error where deposit balances moved sharply within a quarter, which is precisely the
+condition under study in 2022 and 2023. The size of that error is measurable against
+regulatory data, which reports true averages, and quantifying it is now a required part of
+the validation work rather than an optional extra.
