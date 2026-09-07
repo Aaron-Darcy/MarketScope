@@ -26,7 +26,7 @@ from marketscope.banks import (
     FEASIBILITY_SAMPLE,
     Bank,
 )
-from marketscope.ingestion.sec import SecClient
+from marketscope.ingestion.sec import SecClient, normalise_entity_name
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +45,9 @@ class IdentityMismatchError(Exception):
     """Raised when a CIK does not resolve to the filer the sample expects."""
 
 
-def verify_identity(bank: Bank, facts: dict[str, Any]) -> None:
-    entity_name = str(facts.get("entityName", "")).upper()
-    if bank.name_fragment.upper() not in entity_name:
+def verify_identity(bank: Bank, client: SecClient) -> None:
+    entity_name = client.entity_name(bank.cik)
+    if normalise_entity_name(bank.name_fragment) not in entity_name:
         raise IdentityMismatchError(
             f"CIK {bank.cik} resolved to {entity_name!r}, expected a name containing "
             f"{bank.name_fragment!r}"
@@ -120,8 +120,8 @@ def run(output_dir: Path) -> pd.DataFrame:
         for bank in FEASIBILITY_SAMPLE:
             logger.info("Fetching company facts for %s (CIK %d)", bank.name, bank.cik)
             try:
+                verify_identity(bank, client)
                 facts = client.company_facts(bank.cik)
-                verify_identity(bank, facts)
             except Exception as error:
                 failures.append(f"{bank.name} (CIK {bank.cik}): {error}")
                 logger.error("Failed for %s: %s", bank.name, error)

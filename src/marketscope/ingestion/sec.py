@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import timedelta
 from typing import Any
 
@@ -21,6 +22,11 @@ def format_cik(cik: int | str) -> str:
     if not digits.isdigit():
         raise ValueError(f"Not a valid CIK: {cik!r}")
     return f"CIK{int(digits):010d}"
+
+
+def normalise_entity_name(name: str) -> str:
+    """Collapse the irregular whitespace and casing EDGAR uses in registrant names."""
+    return re.sub(r"\s+", " ", name).strip().upper()
 
 
 class SecClient:
@@ -71,6 +77,16 @@ class SecClient:
         url = SUBMISSIONS_URL.format(cik=format_cik(cik))
         payload: dict[str, Any] = self._client.get_json(url)
         return payload
+
+    def entity_name(self, cik: int | str) -> str:
+        """Return the registrant name for a CIK, normalised.
+
+        Taken from the submissions endpoint rather than the entityName field on company
+        facts. That field can carry a co-filing subsidiary instead of the registrant:
+        CIK 70858 is Bank of America Corporation, but its company facts payload reports
+        BofA Finance LLC, a financing subsidiary that files under the same CIK.
+        """
+        return normalise_entity_name(str(self.submissions(cik).get("name", "")))
 
     def filing_history(self, cik: int | str) -> list[dict[str, Any]]:
         """Return the complete filing history, following the SEC's older-filing pages.

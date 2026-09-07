@@ -131,14 +131,38 @@ FEASIBILITY_SAMPLE: tuple[Bank, ...] = (
         entity_events=("Silicon Valley Bank closed by regulators, March 2023",),
     ),
     Bank(
-        cik=1132979,
-        name="First Republic Bank",
+        cik=1102112,
+        name="PacWest Bancorp",
         ticker=None,
         profile=FundingProfile.REGIONAL,
-        name_fragment="FIRST REPUBLIC",
-        rationale="Terminal filer; relationship deposit base",
-        last_filed_period=date(2022, 12, 31),
-        entity_events=("Closed by regulators and acquired by JPMorgan Chase, May 2023",),
+        name_fragment="PACWEST",
+        rationale=(
+            "Terminal filer covering both cycles. Sustained acute deposit outflow through "
+            "2023 and exited by merger rather than closure, which exercises the terminal "
+            "filer and entity event paths together"
+        ),
+        last_filed_period=date(2023, 9, 30),
+        entity_events=("Merged into Banc of California, November 2023",),
+    ),
+)
+
+EXCLUDED_FROM_EDGAR: tuple[tuple[str, str], ...] = (
+    (
+        "First Republic Bank",
+        "State-chartered bank with no holding company. Filed periodic reports with the "
+        "FDIC rather than the SEC, so EDGAR holds no 10-K and no XBRL facts. CIK 1132979 "
+        "exists under the name but carries only 40-6B/A and SC 13G filings. Recoverable "
+        "only from regulatory data.",
+    ),
+    (
+        "Signature Bank",
+        "Same pattern as First Republic. No 10-K filer in EDGAR.",
+    ),
+    (
+        "Silvergate Capital Corporation",
+        "Files with the SEC and has XBRL, but its first 10-K covers fiscal 2019, so it has "
+        "no calibration-window history. Usable for the test cycle and the survivorship "
+        "comparison, not for cross-cycle persistence.",
     ),
 )
 
