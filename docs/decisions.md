@@ -438,8 +438,9 @@ A bank with no holding company is invisible to EDGAR only when it also has no re
 securities.
 
 Two institutions of fifty is a footnote, so FFIEC and FDIC ingestion stays at Milestone 3
-and Milestone 1 proceeds on EDGAR alone. The two are recorded in `EXCLUDED_FROM_EDGAR` and
-recovered from regulatory data at Milestone 3, as 0010 already provides. The seven foreign
+and Milestone 1 proceeds on EDGAR alone. All three institutions absent for want of
+registered securities — the two above and USAA — are recorded in `EXCLUDED_FROM_EDGAR` and
+recovered from regulatory data at Milestone 3, as 0010 already provides for the first two. The seven foreign
 banking organisations are a scope boundary rather than a coverage failure and are not
 recovered at all: they are not US bank holding companies and never had EDGAR coverage to
 lose. Both counts are published on the data health page, because a reader entitled to ask

@@ -159,6 +159,13 @@ EXCLUDED_FROM_EDGAR: tuple[tuple[str, str], ...] = (
         "Same pattern as First Republic. No 10-K filer in EDGAR.",
     ),
     (
+        "United Services Automobile Association",
+        "Member-owned reciprocal inter-insurance exchange. Registers no securities, so it "
+        "files nothing with the SEC at all, not even the ownership forms First Republic "
+        "and Signature appear through. Reaches the largest fifty on insured-bank assets "
+        "and is recoverable only from regulatory data.",
+    ),
+    (
         "Silvergate Capital Corporation",
         "Files with the SEC and has XBRL, but its first 10-K covers fiscal 2019, so it has "
         "no calibration-window history. Usable for the test cycle and the survivorship "
