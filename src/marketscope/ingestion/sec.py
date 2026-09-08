@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import re
 from datetime import timedelta
+from types import TracebackType
 from typing import Any
+
+import httpx
 
 from marketscope.config import Settings, get_settings
 from marketscope.ingestion.http import JsonApiClient, RateLimiter, ResponseCache
@@ -14,6 +17,13 @@ COMPANY_TICKERS_URL = f"{WWW_HOST}/files/company_tickers.json"
 COMPANY_FACTS_URL = f"{DATA_HOST}/api/xbrl/companyfacts/{{cik}}.json"
 SUBMISSIONS_URL = f"{DATA_HOST}/submissions/{{cik}}.json"
 SUBMISSIONS_PAGE_URL = f"{DATA_HOST}/submissions/{{filename}}"
+FRAME_URL = f"{DATA_HOST}/api/xbrl/frames/{{taxonomy}}/{{tag}}/{{unit}}/{{frame}}.json"
+BROWSE_URL = f"{WWW_HOST}/cgi-bin/browse-edgar"
+
+BROWSE_PAGE_SIZE = 100
+BROWSE_MAX_PAGES = 200
+
+_CIK_PATTERN = re.compile(r"<cik>(\d+)</cik>")
 
 
 def format_cik(cik: int | str) -> str:
@@ -66,6 +76,79 @@ class SecClient:
             for row in payload.values()
         ]
 
+    def companies_by_sic(self, sic: str) -> list[int]:
+        """Return the CIK of every EDGAR entity carrying an SIC code.
+
+        Reads the company browser rather than a bulk file because no bulk file publishes
+        SIC. The Atom rendering is used for its stable markup, but its company-name field
+        is unusable — EDGAR emits a serialised Perl reference such as ``ARRAY(0x55d3...)``
+        rather than the name — so only the CIK is taken and names are resolved from the
+        submissions endpoint.
+        """
+        ciks: list[int] = []
+        seen: set[int] = set()
+
+        for page in range(BROWSE_MAX_PAGES):
+            payload = self._client.get_text(
+                BROWSE_URL,
+                params={
+                    "action": "getcompany",
+                    "SIC": sic,
+                    "dateb": "",
+                    "owner": "include",
+                    "count": str(BROWSE_PAGE_SIZE),
+                    "start": str(page * BROWSE_PAGE_SIZE),
+                    "output": "atom",
+                },
+            )
+            found = [int(match) for match in _CIK_PATTERN.findall(payload)]
+            if not found:
+                return ciks
+            for cik in found:
+                if cik not in seen:
+                    seen.add(cik)
+                    ciks.append(cik)
+
+        raise RuntimeError(f"SIC {sic} exceeded {BROWSE_MAX_PAGES} pages of company results")
+
+    def frame_payload(
+        self, tag: str, frame: str, *, taxonomy: str = "us-gaap", unit: str = "USD"
+    ) -> dict[str, Any]:
+        """Return the raw frame payload, including the entity name on each observation.
+
+        The frames endpoint answers cross-filer questions in a single request that would
+        otherwise cost one company facts download per filer. It reports only filers whose
+        period aligns to the frame, so a filer with a non-calendar fiscal year is absent
+        from the calendar frame rather than reported at zero.
+        """
+        url = FRAME_URL.format(taxonomy=taxonomy, tag=tag, unit=unit, frame=frame)
+        payload: dict[str, Any] = self._client.get_json(url)
+        return payload
+
+    def frame(
+        self, tag: str, frame: str, *, taxonomy: str = "us-gaap", unit: str = "USD"
+    ) -> dict[int, float]:
+        """Return one concept's value for every filer reporting it in a period."""
+        payload = self.frame_payload(tag, frame, taxonomy=taxonomy, unit=unit)
+        return {int(row["cik"]): float(row["val"]) for row in payload.get("data", [])}
+
+    def frame_or_empty(
+        self, tag: str, frame: str, *, taxonomy: str = "us-gaap", unit: str = "USD"
+    ) -> dict[int, float]:
+        """Return a frame, treating 404 as nobody having reported the concept in the period.
+
+        The frames endpoint publishes a document per concept and period and returns 404
+        where none exists. That is an ordinary answer when sweeping a candidate concept
+        list across years, not a fault, so it is distinguished here from the other error
+        statuses, which still raise.
+        """
+        try:
+            return self.frame(tag, frame, taxonomy=taxonomy, unit=unit)
+        except httpx.HTTPStatusError as error:
+            if error.response.status_code == 404:
+                return {}
+            raise
+
     def company_facts(self, cik: int | str) -> dict[str, Any]:
         """Return every XBRL fact the SEC holds for a filer."""
         url = COMPANY_FACTS_URL.format(cik=format_cik(cik))
@@ -77,6 +160,22 @@ class SecClient:
         url = SUBMISSIONS_URL.format(cik=format_cik(cik))
         payload: dict[str, Any] = self._client.get_json(url)
         return payload
+
+    def has_company_facts(self, cik: int | str) -> bool:
+        """Report whether the SEC holds any XBRL facts for a filer.
+
+        A registrant that has never filed a financial statement in XBRL returns 404 from
+        the company facts endpoint. That is the signature of an institution reachable in
+        EDGAR only through ownership forms, which is not the same as absence from EDGAR
+        and is distinguished from it in universe construction.
+        """
+        try:
+            self.company_facts(cik)
+        except httpx.HTTPStatusError as error:
+            if error.response.status_code == 404:
+                return False
+            raise
+        return True
 
     def entity_name(self, cik: int | str) -> str:
         """Return the registrant name for a CIK, normalised.
@@ -109,6 +208,17 @@ class SecClient:
 
     def close(self) -> None:
         self._client.close()
+
+    def __enter__(self) -> SecClient:
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        self.close()
 
 
 def _expand_filing_table(table: dict[str, list[Any]]) -> list[dict[str, Any]]:
