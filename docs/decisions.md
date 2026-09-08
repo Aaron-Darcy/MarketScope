@@ -332,3 +332,119 @@ to be right simultaneously to reproduce an external number. It also provides the
 independent evidence for the specification's assumption that betas run higher in faster
 cycles. The check does not validate cross-bank dispersion, which remains the job of the
 regulatory comparison in section 5 of the specification.
+
+---
+
+## 0015 — Decide universe membership by reported deposit behaviour, not SIC code
+
+**Date** 2026-09-09
+**Status** Accepted. Refines 0001.
+
+**Context.** Section 1 identified the universe by SIC codes 6020, 6021, 6022, 6035 and
+6036. Measured against EDGAR that screen loses eight of the fifty largest deposit-taking
+filers. Goldman Sachs, Morgan Stanley, Charles Schwab and Raymond James carry SIC 6211,
+security brokers and dealers. American Express and Synchrony carry 6199, Discover carries
+6141 and Ameriprise carries 6282. Every one of them files a 10-K with full XBRL, is a
+regulated depository holding company, and appears in the FDIC ranking of the largest fifty
+US depository groups. Schwab is also the clearest cash-sorting case of 2023, which is the
+behaviour the study exists to measure. SIC is a self-reported administrative attribute on
+the EDGAR entity record, not a regulatory classification, and nothing keeps it current.
+SIC 6020 turns out to be a group heading: EDGAR returns no entities for it at all.
+
+**Decision.** Membership is decided by what a filer reports, under four rules answerable
+from EDGAR alone. It reports total assets, so it can be ranked. Deposits reach five percent
+of assets in some period of the study window. It reports interest paid on deposits under
+any concept in the candidate list. It files a 10-K rather than a 20-F or 40-F. SIC is
+retained on the row as a descriptive attribute and as the basis for reporting how far the
+old screen would have diverged.
+
+**Alternatives.** Keep the SIC screen and add the eight by explicit inclusion, which works
+but leaves a hand-maintained list that has to be re-audited whenever the universe is
+rebuilt, and which needs an external source to discover the omissions in the first place.
+Make the FDIC rollup the membership authority, which is regulatory truth but makes
+Milestone 1 depend on a source the specification places at Milestone 3, and requires a
+name-to-CIK mapping layer that has no reliable key.
+
+**Consequences.** The universe is reproducible from EDGAR alone and self-maintaining: an
+institution that begins taking deposits enters without anyone editing a list. Two screens
+are needed rather than one, because deposit funding alone does not identify a
+deposit-taking institution — an insurer tags annuity and other deposit-type contracts under
+the same `Deposits` concept a bank uses for its funding base, which is how Fidelity
+National Financial reached the ranking before the interest test was added. The interest
+test sweeps the whole concept list rather than the aggregate alone, because M&T Bank,
+Flagstar and Valley National tag only leaf categories, the pattern recorded in 0013.
+
+The deposit-funding threshold carries no weight. Above twenty billion dollars of assets the
+largest non-depository ratio is 0.024, Nelnet, and the smallest depository ratio is 0.210,
+Ameriprise. Any cut inside that gap selects the same filers.
+
+Foreign private issuers are excluded by scope rather than by coverage. National Bank of
+Greece passes both deposit tests and would otherwise rank inside the fifty; it files 20-F
+and is not a US bank holding company. The two are counted separately so that a genuine
+coverage failure is never recorded as a scope judgement.
+
+The universe now includes institutions whose deposit franchise is a minor part of the
+balance sheet — Goldman at a 0.26 deposit share, Morgan Stanley at 0.30, Ameriprise at
+0.22. Their betas are computed on the deposit base like everyone else's, but their funding
+mix differs enough from a branch-funded regional that the descriptive work in section 6 of
+the specification has to show funding mix alongside beta rather than ranking on beta alone.
+
+---
+
+## 0016 — Size the EDGAR coverage gap against a regulatory ranking, and leave FDIC ingestion at Milestone 3
+
+**Date** 2026-09-09
+**Status** Accepted. Extends 0010.
+
+**Context.** 0010 established that a bank operating without a holding company files with
+its primary federal banking regulator rather than the SEC, and that First Republic and
+Signature are both absent from EDGAR for that reason. Nobody had sized how far that extends
+across the largest fifty. If it were a large share, the FFIEC and FDIC work the
+specification places at Milestone 3 would have to move into Milestone 1, because everything
+built on an EDGAR-only universe would inherit the gap.
+
+A universe built from EDGAR cannot answer this. A bank that files nothing with the SEC
+reports no assets in XBRL, so it cannot be ranked, and every filer in a top fifty derived
+from EDGAR has XBRL by construction. The measurement needs a ranking from outside EDGAR.
+
+**Decision.** Rank US depository groups by rolling FDIC insured-institution financials at
+2022-12-31 up to each institution's regulatory high holder, which puts a bank with no
+holding company into the ranking as its own group, and map the largest fifty to SEC
+registrants through a pinned, hand-verified table keyed on FDIC identifiers. The reference
+date is the opening of the test cycle, when every institution of interest was still
+reporting.
+
+**Alternatives.** FFIEC NPW, which publishes holding-company data directly and would avoid
+the insured-institution rollup, is CAPTCHA-gated and cannot be fetched programmatically.
+Matching names rather than pinning identifiers, which is what the first attempt did: it
+mapped First Republic Bank onto Republic First Bancorp, a different institution, and
+Signature Bank onto National Bank Holdings. That is the exact confusion 0010 records, and
+it would have reported a coverage gap of zero.
+
+**Consequences.** Forty of the largest fifty groups are reachable in EDGAR: thirty-eight
+through a top-tier registrant and two, HSBC and Santander, through a US intermediate
+holding company that files a 10-K against registered debt. Ten are not.
+
+The pattern 0010 describes accounts for two of them, First Republic at 213bn and Signature
+at 110bn. A third, USAA at 113bn, is absent for a related but distinct reason: it is a
+member-owned reciprocal inter-insurance exchange with no registered securities. The
+remaining seven are US operations of foreign banking organisations — Toronto-Dominion at
+423bn, Bank of Montreal, UBS, Royal Bank of Canada, BNP Paribas, Bank of China and Standard
+Chartered — which file FR Y-9C and have no SEC-registered US entity.
+
+The mechanism is registered securities, not corporate structure. Zions Bancorporation
+dissolved its holding company in 2018 and files as the bank itself, and is fully covered.
+A bank with no holding company is invisible to EDGAR only when it also has no registered
+securities.
+
+Two institutions of fifty is a footnote, so FFIEC and FDIC ingestion stays at Milestone 3
+and Milestone 1 proceeds on EDGAR alone. The two are recorded in `EXCLUDED_FROM_EDGAR` and
+recovered from regulatory data at Milestone 3, as 0010 already provides. The seven foreign
+banking organisations are a scope boundary rather than a coverage failure and are not
+recovered at all: they are not US bank holding companies and never had EDGAR coverage to
+lose. Both counts are published on the data health page, because a reader entitled to ask
+what "largest fifty" excludes should not have to reconstruct it.
+
+The audit refuses to guess. A group the pinned table does not cover raises rather than
+falling through as covered, so a shift in FDIC data surfaces as a failure rather than as a
+quietly improved coverage rate.
