@@ -1,0 +1,51 @@
+rank,fdic_key,fdic_name,mapped_name,insured_assets,insured_deposits,certs,reachability,cik,note
+1,HC:1039502,JPMORGAN CHASE&CO,JPMorgan Chase & Co,3202004920000.0,2440722500000.0,2,covered_top_tier,19617.0,
+2,HC:1073757,BANK OF AMERICA CORP,Bank of America Corporation,2436712000000.0,2056239000000.0,2,covered_top_tier,70858.0,
+3,HC:1951350,CITIGROUP INC,Citigroup Inc,1764162537000.0,1399631000000.0,2,covered_top_tier,831001.0,
+4,HC:1120754,WELLS FARGO&COMPANY,Wells Fargo & Company,1742268005000.0,1439530756000.0,4,covered_top_tier,72971.0,
+5,HC:1119794,U S BCORP,U.S. Bancorp,689581101000.0,546813866000.0,2,covered_top_tier,36104.0,
+6,HC:1069778,PNC FINL SERVICES GROUP INC,PNC Financial Services Group,580082489000.0,467578836000.0,2,covered_top_tier,713676.0,
+7,HC:1074156,TRUIST FINANCIAL CORP,Truist Financial Corporation,545969000000.0,424922000000.0,1,covered_top_tier,92230.0,
+8,HC:2380443,GOLDMAN SACHS GROUP INC THE,"The Goldman Sachs Group, Inc.",485553000000.0,362009000000.0,1,covered_top_tier,886982.0,
+9,HC:2277860,CAPITAL ONE FINANCIAL CORP,Capital One Financial Corp,453313240000.0,355083771000.0,1,covered_top_tier,927628.0,
+10,HC:1238565,TORONTO-DOMINION BANK THE,The Toronto-Dominion Bank,422795854000.0,361402618000.0,2,absent_foreign_parent,,TD Group US Holdings files FR Y-9C; no US entity is an SEC registrant
+11,HC:2162966,MORGAN STANLEY,Morgan Stanley,411027000000.0,369621000000.0,2,covered_top_tier,895421.0,
+12,HC:1026632,CHARLES SCHWAB CORP THE,The Charles Schwab Corporation,393270000000.0,367066000000.0,3,covered_top_tier,316709.0,
+13,HC:3587146,BANK OF NY MELLON CORP THE,The Bank of New York Mellon Corporation,357764955000.0,308070908000.0,4,covered_top_tier,1390777.0,
+14,HC:1111435,STATE STREET CORP,State Street Corporation,298064515000.0,241844000000.0,2,covered_top_tier,93751.0,
+15,HC:1132449,CITIZENS FINANCIAL GROUP INC,Citizens Financial Group Inc,226401591000.0,182994749000.0,1,covered_top_tier,759944.0,
+16,BANK:59017,First Republic Bank,First Republic Bank,212638872000.0,176436706000.0,1,absent_no_registration,,State-chartered bank with no holding company and no registered securities. CIK 1132979 carries only ownership forms and returns 404 from company facts
+17,HC:1031449,SVB FINANCIAL GROUP,SVB Financial Group,209026000000.0,175378000000.0,1,covered_top_tier,719739.0,
+18,HC:1070345,FIFTH THIRD BCORP,Fifth Third Bancorp,206289179000.0,169530550000.0,1,covered_top_tier,35527.0,
+19,HC:1037003,M&T BANK CORP,M&T Bank Corporation,200954916000.0,165990528000.0,2,covered_top_tier,36270.0,
+20,HC:1068025,KEYCORP,KeyCorp,187590465000.0,145991717000.0,1,covered_top_tier,91576.0,
+21,HC:1068191,HUNTINGTON BANCSHARES INC,Huntington Bancshares Inc,182325674000.0,151757446000.0,1,covered_top_tier,49196.0,
+22,HC:1562859,ALLY FINANCIAL INC,Ally Financial Inc.,181890000000.0,156081000000.0,1,covered_top_tier,40729.0,
+23,HC:1231333,BANK OF MONTREAL,Bank of Montreal,176988372000.0,142017082000.0,2,absent_foreign_parent,,BMO Financial Corp files FR Y-9C; no US entity is an SEC registrant
+24,HC:1857108,HSBC HOLDINGS PLC,HSBC Holdings plc,162492752000.0,136884672000.0,2,covered_us_subsidiary,83246.0,HSBC USA Inc. files 10-K with XBRL against its registered debt
+25,HC:1275216,AMERICAN EXPRESS CO,American Express Company,155378079000.0,119923682000.0,1,covered_top_tier,4962.0,
+26,HC:1199611,NORTHERN TRUST CORP,Northern Trust Corporation,154522864000.0,124597802000.0,1,covered_top_tier,73124.0,
+27,HC:3242838,REGIONS FINANCIAL CORP,Regions Financial Corporation,154203000000.0,133792000000.0,1,covered_top_tier,1281761.0,
+28,HC:3846375,DISCOVER FINANCIAL SERVICES,Discover Financial Services,129592344000.0,94876159000.0,1,covered_top_tier,1393612.0,
+29,HC:4795461,UBS GROUP AG,UBS Group AG,120987397000.0,103818007000.0,1,absent_foreign_parent,,UBS Americas Holding files FR Y-9C; the parent files 20-F without US bank detail
+30,HC:1447376,UNITED SERVICES AUTOMOBILE ASSN,United Services Automobile Association,113249497000.0,102205921000.0,2,absent_no_registration,,Member-owned reciprocal inter-insurance exchange with no registered securities
+31,BANK:57053,Signature Bank,Signature Bank,110363650000.0,88612911000.0,1,absent_no_registration,,State-chartered bank with no holding company. CIK 1288784 carries only ownership forms and returns 404 from company facts
+32,HC:1075612,FIRST CITIZENS BANCSHARES INC,First Citizens BancShares Inc,109180139000.0,89537312000.0,1,covered_top_tier,798941.0,
+33,HC:1232497,ROYAL BANK OF CANADA,Royal Bank of Canada,102602491000.0,80985668000.0,2,absent_foreign_parent,,RBC US Group Holdings files FR Y-9C; no US entity is an SEC registrant
+34,HC:1239254,BANCO SANTANDER SA,Banco Santander SA,99105686000.0,76009038000.0,1,covered_us_subsidiary,811830.0,"Santander Holdings USA, Inc. files 10-K with XBRL against its registered debt"
+35,HC:4504654,SYNCHRONY FINANCIAL,Synchrony Financial,96300000000.0,74271000000.0,1,covered_top_tier,1601712.0,
+36,HC:1231968,BNP PARIBAS,BNP Paribas,91580361000.0,72129430000.0,1,absent_foreign_parent,,BNP Paribas USA files FR Y-9C; no US entity is an SEC registrant
+37,BANK:32541,"Flagstar Bank, National Association","Flagstar Bank, National Association",90036656000.0,58842231000.0,1,covered_top_tier,910073.0,"The FDIC record carries no high holder at this date, weeks after the New York Community Bancorp acquisition closed. Its holder files as CIK 910073"
+38,BANK:2270,"Zions Bancorporation, N.A.","Zions Bancorporation, N.A.",89544919000.0,72020002000.0,1,covered_top_tier,109380.0,"Dissolved its holding company in 2018 and files as the bank itself. Shows that the driver of absence is registered securities, not holding-company structure"
+39,HC:1199844,COMERICA INC,Comerica Incorporated,85607187000.0,73391506000.0,2,covered_top_tier,28412.0,
+40,HC:1094640,FIRST HORIZON CORP,First Horizon Corporation,78672073000.0,64839262000.0,1,covered_top_tier,36966.0,
+41,HC:1145476,WEBSTER FINANCIAL CORP,Webster Financial Corporation,71166370000.0,54363251000.0,1,covered_top_tier,801337.0,
+42,HC:2349815,WESTERN ALLIANCE BCORP,Western Alliance Bancorporation,67683841000.0,53918167000.0,1,covered_top_tier,1212545.0,
+43,HC:1129382,POPULAR INC,"Popular, Inc.",67606290000.0,61894170000.0,2,covered_top_tier,763901.0,
+44,HC:2734233,EAST WEST BCORP INC,"East West Bancorp, Inc.",64087895000.0,56273031000.0,1,covered_top_tier,1069157.0,
+45,HC:1078846,SYNOVUS FINANCIAL CORP,Synovus Financial Corp.,59629623000.0,49414623000.0,1,covered_top_tier,18349.0,
+46,HC:3815157,RAYMOND JAMES FINANCIAL INC,"Raymond James Financial, Inc.",57672405000.0,52565607000.0,2,covered_top_tier,720005.0,
+47,HC:1048773,VALLEY NATIONAL BCORP,Valley National Bancorp,57451653000.0,47782583000.0,1,covered_top_tier,714310.0,
+48,HC:2260406,WINTRUST FINANCIAL CORP,Wintrust Financial Corporation,56270229000.0,46822125000.0,16,covered_top_tier,1015328.0,
+49,BANK:33653,Bank of China,Bank of China,55267334000.0,20855164000.0,1,absent_foreign_parent,,US branch network of a Chinese bank; no US entity is an SEC registrant
+50,BANK:33692,"STANDARD CHARTERED BANK, PLC","Standard Chartered Bank, PLC",52969707000.0,46661906000.0,1,absent_foreign_parent,,US branch of a UK bank; no US entity is an SEC registrant
