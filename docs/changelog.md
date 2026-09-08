@@ -6,6 +6,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Cost of deposits is denominated on interest-bearing deposits rather than total deposits,
+  resolved by reported concept, summed domestic and foreign components, or total less a
+  complete non-interest-bearing figure. Tier 1 coverage rises from 8 filers to 11.
+- Numerators reconstructed from component concepts are checked against deposit expense
+  implied by total interest expense less non-deposit funding, and excluded below 80 percent
+  coverage rather than used understated.
 - Filer identity is verified against the submissions endpoint rather than the `entityName`
   field on company facts, which reports the entity that published a fact rather than the
   registrant and is unusable as a filer key.
@@ -24,6 +30,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Deposit cost and cumulative deposit beta, annualised by simple multiplication and scaled
+  by average interest-bearing deposits, following the convention used in Federal Reserve
+  work on FR Y-9C filings.
+- Gate criterion G4 check comparing a direct bank against a branch-funded regional, and an
+  industry aggregate benchmarked against the published Federal Reserve figure.
 - Project specification covering scope, cycle definitions, metric comparability tiers,
   known data problems, validation approach, model layout and milestone gates.
 - Decision record seeded with the eight decisions taken during scoping.

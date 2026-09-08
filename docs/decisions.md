@@ -247,3 +247,88 @@ error where deposit balances moved sharply within a quarter, which is precisely 
 condition under study in 2022 and 2023. The size of that error is measurable against
 regulatory data, which reports true averages, and quantifying it is now a required part of
 the validation work rather than an optional extra.
+
+---
+
+## 0012 — Denominate cost of deposits on interest-bearing deposits
+
+**Date** 2026-09-08
+**Status** Accepted. Refines 0004 and 0011.
+
+**Context.** Tier 2, dividing by total deposits, was available for every filer and tier 1 for
+only eight of twelve, which made tier 2 the tempting default. Non-interest-bearing deposits
+have a deposit beta of zero by construction, so a total-deposit denominator scales a bank's
+measured beta by its interest-bearing share. That share is a function of business model —
+near total for a direct bank, far lower for a commercial bank funded by business operating
+accounts — and it moved sharply during 2022 and 2023 as balances migrated into
+interest-bearing accounts. Applied to gate criterion G4, which compares a direct bank against
+a branch-funded regional, tier 2 would have widened the gap for reasons unrelated to
+repricing and produced a pass the evidence did not support.
+
+**Decision.** Denominate on interest-bearing deposits wherever resolvable, by three routes
+recorded on the row: the reported concept; domestic plus foreign components summed; or total
+deposits less a complete non-interest-bearing figure. Total deposits is used only where no
+interest-bearing base exists at all.
+
+**Alternatives.** Tier 2 throughout, rejected above. Restricting to filers reporting the
+concept directly, which would have dropped JPMorgan, Citigroup and Zions and biased the
+sample toward filers with richer disclosure.
+
+**Consequences.** Tier 1 rises from 8 filers to 11, covering 708 bank-quarters. Federal
+Reserve work on FR Y-9C filings uses the same denominator, which makes the published industry
+figure a usable benchmark. The residual route requires a complete non-interest-bearing
+figure and refuses a partial one rather than approximating.
+
+---
+
+## 0013 — Check reconstructed numerators for completeness before use
+
+**Date** 2026-09-08
+**Status** Accepted
+
+**Context.** Summing whatever component concepts a filer happens to tag produced a badly
+understated numerator for M&T Bank. At 2023Q3 its total interest expense was $866m, of which
+$101m was long-term debt and $69m short-term borrowings, implying roughly $696m on deposits.
+Only `InterestExpenseTimeDeposits` was tagged that quarter, at $202m. The reconstruction
+captured 29 percent of the true numerator and produced a test-cycle beta of 0.095, four times
+below the next lowest bank. A silently understated numerator is indistinguishable from a
+genuinely low-beta bank, which is the most dangerous failure mode available to this metric.
+
+**Decision.** Where the numerator is reconstructed from components, test the sum against
+deposit expense implied by total interest expense less identifiable non-deposit funding. Below
+80 percent coverage the bank-quarter is marked tier X and excluded from results, with the
+coverage ratio retained on the row.
+
+**Alternatives.** Extending the component list, which does not help because the concepts exist
+in M&T's taxonomy but are untagged in the affected quarters. Excluding M&T outright, which
+would discard the quarters where reconstruction is sound.
+
+**Consequences.** 31 M&T bank-quarters excluded, coverage as low as 2 percent. M&T has no
+test-cycle beta and drops from the cross-bank ranking. Tier X moves from a defined but unused
+category to one the pipeline actually assigns. The check depends on the non-deposit funding
+list being reasonably complete; where total interest expense is absent no check is possible and
+the reconstruction is accepted with `component_coverage` null, which is visible rather than
+assumed correct.
+
+---
+
+## 0014 — Validate the metric against the published industry beta
+
+**Date** 2026-09-08
+**Status** Accepted
+
+**Context.** G4 compares two banks. A pass on a single pair is weak evidence that the metric
+measures deposit behaviour rather than reporting artefacts, and the observed margin was thin.
+Federal Reserve work on FR Y-9C filings reports the industry cumulative interest-bearing
+deposit beta at roughly 0.4 in both the 2015-2019 and 2022-2023 cycles.
+
+**Decision.** Compute an industry aggregate by summing expense and balances across the sample
+before dividing, matching how the published figure is constructed, and require it to land
+within 0.15 of 0.4 in both cycles.
+
+**Consequences.** Passed at 0.354 for calibration and 0.480 for the test cycle. This is a
+stronger check than G4 because units, averaging method, annualisation and tag mapping all have
+to be right simultaneously to reproduce an external number. It also provides the first
+independent evidence for the specification's assumption that betas run higher in faster
+cycles. The check does not validate cross-bank dispersion, which remains the job of the
+regulatory comparison in section 5 of the specification.

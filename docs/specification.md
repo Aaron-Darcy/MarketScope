@@ -72,10 +72,28 @@ precise tier each filer-quarter supports, and the tier is recorded on the row.
 
 | Tier | Numerator | Denominator | Sample availability |
 |---|---|---|---|
-| 1 | Interest expense on deposits | Interest-bearing deposits | 8 of 12 |
-| 2 | Interest expense on deposits | Total deposits | 12 of 12 |
-| 3 | Interest expense on deposits, reconstructed from components | Total deposits | Fallback |
-| X | — | Excluded as insufficiently comparable | — |
+| 1 | Interest expense on deposits | Interest-bearing deposits | 11 of 12 banks, 708 bank-quarters |
+| 2 | Interest expense on deposits | Total deposits | 3 bank-quarters |
+| 3 | Interest expense on deposits, reconstructed from components | Best available base | 39 bank-quarters |
+| X | Reconstruction failed completeness check | — | 31 bank-quarters |
+
+The denominator is interest-bearing deposits wherever it can be resolved. Non-interest-bearing
+deposits have a beta of zero by construction, so including them scales a bank's measured beta
+by its interest-bearing share — a share that varies with business model and moved sharply
+during 2022 and 2023. Total deposits is therefore not comparable across banks and is used only
+where no interest-bearing base can be resolved at all.
+
+Three routes reach that base, in order of directness, each recorded on the row:
+
+| Provenance | Route | Filers |
+|---|---|---|
+| `reported` | `InterestBearingDepositLiabilities` | 8 |
+| `summed_components` | Domestic plus foreign components | JPMorgan, Citigroup |
+| `derived_residual` | Total deposits less non-interest-bearing deposits | Zions |
+
+The residual route requires a *complete* non-interest-bearing figure. A partial one, such as a
+domestic component with no foreign counterpart, would understate what is subtracted and
+silently overstate the base, so it is refused rather than approximated.
 
 All denominators are two-point averages of period-end balances. Milestone 0 established
 that no filer in the sample tags an average deposit balance in any taxonomy, including its
@@ -100,9 +118,16 @@ Cumulative over each cycle rather than differenced quarter on quarter, which is 
 convention and materially more stable:
 
 ```
-cumulative_beta = Δ cost_of_deposits (cycle start → cycle peak)
-                ÷ Δ effective federal funds rate (same window)
+cost_of_deposits = quarterly deposit interest expense × 4
+                 ÷ average interest-bearing deposits for the quarter
+
+cumulative_beta  = Δ cost_of_deposits (cycle start → cycle peak)
+                 ÷ Δ effective federal funds rate (same window)
 ```
+
+Annualisation is by simple multiplication rather than compounding, and the policy rate is
+converted to a decimal fraction to match, following the convention used in Federal Reserve
+work on FR Y-9C filings.
 
 ### 3.3 Net interest margin
 
@@ -318,6 +343,10 @@ Proceed past Milestone 0 only if all hold across the twelve-bank sample:
   construction is wrong and work stops until it is corrected. **Outstanding.**
 - **G5** Q4 values are derivable for at least 80 percent of bank-years. **Passed: 92.3
   percent** on interest expense on deposits, 180 of 195 bank-years.
+- **Benchmark** The industry cumulative interest-bearing deposit beta computed here must
+  land near the published Federal Reserve figure of roughly 0.40 for both cycles, which
+  tests units, averaging and tag mapping together. **Passed:** 0.354 calibration, 0.480
+  test.
 
 ### 9.2 Fallbacks
 
@@ -352,4 +381,5 @@ Evidence.dev demonstrably constrains a feature users need.
 | Date | Change |
 |---|---|
 | 2026-09-02 | Version 1.0. Initial specification. |
+| 2026-09-08 | G4 and benchmark passed; Milestone 0 gate closed. Denominator fixed as interest-bearing deposits with three resolution routes. Completeness check added for reconstructed numerators, excluding 31 M&T bank-quarters. Annualisation convention recorded. |
 | 2026-09-04 | Milestone 0 results. Tier denominators restated as endpoint averages, since no filer tags average deposit balances. Tier availability recorded. Survivorship section extended to banks absent from EDGAR entirely. Regulatory data promoted from validation to coverage source. Gate criteria annotated with outcomes; G4 remains open. |
