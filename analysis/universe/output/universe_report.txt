@@ -75,7 +75,7 @@ Top 51 by peak total assets, 2015Q4-2023Q4:
  48.        53bn  CULLEN/FROST BANKERS, INC.                   SIC 6021  covered
  49.        52bn  COLUMBIA BANKING SYSTEM, INC.                SIC 6022  covered
  50.        50bn  BOK FINANCIAL CORP                           SIC 6021  covered
- 51.        41bn  PACWEST BANCORP                              SIC 6021  covered  <- pinned
+  -.        41bn  PACWEST BANCORP                              SIC 6021  covered  <- pinned
 
 EDGAR coverage across the universe:
   covered    51
@@ -85,6 +85,9 @@ EDGAR coverage across the universe:
 
 Ranked above the cut but excluded:
        114bn  NATIONAL BANK OF GREECE SA               foreign_private_issuer
+
+Pinned into the universe: 1
+  PACWEST BANCORP                          PacWest Bancorp. Peaked at 41bn and ranks outside the fifty, but is one of the two terminal filers decision 0010 selected: it spans both cycles, sustained acute deposit outflow through 2023 and exited by merger rather than closure, which exercises the terminal filer and entity event paths together
 
 Pinned into the universe: 1
   PACWEST BANCORP                          PacWest Bancorp. Peaked at 41bn and ranks outside the fifty, but is one of the two terminal filers decision 0010 selected: it spans both cycles, sustained acute deposit outflow through 2023 and exited by merger rather than closure, which exercises the terminal filer and entity event paths together

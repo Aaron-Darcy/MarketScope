@@ -492,3 +492,37 @@ comparisons use all seated members, which is the reason the pin exists.
 
 Silvergate is not pinned. It ranks 116th on a $16bn peak and, as 0010 records, its first
 10-K covers fiscal 2019, so it cannot contribute to the cross-cycle test at all.
+
+---
+
+## 0018 — Commit the resolved universe and rebuild it deliberately
+
+**Date** 2026-09-09
+**Status** Accepted
+
+**Context.** Milestone 1 exits when the full universe ingests reproducibly. Universe
+construction reads live XBRL frames, and the fiftieth place is decided by a $50bn cut with
+banks a few hundred million apart around it. A filer restating total assets, or publishing
+a fact that lands it in a frame it was previously absent from, reorders the cut. Ingestion
+driven straight from a rebuild would then cover a different set of banks than the previous
+run, silently, and every result downstream would shift with no record of why.
+
+**Decision.** The resolved universe is committed to `data/seeds/universe.csv` and ingestion
+reads that file. Rebuilding is a separate, deliberate act: `--write-seed` regenerates it and
+`--check` fails when a fresh build departs from it. Membership changes and rank changes are
+reported separately, because a bank entering or leaving changes what is ingested while a
+bank moving one place changes only the order results are presented in.
+
+**Alternatives.** Rebuild on every run, which is reproducible only in the sense that the
+code is deterministic — the inputs are not. Pin the CIKs in Python beside `PINNED_FILERS`,
+which makes the universe a code change rather than data and puts fifty-one rows of
+generated content into a module. Freeze the frames themselves, which fixes the inputs but
+also freezes the restatement history the secondary question depends on.
+
+**Consequences.** Ingestion, and every result built on it, covers a fixed set of filers
+until someone changes the seed and says why in the commit. The seed can go stale: a bank
+crossing into the top fifty will not appear until the universe is rebuilt, so `--check`
+belongs in the scheduled refresh at Milestone 6 as a warning rather than a failure. The
+diff is the review artefact — a rebuild that adds one bank and removes another is a
+one-line change to read, which is the point of committing the resolved list rather than the
+rule that produced it.

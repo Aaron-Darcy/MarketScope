@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
+from pathlib import Path
 
 import pytest
 
@@ -10,14 +11,18 @@ from marketscope.universe import (
     Exclusion,
     Filer,
     PinnedFilerError,
+    SeedRow,
     build_candidates,
     classify_coverage,
     count_foreign_annual_forms,
     deposit_share,
+    diff_seed,
     peak_by_cik,
     rank,
+    read_seed,
     select,
     ten_k_history,
+    write_seed,
 )
 
 
@@ -254,3 +259,57 @@ def test_pinning_a_cik_the_screens_reject_raises_rather_than_seating_it_silently
 
     with pytest.raises(PinnedFilerError, match="does not survive the membership screens"):
         select(client, ranked, size=1, pinned={404: "not a deposit taker"})
+
+
+def _seed_row(cik: int, rank: int | None, *, pinned: bool = False) -> SeedRow:
+    return SeedRow(
+        cik=cik,
+        registrant_name=f"FILER {cik}",
+        rank=rank,
+        pinned=pinned,
+        pinned_reason="terminal filer" if pinned else "",
+    )
+
+
+def test_seed_round_trips_through_disk(tmp_path: Path) -> None:
+    rows = [_seed_row(19617, 1), _seed_row(1102112, None, pinned=True)]
+    path = tmp_path / "universe.csv"
+
+    write_seed(rows, path)
+
+    assert read_seed(path) == rows
+
+
+def test_read_seed_rejects_a_file_whose_columns_have_drifted(tmp_path: Path) -> None:
+    path = tmp_path / "universe.csv"
+    path.write_text("cik,name\n19617,JPMORGAN\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="expected"):
+        read_seed(path)
+
+
+def test_diff_seed_is_clean_when_the_build_reproduces_the_committed_universe() -> None:
+    rows = [_seed_row(1, 1), _seed_row(2, 2)]
+
+    assert diff_seed(rows, list(rows)).is_clean
+
+
+def test_diff_seed_separates_membership_changes_from_rank_changes() -> None:
+    """A bank entering or leaving changes what is ingested; a bank moving a place changes
+    only presentation, and the two warrant different responses."""
+    committed = [_seed_row(1, 1), _seed_row(2, 2), _seed_row(3, 3)]
+    rebuilt = [_seed_row(1, 1), _seed_row(3, 2), _seed_row(4, 3)]
+
+    diff = diff_seed(committed, rebuilt)
+
+    assert [row.cik for row in diff.removed] == [2]
+    assert [row.cik for row in diff.added] == [4]
+    assert diff.moved == ((3, 3, 2),)
+    assert not diff.is_clean
+
+
+def test_diff_seed_reports_a_pin_losing_its_ranked_position() -> None:
+    committed = [_seed_row(9, 50, pinned=True)]
+    rebuilt = [_seed_row(9, None, pinned=True)]
+
+    assert diff_seed(committed, rebuilt).moved == ((9, 50, None),)

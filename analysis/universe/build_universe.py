@@ -26,17 +26,23 @@ from marketscope.universe import (
     BALANCE_FRAMES,
     DEPOSIT_FUNDED_FLOOR,
     DEPOSITS_TAG,
+    SEED_PATH,
     UNIVERSE_SIZE,
     Candidate,
     EdgarCoverage,
     Filer,
+    SeedDiff,
+    as_seed_rows,
     bank_sic_entities,
     build_candidates,
     collect_deposit_interest_payers,
     collect_frame_names,
     collect_frames,
+    diff_seed,
     rank,
+    read_seed,
     select,
+    write_seed,
 )
 
 logger = logging.getLogger(__name__)
@@ -57,7 +63,7 @@ class Result:
 def filer_rows(filers: list[Filer], *, ranked: bool) -> list[dict[str, Any]]:
     return [
         {
-            **({"rank": position} if ranked else {}),
+            **({"rank": filer.rank} if ranked else {}),
             "cik": filer.cik,
             "registrant_name": filer.registrant_name,
             "sic": filer.sic,
@@ -77,7 +83,7 @@ def filer_rows(filers: list[Filer], *, ranked: bool) -> list[dict[str, Any]]:
             "pinned_reason": filer.pinned_reason or "",
             "exclusion": filer.exclusion.value if filer.exclusion else "",
         }
-        for position, filer in enumerate(filers, start=1)
+        for filer in filers
     ]
 
 
@@ -178,12 +184,13 @@ def summarise(result: Result) -> str:
         "",
     ]
 
-    for position, filer in enumerate(result.members, start=1):
+    for filer in result.members:
         flag = "" if filer.has_bank_sic else "  <- outside the SIC screen"
         if filer.is_pinned:
             flag += "  <- pinned"
+        position = "  -" if filer.rank is None else f"{filer.rank:>3}"
         lines.append(
-            f"{position:>3}. {filer.candidate.peak_assets / 1e9:>9,.0f}bn  "
+            f"{position}. {filer.candidate.peak_assets / 1e9:>9,.0f}bn  "
             f"{filer.registrant_name[:44]:<44} SIC {filer.sic!s:<5} "
             f"{filer.coverage.value}{flag}"
         )
@@ -205,6 +212,11 @@ def summarise(result: Result) -> str:
     for filer in pins:
         lines.append(f"  {filer.registrant_name[:40]:<40} {filer.pinned_reason}")
 
+    pins = [filer for filer in result.members if filer.is_pinned]
+    lines += ["", f"Pinned into the universe: {len(pins)}"]
+    for filer in pins:
+        lines.append(f"  {filer.registrant_name[:40]:<40} {filer.pinned_reason}")
+
     missed = [filer for filer in result.members if not filer.has_bank_sic]
     lines += ["", f"In the universe but outside the SIC screen: {len(missed)}"]
     for filer in missed:
@@ -216,9 +228,31 @@ def summarise(result: Result) -> str:
     return "\n".join(lines)
 
 
+def describe_drift(diff: SeedDiff) -> str:
+    lines = ["Drift against the committed universe:"]
+    for row in diff.removed:
+        lines.append(f"  removed  {row.cik:<9} {row.registrant_name}")
+    for row in diff.added:
+        lines.append(f"  added    {row.cik:<9} {row.registrant_name}")
+    for cik, before, after in diff.moved:
+        lines.append(f"  moved    {cik:<9} rank {before} -> {after}")
+    return "\n".join(lines)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)
+    parser.add_argument("--seed", type=Path, default=SEED_PATH)
+    parser.add_argument(
+        "--write-seed",
+        action="store_true",
+        help="Rebuild the committed universe. Review the diff before committing it.",
+    )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Exit non-zero if a fresh build departs from the committed universe.",
+    )
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
@@ -227,7 +261,31 @@ def main(argv: list[str] | None = None) -> int:
     report = summarise(result)
     print(report)
     (args.output_dir / "universe_report.txt").write_text(report, encoding="utf-8")
-    return 0 if result.members else 1
+
+    if not result.members:
+        return 1
+
+    rebuilt = as_seed_rows(result.members)
+
+    if args.write_seed:
+        write_seed(rebuilt, args.seed)
+        print(f"\nWrote {len(rebuilt)} members to {args.seed}")
+        return 0
+
+    if not args.seed.is_file():
+        print(f"\nNo committed universe at {args.seed}. Write one with --write-seed.")
+        return 1
+
+    diff = diff_seed(read_seed(args.seed), rebuilt)
+    if diff.is_clean:
+        print(f"\nUniverse matches {args.seed}: {len(rebuilt)} members.")
+        return 0
+
+    print("\n" + describe_drift(diff))
+    if args.check:
+        print("\nIngestion reads the committed universe, so this build is not in effect.")
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

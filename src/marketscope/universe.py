@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import csv
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from datetime import date
 from enum import StrEnum
+from pathlib import Path
 from typing import Any, Protocol
 
 from marketscope.banks import DEPOSIT_INTEREST_EXPENSE_TAGS
@@ -44,6 +46,13 @@ BANK_SIC_CODES: tuple[str, ...] = ("6020", "6021", "6022", "6035", "6036")
 DEPOSIT_FUNDED_FLOOR = 0.05
 
 UNIVERSE_SIZE = 50
+
+# The resolved universe is committed rather than recomputed on every run. Rebuilding from
+# live frames is not reproducible: a filer restating total assets reorders the cut, and
+# ingestion would then silently cover a different set of banks than the last run did.
+SEED_PATH = Path("data/seeds/universe.csv")
+
+SEED_COLUMNS: tuple[str, ...] = ("cik", "registrant_name", "rank", "pinned", "pinned_reason")
 
 EARLIEST_FISCAL_YEAR = 2015
 
@@ -149,6 +158,7 @@ class Filer:
     ten_k_count: int
     foreign_annual_forms: int
     coverage: EdgarCoverage
+    rank: int | None = None
     pinned_reason: str | None = None
 
     @property
@@ -370,7 +380,7 @@ def select(
             break
         filer = describe(client, candidate)
         if filer.exclusion is None:
-            members.append(replace(filer, pinned_reason=pins.get(filer.cik)))
+            members.append(replace(filer, rank=len(members) + 1, pinned_reason=pins.get(filer.cik)))
         else:
             excluded.append(filer)
 
@@ -390,6 +400,103 @@ def select(
         members.append(replace(describe(client, pin), pinned_reason=reason))
 
     return members, excluded
+
+
+@dataclass(frozen=True)
+class SeedRow:
+    """One committed universe member."""
+
+    cik: int
+    registrant_name: str
+    rank: int | None
+    pinned: bool
+    pinned_reason: str
+
+
+@dataclass(frozen=True)
+class SeedDiff:
+    """How a freshly built universe departs from the committed one."""
+
+    added: tuple[SeedRow, ...]
+    removed: tuple[SeedRow, ...]
+    moved: tuple[tuple[int, int | None, int | None], ...]
+
+    @property
+    def is_clean(self) -> bool:
+        return not (self.added or self.removed or self.moved)
+
+
+def as_seed_rows(members: Iterable[Filer]) -> list[SeedRow]:
+    return [
+        SeedRow(
+            cik=filer.cik,
+            registrant_name=filer.registrant_name,
+            rank=filer.rank,
+            pinned=filer.is_pinned,
+            pinned_reason=filer.pinned_reason or "",
+        )
+        for filer in members
+    ]
+
+
+def write_seed(rows: Iterable[SeedRow], path: Path = SEED_PATH) -> None:
+    """Commit the resolved universe so ingestion covers a fixed set of filers."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(SEED_COLUMNS)
+        for row in rows:
+            writer.writerow(
+                [
+                    row.cik,
+                    row.registrant_name,
+                    "" if row.rank is None else row.rank,
+                    "true" if row.pinned else "false",
+                    row.pinned_reason,
+                ]
+            )
+
+
+def read_seed(path: Path = SEED_PATH) -> list[SeedRow]:
+    """Load the committed universe, refusing a file whose columns have drifted."""
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if tuple(reader.fieldnames or ()) != SEED_COLUMNS:
+            raise ValueError(
+                f"{path} has columns {reader.fieldnames}, expected {list(SEED_COLUMNS)}"
+            )
+        return [
+            SeedRow(
+                cik=int(row["cik"]),
+                registrant_name=row["registrant_name"],
+                rank=int(row["rank"]) if row["rank"] else None,
+                pinned=row["pinned"] == "true",
+                pinned_reason=row["pinned_reason"],
+            )
+            for row in reader
+        ]
+
+
+def diff_seed(committed: Sequence[SeedRow], rebuilt: Sequence[SeedRow]) -> SeedDiff:
+    """Compare a fresh build against the committed universe.
+
+    Membership changes and rank changes are reported separately. A bank entering or
+    leaving changes what is ingested; a bank moving a place or two changes only the order
+    results are presented in, and the two warrant different responses.
+    """
+    before = {row.cik: row for row in committed}
+    after = {row.cik: row for row in rebuilt}
+
+    moved = tuple(
+        (cik, before[cik].rank, after[cik].rank)
+        for cik in sorted(before.keys() & after.keys())
+        if before[cik].rank != after[cik].rank
+    )
+    return SeedDiff(
+        added=tuple(after[cik] for cik in sorted(after.keys() - before.keys())),
+        removed=tuple(before[cik] for cik in sorted(before.keys() - after.keys())),
+        moved=moved,
+    )
 
 
 def bank_sic_entities(client: SecClient) -> dict[str, list[int]]:
