@@ -23,7 +23,7 @@ Filers reporting assets:                        11224
     carrying a bank SIC code:                   594
     not carrying one:                           27
 
-Top 50 by peak total assets, 2015Q4-2023Q4:
+Top 51 by peak total assets, 2015Q4-2023Q4:
 
   1.     3,898bn  JPMORGAN CHASE & CO                          SIC 6021  covered
   2.     3,180bn  BANK OF AMERICA CORP /DE/                    SIC 6021  covered
@@ -75,15 +75,19 @@ Top 50 by peak total assets, 2015Q4-2023Q4:
  48.        53bn  CULLEN/FROST BANKERS, INC.                   SIC 6021  covered
  49.        52bn  COLUMBIA BANKING SYSTEM, INC.                SIC 6022  covered
  50.        50bn  BOK FINANCIAL CORP                           SIC 6021  covered
+ 51.        41bn  PACWEST BANCORP                              SIC 6021  covered  <- pinned
 
 EDGAR coverage across the universe:
-  covered    50
+  covered    51
   no_ten_k   0
   no_xbrl    0
   absent     0
 
 Ranked above the cut but excluded:
        114bn  NATIONAL BANK OF GREECE SA               foreign_private_issuer
+
+Pinned into the universe: 1
+  PACWEST BANCORP                          PacWest Bancorp. Peaked at 41bn and ranks outside the fifty, but is one of the two terminal filers decision 0010 selected: it spans both cycles, sustained acute deposit outflow through 2023 and exited by merger rather than closure, which exercises the terminal filer and entity event paths together
 
 In the universe but outside the SIC screen: 8
   GOLDMAN SACHS GROUP INC                  SIC 6211 (Security Brokers, Dealers & Flotation Companies) 1,642bn

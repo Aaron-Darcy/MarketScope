@@ -73,6 +73,8 @@ def filer_rows(filers: list[Filer], *, ranked: bool) -> list[dict[str, Any]]:
             "ten_k_count": filer.ten_k_count,
             "foreign_annual_forms": filer.foreign_annual_forms,
             "coverage": filer.coverage.value,
+            "pinned": filer.is_pinned,
+            "pinned_reason": filer.pinned_reason or "",
             "exclusion": filer.exclusion.value if filer.exclusion else "",
         }
         for position, filer in enumerate(filers, start=1)
@@ -178,6 +180,8 @@ def summarise(result: Result) -> str:
 
     for position, filer in enumerate(result.members, start=1):
         flag = "" if filer.has_bank_sic else "  <- outside the SIC screen"
+        if filer.is_pinned:
+            flag += "  <- pinned"
         lines.append(
             f"{position:>3}. {filer.candidate.peak_assets / 1e9:>9,.0f}bn  "
             f"{filer.registrant_name[:44]:<44} SIC {filer.sic!s:<5} "
@@ -195,6 +199,11 @@ def summarise(result: Result) -> str:
             f"  {filer.candidate.peak_assets / 1e9:>8,.0f}bn  {filer.registrant_name[:40]:<40} "
             f"{filer.exclusion.value if filer.exclusion else ''}"
         )
+
+    pins = [filer for filer in result.members if filer.is_pinned]
+    lines += ["", f"Pinned into the universe: {len(pins)}"]
+    for filer in pins:
+        lines.append(f"  {filer.registrant_name[:40]:<40} {filer.pinned_reason}")
 
     missed = [filer for filer in result.members if not filer.has_bank_sic]
     lines += ["", f"In the universe but outside the SIC screen: {len(missed)}"]

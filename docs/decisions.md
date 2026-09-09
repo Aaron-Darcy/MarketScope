@@ -449,3 +449,46 @@ what "largest fifty" excludes should not have to reconstruct it.
 The audit refuses to guess. A group the pinned table does not cover raises rather than
 falling through as covered, so a shift in FDIC data surfaces as a failure rather than as a
 quietly improved coverage rate.
+
+---
+
+## 0017 — Seat pinned filers alongside the ranked fifty rather than inside it
+
+**Date** 2026-09-09
+**Status** Accepted. Resolves a conflict between 0005 and 0015.
+
+**Context.** 0005 retains terminal filers, pinned by CIK, so that a pipeline built on
+currently listed companies cannot understate the effect under study. 0015 decides
+membership by peak total assets across the study window and takes the largest fifty. The
+two rules conflict for PacWest Bancorp: it peaked at $41bn and ranks 58th of the 621 filers
+that pass the deposit screens, against a fiftieth-place cut of $50bn.
+
+This is not the ranking failing to see a shrinking bank. Ranking on the peak of the window
+already keeps an institution at the size it reached, which is why SVB is seated at 19th on
+$212bn despite filing nothing after 2022Q4. PacWest was simply never a top-fifty bank by
+assets. It is in the project because 0010 selected it as a terminal filer that spans both
+cycles and exited by merger after sustained deposit outflow, which exercises the terminal
+filer and entity event paths together — a reason the ranking has no way to express.
+
+**Decision.** Pinned filers are additional to the fifty rather than seated within it. The
+universe holds 51 members: the largest fifty by peak assets plus PacWest, carrying a
+`pinned` flag and the reason on the row. A pinned filer that would have ranked inside the
+fifty anyway is marked in place rather than added twice. A pinned CIK that does not survive
+the membership screens raises rather than being seated silently.
+
+**Alternatives.** Displace the fiftieth member, which keeps the count at fifty but drops a
+bank that was genuinely larger in order to fit one that was not, and makes the published
+ranking a worse description of the banking system than the data supports. Lower the cut
+until PacWest qualifies, which would admit eight more banks nobody has argued for to solve
+a problem with one. Drop PacWest and rely on SVB alone, which leaves the terminal-filer
+path exercised only by a bank that failed outright, never by one that exited by merger.
+
+**Consequences.** The universe size becomes a reported quantity rather than a constant,
+which is consistent with 0004 already treating sample size that way. Every headline result
+must state whether it runs on the ranked fifty or on all seated members, because including
+a bank that was never top-fifty changes the composition of a cross-bank distribution.
+Rankings and quartile transitions are computed on the ranked fifty; survivorship
+comparisons use all seated members, which is the reason the pin exists.
+
+Silvergate is not pinned. It ranks 116th on a $16bn peak and, as 0010 records, its first
+10-K covers fiscal 2019, so it cannot contribute to the cross-cycle test at all.

@@ -9,14 +9,38 @@ from marketscope.universe import (
     EdgarCoverage,
     Exclusion,
     Filer,
+    PinnedFilerError,
     build_candidates,
     classify_coverage,
     count_foreign_annual_forms,
     deposit_share,
     peak_by_cik,
     rank,
+    select,
     ten_k_history,
 )
+
+
+class _FakeClient:
+    """Stands in for SecClient so selection is tested without network access."""
+
+    def __init__(self, candidates: list[Candidate]) -> None:
+        self._names = {candidate.cik: f"FILER {candidate.cik}" for candidate in candidates}
+        self.described: list[int] = []
+
+    def submissions(self, cik: int | str) -> dict[str, object]:
+        self.described.append(int(cik))
+        return {
+            "name": self._names[int(cik)],
+            "sic": "6022",
+            "sicDescription": "State Commercial Banks",
+        }
+
+    def has_company_facts(self, cik: int | str) -> bool:
+        return True
+
+    def filing_history(self, cik: int | str) -> list[dict[str, object]]:
+        return [{"form": "10-K", "reportDate": "2023-12-31"}]
 
 
 def _candidate(
@@ -196,3 +220,37 @@ def test_bank_sic_membership_reads_the_registrant_code() -> None:
     assert _filer(_candidate(), sic="6021").has_bank_sic is True
     assert _filer(_candidate(), sic="6211").has_bank_sic is False
     assert _filer(_candidate(), sic=None).has_bank_sic is False
+
+
+def test_a_pinned_filer_outside_the_cut_is_added_rather_than_displacing_a_larger_one() -> None:
+    ranked = [
+        _candidate(1, peak_assets=300.0),
+        _candidate(2, peak_assets=200.0),
+        _candidate(9, peak_assets=10.0),
+    ]
+    pinned = {9: "terminal filer selected to exercise the entity event path"}
+    client = _FakeClient(ranked)
+
+    members, _ = select(client, ranked, size=2, pinned=pinned)
+
+    assert [filer.cik for filer in members] == [1, 2, 9]
+    assert [filer.is_pinned for filer in members] == [False, False, True]
+    assert client.described == [1, 2, 9]
+
+
+def test_a_pinned_filer_inside_the_cut_is_marked_but_not_added_twice() -> None:
+    ranked = [_candidate(1, peak_assets=300.0), _candidate(2, peak_assets=200.0)]
+    client = _FakeClient(ranked)
+
+    members, _ = select(client, ranked, size=2, pinned={2: "already large enough"})
+
+    assert [filer.cik for filer in members] == [1, 2]
+    assert members[1].pinned_reason == "already large enough"
+
+
+def test_pinning_a_cik_the_screens_reject_raises_rather_than_seating_it_silently() -> None:
+    ranked = [_candidate(1, peak_assets=300.0)]
+    client = _FakeClient(ranked)
+
+    with pytest.raises(PinnedFilerError, match="does not survive the membership screens"):
+        select(client, ranked, size=1, pinned={404: "not a deposit taker"})

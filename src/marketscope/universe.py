@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from enum import StrEnum
-from typing import Any
+from typing import Any, Protocol
 
 from marketscope.banks import DEPOSIT_INTEREST_EXPENSE_TAGS
 from marketscope.ingestion.sec import SecClient, normalise_entity_name
@@ -52,6 +52,20 @@ EARLIEST_FISCAL_YEAR = 2015
 # the two are counted separately.
 FOREIGN_ANNUAL_FORMS: frozenset[str] = frozenset({"20-F", "40-F"})
 
+# Filers admitted regardless of where they rank. Ranking on peak assets already keeps an
+# institution that shrank or stopped filing inside the window, so this is not a
+# survivorship patch: it admits institutions the ranking cannot express a reason for.
+# They are additional to the fifty rather than displacing the smallest member, because
+# displacing a bank that was larger would distort the ranking to fit a bank that was not.
+PINNED_FILERS: dict[int, str] = {
+    1102112: (
+        "PacWest Bancorp. Peaked at 41bn and ranks outside the fifty, but is one of the "
+        "two terminal filers decision 0010 selected: it spans both cycles, sustained "
+        "acute deposit outflow through 2023 and exited by merger rather than closure, "
+        "which exercises the terminal filer and entity event paths together"
+    ),
+}
+
 
 class EdgarCoverage(StrEnum):
     """How far into EDGAR an institution can actually be followed."""
@@ -60,6 +74,24 @@ class EdgarCoverage(StrEnum):
     NO_TEN_K = "no_ten_k"
     NO_XBRL = "no_xbrl"
     ABSENT = "absent"
+
+
+class FilerSource(Protocol):
+    """The part of the EDGAR client that describing a filer depends on.
+
+    Narrowing the dependency to three calls keeps selection testable without a network
+    and states what universe construction actually needs, which the full client does not.
+    """
+
+    def submissions(self, cik: int | str) -> dict[str, Any]: ...
+
+    def has_company_facts(self, cik: int | str) -> bool: ...
+
+    def filing_history(self, cik: int | str) -> list[dict[str, Any]]: ...
+
+
+class PinnedFilerError(Exception):
+    """Raised when a pinned CIK cannot be seated in the universe."""
 
 
 class Exclusion(StrEnum):
@@ -117,6 +149,7 @@ class Filer:
     ten_k_count: int
     foreign_annual_forms: int
     coverage: EdgarCoverage
+    pinned_reason: str | None = None
 
     @property
     def cik(self) -> int:
@@ -125,6 +158,10 @@ class Filer:
     @property
     def has_bank_sic(self) -> bool:
         return self.sic in BANK_SIC_CODES
+
+    @property
+    def is_pinned(self) -> bool:
+        return self.pinned_reason is not None
 
     @property
     def is_foreign_private_issuer(self) -> bool:
@@ -287,7 +324,7 @@ def collect_frame_names(client: SecClient, tag: str, frames: Sequence[str]) -> d
     return names
 
 
-def describe(client: SecClient, candidate: Candidate) -> Filer:
+def describe(client: FilerSource, candidate: Candidate) -> Filer:
     """Resolve a candidate's registrant metadata, filing history and coverage grade."""
     submissions = client.submissions(candidate.cik)
     has_facts = client.has_company_facts(candidate.cik)
@@ -310,14 +347,21 @@ def describe(client: SecClient, candidate: Candidate) -> Filer:
 
 
 def select(
-    client: SecClient, ranked: Sequence[Candidate], size: int = UNIVERSE_SIZE
+    client: FilerSource,
+    ranked: Sequence[Candidate],
+    size: int = UNIVERSE_SIZE,
+    pinned: Mapping[int, str] | None = None,
 ) -> tuple[list[Filer], list[Filer]]:
-    """Walk the ranking, describing filers until the universe is full.
+    """Walk the ranking, describing filers until the universe is full, then add the pins.
 
     Filers are described lazily rather than in a fixed oversized slate, so the number of
     company facts and submissions requests scales with how many exclusions are actually
     encountered rather than with a guess about how many there will be.
+
+    A pinned filer already inside the top ``size`` is left where it is and marked, so the
+    universe carries one row per filer whether or not the ranking would have reached it.
     """
+    pins = dict(PINNED_FILERS if pinned is None else pinned)
     members: list[Filer] = []
     excluded: list[Filer] = []
 
@@ -326,9 +370,24 @@ def select(
             break
         filer = describe(client, candidate)
         if filer.exclusion is None:
-            members.append(filer)
+            members.append(replace(filer, pinned_reason=pins.get(filer.cik)))
         else:
             excluded.append(filer)
+
+    seated = {filer.cik for filer in members}
+    by_cik = {candidate.cik: candidate for candidate in ranked}
+
+    for cik, reason in pins.items():
+        if cik in seated:
+            continue
+        pin = by_cik.get(cik)
+        if pin is None:
+            raise PinnedFilerError(
+                f"CIK {cik} is pinned into the universe but does not survive the "
+                f"membership screens, so there is nothing to add. Remove the pin or "
+                f"record why the screens should not apply to it."
+            )
+        members.append(replace(describe(client, pin), pinned_reason=reason))
 
     return members, excluded
 
