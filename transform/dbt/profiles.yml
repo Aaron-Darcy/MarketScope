@@ -1,0 +1,9 @@
+# The warehouse is a local DuckDB file, so the profile carries no credentials and is
+# committed. The path is relative to this directory, which is where dbt is invoked from.
+marketscope:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "../../data/marketscope.duckdb"
+      threads: 4
