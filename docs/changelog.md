@@ -39,6 +39,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- DuckDB load covering the committed universe: 1,809,702 USD facts across every taxonomy,
+  709,163 filings, 51 registrants and 30,854 FRED observations, with no filer failing.
+  Rows stream in per filer through Arrow batches, and facts, filings and registrants share
+  one transaction so a partial run cannot leave them describing different sets of filers.
+- dbt project on DuckDB with four staging models — company facts, submissions, tickers and
+  the FRED series — and 21 tests.
+- Committed universe seed at `data/seeds/universe.csv`, which ingestion reads so a load
+  covers a fixed set of filers. `--check` fails when a rebuild drifts from it and
+  `--write-seed` adopts a new membership deliberately.
+- Pinned universe members, seated alongside the ranked fifty rather than displacing the
+  smallest. PacWest peaked at 41bn and ranks 58th, so the assets ranking alone would have
+  dropped a terminal filer the project selected on purpose.
 - Top-50 universe construction from EDGAR, with each member graded on how far it can be
   followed: XBRL present, 10-K covering fiscal 2015 or later, or neither.
 - Reference audit sizing the institutions EDGAR cannot reach, against a ranking of the

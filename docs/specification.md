@@ -359,8 +359,8 @@ Built with Evidence.dev, deployed as a static site at no running cost.
 
 | # | Deliverable | Exit condition |
 |---|---|---|
-| 0 | Feasibility profiling on the twelve-bank sample | Gate criteria in 9.1 all pass |
-| 1 | Hardened ingestion, DuckDB load, staging models | Full universe ingests reproducibly |
+| 0 | Feasibility profiling on the twelve-bank sample | Gate criteria in 9.1 all pass. **Passed** |
+| 1 | Hardened ingestion, DuckDB load, staging models | Full universe ingests reproducibly. **Passed:** 51 members, 1.81m facts, four staging models, 21 tests green |
 | 2 | Harmonisation, bank-quarter panel, restatement precedence, entity events, beta | `fct_deposit_beta` populated with tiers |
 | 3 | Cycles, rank persistence, survivorship sensitivity, regulatory validation | Headline figure exists and is defensible |
 | 4 | Site: overview, bank explorer, comparison, primary case study | Deploys publicly |
@@ -421,6 +421,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-09-09 | Milestone 1 closed: committed universe seed, DuckDB load of 51 filers, dbt staging models. Pinned filers seated alongside the ranked fifty, taking the universe to 51. |
 | 2026-09-09 | Universe membership moved from SIC codes to four reported-behaviour rules; SIC retained as descriptive. EDGAR coverage gap measured against an FDIC-derived ranking at 3 of 50 for want of registered securities and 7 of 50 for foreign banking organisations. Regulatory ingestion confirmed at Milestone 3. |
 | 2026-09-02 | Version 1.0. Initial specification. |
 | 2026-09-08 | G4 and benchmark passed; Milestone 0 gate closed. Denominator fixed as interest-bearing deposits with three resolution routes. Completeness check added for reconstructed numerators, excluding 31 M&T bank-quarters. Annualisation convention recorded. |

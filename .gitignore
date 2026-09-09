@@ -32,3 +32,5 @@ site/node_modules/
 Thumbs.db
 .vscode/
 .idea/
+
+transform/dbt/.user.yml
