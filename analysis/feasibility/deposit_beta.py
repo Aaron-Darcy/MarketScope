@@ -31,25 +31,17 @@ from typing import Any
 import pandas as pd
 
 from marketscope.banks import FEASIBILITY_SAMPLE, Bank
-from marketscope.facts import Periodicity, derive_fourth_quarter, extract_facts, latest_filed
+from marketscope.facts import extract_facts
 from marketscope.ingestion.fred import FredClient
 from marketscope.ingestion.sec import SecClient
 from marketscope.metrics import (
-    EXPENSE_COMPONENT_TAGS,
-    EXPENSE_REPORTED_TAG,
-    IB_COMPONENT_TAGS,
-    IB_REPORTED_TAG,
-    NIB_COMPONENT_TAGS,
-    NIB_REPORTED_TAG,
-    NON_DEPOSIT_FUNDING_TAGS,
-    TOTAL_DEPOSITS_TAG,
-    TOTAL_INTEREST_EXPENSE_TAG,
     MetricTier,
     cumulative_beta,
     resolve_deposit_cost,
     resolve_deposit_interest_expense,
     resolve_interest_bearing_deposits,
 )
+from marketscope.panel import previous_quarter_end, quarter_end, quarterly_panel
 
 logger = logging.getLogger(__name__)
 
@@ -65,20 +57,6 @@ BENCHMARK_BETA = 0.40
 BENCHMARK_TOLERANCE = 0.15
 G4_MINIMUM_MARGIN = 0.10
 
-BALANCE_TAGS: tuple[str, ...] = (
-    TOTAL_DEPOSITS_TAG,
-    IB_REPORTED_TAG,
-    NIB_REPORTED_TAG,
-    *IB_COMPONENT_TAGS,
-    *NIB_COMPONENT_TAGS,
-)
-EXPENSE_TAGS: tuple[str, ...] = (
-    EXPENSE_REPORTED_TAG,
-    TOTAL_INTEREST_EXPENSE_TAG,
-    *EXPENSE_COMPONENT_TAGS,
-    *NON_DEPOSIT_FUNDING_TAGS,
-)
-
 
 def quarterly_policy_rate(client: FredClient) -> dict[date, float]:
     """Return the effective federal funds rate as a quarter-end keyed decimal fraction.
@@ -93,42 +71,14 @@ def quarterly_policy_rate(client: FredClient) -> dict[date, float]:
     for observation in observations:
         if observation.value is None:
             continue
-        quarter_end = _quarter_end(observation.observation_date)
-        by_quarter[quarter_end].append(observation.value / 100.0)
+        quarter = quarter_end(observation.observation_date)
+        by_quarter[quarter].append(observation.value / 100.0)
 
     return {quarter: statistics.fmean(values) for quarter, values in by_quarter.items()}
 
 
-def _quarter_end(day: date) -> date:
-    month = ((day.month - 1) // 3 + 1) * 3
-    last_day = {3: 31, 6: 30, 9: 30, 12: 31}[month]
-    return date(day.year, month, last_day)
-
-
-def quarterly_panel(payload: dict[str, Any]) -> dict[date, dict[str, float]]:
-    """Collapse a company facts payload into deposit inputs keyed by quarter end."""
-    panel: dict[date, dict[str, float]] = defaultdict(dict)
-
-    for tag in BALANCE_TAGS:
-        for fact in latest_filed(extract_facts(payload, tags=[tag])):
-            if fact.periodicity is Periodicity.INSTANT:
-                panel[fact.period_end][tag] = fact.value
-
-    for tag in EXPENSE_TAGS:
-        current = latest_filed(extract_facts(payload, tags=[tag]))
-        quarterly = [f for f in current if f.periodicity is Periodicity.QUARTERLY]
-        for fact in quarterly + derive_fourth_quarter(current):
-            panel[fact.period_end][tag] = fact.value
-
-    return dict(panel)
-
-
-def previous_quarter_end(quarter: date) -> date:
-    return _quarter_end(quarter.replace(day=1) - pd.Timedelta(days=1))
-
-
 def bank_cost_series(payload: dict[str, Any]) -> list[dict[str, Any]]:
-    panel = quarterly_panel(payload)
+    panel = quarterly_panel(extract_facts(payload, taxonomy=None))
     rows: list[dict[str, Any]] = []
 
     for quarter in sorted(panel):
@@ -161,7 +111,7 @@ def aggregate_series(payloads: dict[int, dict[str, Any]]) -> dict[date, float]:
     balance: dict[date, float] = defaultdict(float)
 
     for payload in payloads.values():
-        panel = quarterly_panel(payload)
+        panel = quarterly_panel(extract_facts(payload, taxonomy=None))
         for quarter, values in panel.items():
             resolved = resolve_deposit_cost(values, panel.get(previous_quarter_end(quarter)))
             if resolved is None or resolved.tier is MetricTier.EXCLUDED:

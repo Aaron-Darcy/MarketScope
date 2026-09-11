@@ -334,3 +334,64 @@ def table_counts(connection: duckdb.DuckDBPyConnection) -> dict[str, int]:
         result = connection.execute(f"SELECT count(*) FROM {RAW_SCHEMA}.{name}").fetchone()
         counts[str(name)] = int(result[0]) if result else 0
     return counts
+
+
+def read_facts(
+    connection: duckdb.DuckDBPyConnection,
+    cik: int,
+    tags: Iterable[str] | None = None,
+) -> list[Fact]:
+    """Rebuild a filer's facts from the warehouse.
+
+    Returns the same shape the SEC client produces, so panel construction and the metric
+    are indifferent to whether a fact arrived from the API or from a previous load.
+    """
+    query = f"""
+        select taxonomy, tag, unit, value, period_start, period_end, filed,
+               accession, form, fiscal_year, fiscal_period, frame
+        from {RAW_SCHEMA}.sec_facts
+        where cik = ?
+    """
+    parameters: list[Any] = [cik]
+
+    wanted = None if tags is None else sorted(set(tags))
+    if wanted is not None:
+        query += f" and tag in ({', '.join('?' for _ in wanted)})"
+        parameters.extend(wanted)
+
+    return [
+        Fact(
+            taxonomy=row[0],
+            tag=row[1],
+            unit=row[2],
+            value=row[3],
+            period_start=row[4],
+            period_end=row[5],
+            filed=row[6],
+            accession=row[7],
+            form=row[8],
+            fiscal_year=row[9],
+            fiscal_period=row[10],
+            frame=row[11],
+        )
+        for row in connection.execute(query, parameters).fetchall()
+    ]
+
+
+def read_universe(connection: duckdb.DuckDBPyConnection) -> list[SeedRow]:
+    """Read the loaded universe back, ranked members first and pins after."""
+    rows = connection.execute(
+        f"select cik, registrant_name, rank, pinned, pinned_reason "
+        f"from {RAW_SCHEMA}.universe order by rank nulls last, cik"
+    ).fetchall()
+
+    return [
+        SeedRow(
+            cik=int(row[0]),
+            registrant_name=str(row[1]),
+            rank=None if row[2] is None else int(row[2]),
+            pinned=bool(row[3]),
+            pinned_reason=str(row[4]),
+        )
+        for row in rows
+    ]
