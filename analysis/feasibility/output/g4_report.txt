@@ -10,22 +10,22 @@ Tier coverage across bank-quarters
     M&T Bank Corporation (31 quarters, coverage as low as 2%)
 
 G4: direct bank against branch-funded regional, test cycle
-  Ally Financial           beta 0.681
-  Zions Bancorporation     beta 0.574
-  margin +0.108  (PASS, threshold 0.10)
+  Ally Financial           beta 0.677
+  Zions Bancorporation     beta 0.593
+  margin +0.085  (FAIL, threshold 0.10)
 
 Benchmark: industry cumulative interest-bearing deposit beta
   calibration  0.354  (published near 0.40, within tolerance)
   test         0.480  (published near 0.40, within tolerance)
 
 Cross-bank test-cycle betas
-   0.737  PacWest Bancorp
-   0.681  Ally Financial Inc.
-   0.628  Citigroup Inc.
-   0.574  Zions Bancorporation, National Association
-   0.501  Truist Financial Corporation
-   0.485  JPMorgan Chase & Co.
-   0.459  U.S. Bancorp
+   0.724  PacWest Bancorp
+   0.677  Ally Financial Inc.
+   0.617  Citigroup Inc.
+   0.593  Zions Bancorporation, National Association
+   0.500  Truist Financial Corporation
+   0.483  JPMorgan Chase & Co.
+   0.461  U.S. Bancorp
    0.432  The PNC Financial Services Group, Inc.
-   0.423  Bank of America Corporation
-   0.363  Wells Fargo & Company
+   0.428  Bank of America Corporation
+   0.368  Wells Fargo & Company

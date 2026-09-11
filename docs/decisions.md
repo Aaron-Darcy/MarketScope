@@ -526,3 +526,57 @@ belongs in the scheduled refresh at Milestone 6 as a warning rather than a failu
 diff is the review artefact — a rebuild that adds one bank and removes another is a
 one-line change to read, which is the point of committing the resolved list rather than the
 rule that produced it.
+
+---
+
+## 0019 — G4 fails once endpoint averaging is actually applied
+
+**Date** 2026-09-11
+**Status** Open. Supersedes the G4 outcome recorded on 2026-09-08.
+
+**Context.** Lifting the bank-quarter panel into the library for Milestone 2 surfaced a
+defect in `previous_quarter_end`. It stepped back one day from the first of the *month*
+rather than the first of the *quarter*. A quarter end falls in the last month of its
+quarter, so 2023-03-31 became 2023-03-01, then 2023-02-28, which resolves to 2023-03-31
+again. The function returned its own argument for every quarter end it was given.
+
+The opening balance was therefore always the closing balance, `average_balance` averaged a
+figure with itself, and every denominator was a period-end balance while the row recorded
+`avg_method = 'endpoint'`. The two-point average 0011 specifies was never computed.
+
+The industry benchmark did not catch it. `aggregate_series` divides summed expense by
+summed closing balances and never calls the averaging path, so it could not test the
+averaging method that 0014 credits it with testing. That claim in 0014 is wrong and is
+corrected here: the benchmark tests units, annualisation and tag mapping, not averaging.
+
+**Effect.** With the defect fixed, G4 fails.
+
+| | Before | After |
+|---|---|---|
+| Ally Financial, test cycle | 0.681 | 0.677 |
+| Zions Bancorporation, test cycle | 0.574 | 0.593 |
+| Margin | +0.108 (pass) | +0.085 (fail, threshold 0.10) |
+
+The industry benchmark is unchanged at 0.354 calibration and 0.480 test, because it never
+used averaging. Every bank's beta moves by less than 0.015; the ranking is undisturbed.
+
+**Open question.** The contrast G4 exists to detect is present and correctly signed — a
+direct bank still reprices faster than the branch-funded regional — but by less than the
+threshold set in advance. Three courses, none yet taken:
+
+1. Accept the failure and invoke a fallback from specification 9.2.
+2. Judge that the 0.10 threshold was arbitrary and that the benchmark, which 0014 already
+   calls the stronger check, carries the validation. This must be argued on its merits and
+   not because the number came in low, which is precisely the reasoning the gate exists to
+   prevent.
+3. Question the comparator rather than the metric. G4 assumes a branch-funded regional is a
+   low-beta bank, and in the test cycle that premise is doubtful: Zions at 0.593 sits
+   mid-pack, while the genuinely low-beta filers are the branch-funded megabanks, Wells
+   Fargo at 0.368 and Bank of America at 0.428. Ally against Wells Fargo is +0.309. Changing
+   the comparator after seeing the result is a re-specification and has to be recorded as
+   one.
+
+No course is chosen here. AGENTS section 5 requires a failed gate criterion and its chosen
+fallback to be recorded before work changes direction, and the choice is not the
+implementer's to make alone. Milestone 2 work continues on the panel and tier coverage,
+which do not depend on the outcome; nothing that rests on G4 proceeds until this is closed.
