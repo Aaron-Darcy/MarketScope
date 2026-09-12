@@ -6,6 +6,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Deposit balance denominators are genuinely two-point averages. `previous_quarter_end`
+  stepped back from the first of the month rather than the first of the quarter and
+  returned its own argument, so every denominator had been a closing balance while the row
+  recorded `avg_method` as endpoint. G4 falls from +0.108 to +0.085 and no longer passes;
+  the industry benchmark is unchanged because it never used averaging.
 - Universe membership is decided by what a filer reports — total assets, deposits reaching
   5 percent of assets, interest paid on deposits, and a 10-K rather than a 20-F or 40-F —
   rather than by SIC code. Screening on the specification's SIC codes lost 8 of the largest
@@ -39,6 +44,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Tier coverage measurement across the full universe, read from the warehouse rather than
+  the SEC. Tier 1 covers 75.8 percent of 3,064 bank-quarters and 43 of 51 filers reach it;
+  37 filers carry headline coverage in both cycles and can support the persistence test.
+- Bank-quarter panel lifted out of the feasibility script into `marketscope.panel`, taking
+  facts rather than an API payload so it works from the warehouse, and pinning the taxonomy
+  so an extension concept sharing a standard name is not read as the standard one.
 - DuckDB load covering the committed universe: 1,809,702 USD facts across every taxonomy,
   709,163 filings, 51 registrants and 30,854 FRED observations, with no filer failing.
   Rows stream in per filer through Arrow batches, and facts, filings and registrants share

@@ -580,3 +580,60 @@ No course is chosen here. AGENTS section 5 requires a failed gate criterion and 
 fallback to be recorded before work changes direction, and the choice is not the
 implementer's to make alone. Milestone 2 work continues on the panel and tier coverage,
 which do not depend on the outcome; nothing that rests on G4 proceeds until this is closed.
+
+---
+
+## 0020 — The completeness check excludes four filers outright; proposal to scale rather than reject
+
+**Date** 2026-09-12
+**Status** Proposed. Extends 0013.
+
+**Context.** 0013 introduced a completeness check on reconstructed numerators after M&T
+Bank's summed components captured 29 percent of its true deposit expense and produced a
+test-cycle beta four times below the next lowest bank. Below 80 percent coverage the
+bank-quarter is marked tier X and excluded. That was calibrated on one filer.
+
+Across the fifty-one-filer universe the check fires on 184 bank-quarters and five filers,
+and it separates into two clearly different populations:
+
+| Filer | Tier X quarters | Median coverage | Range |
+|---|---|---|---|
+| M&T Bank | 31 | 0.26 | 0.02 – 0.47 |
+| E*TRADE | 3 | 0.07 | 0.00 – 0.34 |
+| Valley National | 57 | 0.55 | 0.16 – 0.75 |
+| Flagstar | 53 | 0.73 | 0.45 – 0.80 |
+| First Horizon | 40 | 0.75 | 0.65 – 0.79 |
+
+M&T and E*TRADE are decisively incomplete and the check is doing exactly what 0013 built it
+for. First Horizon is a different case: every one of its forty quarters lands between 0.65
+and 0.79, never once clearing the line. Its non-deposit funding is fully tagged — long-term
+debt, short-term borrowings and trading liabilities are all present — so the implied figure
+the check tests against is sound. It tags time and savings deposit expense but not the
+demand, NOW and money-market components, and the missing quarter is real rather than an
+artefact of the comparison.
+
+The consequence is that M&T, Flagstar and Valley National carry no headline coverage in
+either cycle and First Horizon none in the calibration cycle. Four of fifty-one filers are
+lost to this check alone.
+
+**Proposal.** Do not lower the threshold. A reconstruction capturing 75 percent of deposit
+expense understates a bank's beta by roughly a quarter, which is the distortion 0013 exists
+to prevent, and moving the line to rescue a filer is the same error in the other direction.
+
+Instead add a route that uses implied deposit expense — total interest expense less
+identifiable non-deposit funding — as the numerator directly, where the non-deposit funding
+list is demonstrably complete for that filer-quarter. This is less precise than a reported
+figure and would carry its own provenance and a tier below reported reconstruction, but it
+is a measured quantity rather than a truncated sum, and it recovers filers whose only defect
+is that they decompose deposit expense incompletely.
+
+**Alternatives.** Lower the threshold to 0.60, which admits First Horizon and most of
+Flagstar while knowingly accepting a quarter of the numerator missing, and which was chosen
+by looking at the answer. Scale the reconstructed sum up by the inverse of its coverage
+ratio, which assumes the untagged components cost the same average rate as the tagged ones —
+false, since time deposits reprice fastest and are the component most often tagged. Exclude
+the four filers and state the loss, which is the status quo.
+
+**Open.** Not decided. The proposal changes the tier hierarchy and the published sample, so
+it belongs with the metric definition in specification 3.1 rather than in an implementer's
+judgement. Nothing downstream is built on it yet.
