@@ -1,0 +1,2 @@
+cik,registrant_name,sic,sic_description,bank_sic,tickers,exchanges,peak_assets,peak_deposits,deposit_share,first_ten_k,last_ten_k,ten_k_count,foreign_annual_forms,coverage,pinned,pinned_reason,exclusion
+1096061,NATIONAL BANK OF GREECE SA,6029,"Commercial Banks, NEC",False,,,114339000000.0,77304000000.0,0.7716130348606739,,,0,17,no_ten_k,False,,foreign_private_issuer

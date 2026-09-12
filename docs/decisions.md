@@ -332,3 +332,308 @@ to be right simultaneously to reproduce an external number. It also provides the
 independent evidence for the specification's assumption that betas run higher in faster
 cycles. The check does not validate cross-bank dispersion, which remains the job of the
 regulatory comparison in section 5 of the specification.
+
+---
+
+## 0015 — Decide universe membership by reported deposit behaviour, not SIC code
+
+**Date** 2026-09-09
+**Status** Accepted. Refines 0001.
+
+**Context.** Section 1 identified the universe by SIC codes 6020, 6021, 6022, 6035 and
+6036. Measured against EDGAR that screen loses eight of the fifty largest deposit-taking
+filers. Goldman Sachs, Morgan Stanley, Charles Schwab and Raymond James carry SIC 6211,
+security brokers and dealers. American Express and Synchrony carry 6199, Discover carries
+6141 and Ameriprise carries 6282. Every one of them files a 10-K with full XBRL, is a
+regulated depository holding company, and appears in the FDIC ranking of the largest fifty
+US depository groups. Schwab is also the clearest cash-sorting case of 2023, which is the
+behaviour the study exists to measure. SIC is a self-reported administrative attribute on
+the EDGAR entity record, not a regulatory classification, and nothing keeps it current.
+SIC 6020 turns out to be a group heading: EDGAR returns no entities for it at all.
+
+**Decision.** Membership is decided by what a filer reports, under four rules answerable
+from EDGAR alone. It reports total assets, so it can be ranked. Deposits reach five percent
+of assets in some period of the study window. It reports interest paid on deposits under
+any concept in the candidate list. It files a 10-K rather than a 20-F or 40-F. SIC is
+retained on the row as a descriptive attribute and as the basis for reporting how far the
+old screen would have diverged.
+
+**Alternatives.** Keep the SIC screen and add the eight by explicit inclusion, which works
+but leaves a hand-maintained list that has to be re-audited whenever the universe is
+rebuilt, and which needs an external source to discover the omissions in the first place.
+Make the FDIC rollup the membership authority, which is regulatory truth but makes
+Milestone 1 depend on a source the specification places at Milestone 3, and requires a
+name-to-CIK mapping layer that has no reliable key.
+
+**Consequences.** The universe is reproducible from EDGAR alone and self-maintaining: an
+institution that begins taking deposits enters without anyone editing a list. Two screens
+are needed rather than one, because deposit funding alone does not identify a
+deposit-taking institution — an insurer tags annuity and other deposit-type contracts under
+the same `Deposits` concept a bank uses for its funding base, which is how Fidelity
+National Financial reached the ranking before the interest test was added. The interest
+test sweeps the whole concept list rather than the aggregate alone, because M&T Bank,
+Flagstar and Valley National tag only leaf categories, the pattern recorded in 0013.
+
+The deposit-funding threshold carries no weight. Above twenty billion dollars of assets the
+largest non-depository ratio is 0.024, Nelnet, and the smallest depository ratio is 0.210,
+Ameriprise. Any cut inside that gap selects the same filers.
+
+Foreign private issuers are excluded by scope rather than by coverage. National Bank of
+Greece passes both deposit tests and would otherwise rank inside the fifty; it files 20-F
+and is not a US bank holding company. The two are counted separately so that a genuine
+coverage failure is never recorded as a scope judgement.
+
+The universe now includes institutions whose deposit franchise is a minor part of the
+balance sheet — Goldman at a 0.26 deposit share, Morgan Stanley at 0.30, Ameriprise at
+0.22. Their betas are computed on the deposit base like everyone else's, but their funding
+mix differs enough from a branch-funded regional that the descriptive work in section 6 of
+the specification has to show funding mix alongside beta rather than ranking on beta alone.
+
+---
+
+## 0016 — Size the EDGAR coverage gap against a regulatory ranking, and leave FDIC ingestion at Milestone 3
+
+**Date** 2026-09-09
+**Status** Accepted. Extends 0010.
+
+**Context.** 0010 established that a bank operating without a holding company files with
+its primary federal banking regulator rather than the SEC, and that First Republic and
+Signature are both absent from EDGAR for that reason. Nobody had sized how far that extends
+across the largest fifty. If it were a large share, the FFIEC and FDIC work the
+specification places at Milestone 3 would have to move into Milestone 1, because everything
+built on an EDGAR-only universe would inherit the gap.
+
+A universe built from EDGAR cannot answer this. A bank that files nothing with the SEC
+reports no assets in XBRL, so it cannot be ranked, and every filer in a top fifty derived
+from EDGAR has XBRL by construction. The measurement needs a ranking from outside EDGAR.
+
+**Decision.** Rank US depository groups by rolling FDIC insured-institution financials at
+2022-12-31 up to each institution's regulatory high holder, which puts a bank with no
+holding company into the ranking as its own group, and map the largest fifty to SEC
+registrants through a pinned, hand-verified table keyed on FDIC identifiers. The reference
+date is the opening of the test cycle, when every institution of interest was still
+reporting.
+
+**Alternatives.** FFIEC NPW, which publishes holding-company data directly and would avoid
+the insured-institution rollup, is CAPTCHA-gated and cannot be fetched programmatically.
+Matching names rather than pinning identifiers, which is what the first attempt did: it
+mapped First Republic Bank onto Republic First Bancorp, a different institution, and
+Signature Bank onto National Bank Holdings. That is the exact confusion 0010 records, and
+it would have reported a coverage gap of zero.
+
+**Consequences.** Forty of the largest fifty groups are reachable in EDGAR: thirty-eight
+through a top-tier registrant and two, HSBC and Santander, through a US intermediate
+holding company that files a 10-K against registered debt. Ten are not.
+
+The pattern 0010 describes accounts for two of them, First Republic at 213bn and Signature
+at 110bn. A third, USAA at 113bn, is absent for a related but distinct reason: it is a
+member-owned reciprocal inter-insurance exchange with no registered securities. The
+remaining seven are US operations of foreign banking organisations — Toronto-Dominion at
+423bn, Bank of Montreal, UBS, Royal Bank of Canada, BNP Paribas, Bank of China and Standard
+Chartered — which file FR Y-9C and have no SEC-registered US entity.
+
+The mechanism is registered securities, not corporate structure. Zions Bancorporation
+dissolved its holding company in 2018 and files as the bank itself, and is fully covered.
+A bank with no holding company is invisible to EDGAR only when it also has no registered
+securities.
+
+Two institutions of fifty is a footnote, so FFIEC and FDIC ingestion stays at Milestone 3
+and Milestone 1 proceeds on EDGAR alone. All three institutions absent for want of
+registered securities — the two above and USAA — are recorded in `EXCLUDED_FROM_EDGAR` and
+recovered from regulatory data at Milestone 3, as 0010 already provides for the first two. The seven foreign
+banking organisations are a scope boundary rather than a coverage failure and are not
+recovered at all: they are not US bank holding companies and never had EDGAR coverage to
+lose. Both counts are published on the data health page, because a reader entitled to ask
+what "largest fifty" excludes should not have to reconstruct it.
+
+The audit refuses to guess. A group the pinned table does not cover raises rather than
+falling through as covered, so a shift in FDIC data surfaces as a failure rather than as a
+quietly improved coverage rate.
+
+---
+
+## 0017 — Seat pinned filers alongside the ranked fifty rather than inside it
+
+**Date** 2026-09-09
+**Status** Accepted. Resolves a conflict between 0005 and 0015.
+
+**Context.** 0005 retains terminal filers, pinned by CIK, so that a pipeline built on
+currently listed companies cannot understate the effect under study. 0015 decides
+membership by peak total assets across the study window and takes the largest fifty. The
+two rules conflict for PacWest Bancorp: it peaked at $41bn and ranks 58th of the 621 filers
+that pass the deposit screens, against a fiftieth-place cut of $50bn.
+
+This is not the ranking failing to see a shrinking bank. Ranking on the peak of the window
+already keeps an institution at the size it reached, which is why SVB is seated at 19th on
+$212bn despite filing nothing after 2022Q4. PacWest was simply never a top-fifty bank by
+assets. It is in the project because 0010 selected it as a terminal filer that spans both
+cycles and exited by merger after sustained deposit outflow, which exercises the terminal
+filer and entity event paths together — a reason the ranking has no way to express.
+
+**Decision.** Pinned filers are additional to the fifty rather than seated within it. The
+universe holds 51 members: the largest fifty by peak assets plus PacWest, carrying a
+`pinned` flag and the reason on the row. A pinned filer that would have ranked inside the
+fifty anyway is marked in place rather than added twice. A pinned CIK that does not survive
+the membership screens raises rather than being seated silently.
+
+**Alternatives.** Displace the fiftieth member, which keeps the count at fifty but drops a
+bank that was genuinely larger in order to fit one that was not, and makes the published
+ranking a worse description of the banking system than the data supports. Lower the cut
+until PacWest qualifies, which would admit eight more banks nobody has argued for to solve
+a problem with one. Drop PacWest and rely on SVB alone, which leaves the terminal-filer
+path exercised only by a bank that failed outright, never by one that exited by merger.
+
+**Consequences.** The universe size becomes a reported quantity rather than a constant,
+which is consistent with 0004 already treating sample size that way. Every headline result
+must state whether it runs on the ranked fifty or on all seated members, because including
+a bank that was never top-fifty changes the composition of a cross-bank distribution.
+Rankings and quartile transitions are computed on the ranked fifty; survivorship
+comparisons use all seated members, which is the reason the pin exists.
+
+Silvergate is not pinned. It ranks 116th on a $16bn peak and, as 0010 records, its first
+10-K covers fiscal 2019, so it cannot contribute to the cross-cycle test at all.
+
+---
+
+## 0018 — Commit the resolved universe and rebuild it deliberately
+
+**Date** 2026-09-09
+**Status** Accepted
+
+**Context.** Milestone 1 exits when the full universe ingests reproducibly. Universe
+construction reads live XBRL frames, and the fiftieth place is decided by a $50bn cut with
+banks a few hundred million apart around it. A filer restating total assets, or publishing
+a fact that lands it in a frame it was previously absent from, reorders the cut. Ingestion
+driven straight from a rebuild would then cover a different set of banks than the previous
+run, silently, and every result downstream would shift with no record of why.
+
+**Decision.** The resolved universe is committed to `data/seeds/universe.csv` and ingestion
+reads that file. Rebuilding is a separate, deliberate act: `--write-seed` regenerates it and
+`--check` fails when a fresh build departs from it. Membership changes and rank changes are
+reported separately, because a bank entering or leaving changes what is ingested while a
+bank moving one place changes only the order results are presented in.
+
+**Alternatives.** Rebuild on every run, which is reproducible only in the sense that the
+code is deterministic — the inputs are not. Pin the CIKs in Python beside `PINNED_FILERS`,
+which makes the universe a code change rather than data and puts fifty-one rows of
+generated content into a module. Freeze the frames themselves, which fixes the inputs but
+also freezes the restatement history the secondary question depends on.
+
+**Consequences.** Ingestion, and every result built on it, covers a fixed set of filers
+until someone changes the seed and says why in the commit. The seed can go stale: a bank
+crossing into the top fifty will not appear until the universe is rebuilt, so `--check`
+belongs in the scheduled refresh at Milestone 6 as a warning rather than a failure. The
+diff is the review artefact — a rebuild that adds one bank and removes another is a
+one-line change to read, which is the point of committing the resolved list rather than the
+rule that produced it.
+
+---
+
+## 0019 — G4 fails once endpoint averaging is actually applied
+
+**Date** 2026-09-11
+**Status** Open. Supersedes the G4 outcome recorded on 2026-09-08.
+
+**Context.** Lifting the bank-quarter panel into the library for Milestone 2 surfaced a
+defect in `previous_quarter_end`. It stepped back one day from the first of the *month*
+rather than the first of the *quarter*. A quarter end falls in the last month of its
+quarter, so 2023-03-31 became 2023-03-01, then 2023-02-28, which resolves to 2023-03-31
+again. The function returned its own argument for every quarter end it was given.
+
+The opening balance was therefore always the closing balance, `average_balance` averaged a
+figure with itself, and every denominator was a period-end balance while the row recorded
+`avg_method = 'endpoint'`. The two-point average 0011 specifies was never computed.
+
+The industry benchmark did not catch it. `aggregate_series` divides summed expense by
+summed closing balances and never calls the averaging path, so it could not test the
+averaging method that 0014 credits it with testing. That claim in 0014 is wrong and is
+corrected here: the benchmark tests units, annualisation and tag mapping, not averaging.
+
+**Effect.** With the defect fixed, G4 fails.
+
+| | Before | After |
+|---|---|---|
+| Ally Financial, test cycle | 0.681 | 0.677 |
+| Zions Bancorporation, test cycle | 0.574 | 0.593 |
+| Margin | +0.108 (pass) | +0.085 (fail, threshold 0.10) |
+
+The industry benchmark is unchanged at 0.354 calibration and 0.480 test, because it never
+used averaging. Every bank's beta moves by less than 0.015; the ranking is undisturbed.
+
+**Open question.** The contrast G4 exists to detect is present and correctly signed — a
+direct bank still reprices faster than the branch-funded regional — but by less than the
+threshold set in advance. Three courses, none yet taken:
+
+1. Accept the failure and invoke a fallback from specification 9.2.
+2. Judge that the 0.10 threshold was arbitrary and that the benchmark, which 0014 already
+   calls the stronger check, carries the validation. This must be argued on its merits and
+   not because the number came in low, which is precisely the reasoning the gate exists to
+   prevent.
+3. Question the comparator rather than the metric. G4 assumes a branch-funded regional is a
+   low-beta bank, and in the test cycle that premise is doubtful: Zions at 0.593 sits
+   mid-pack, while the genuinely low-beta filers are the branch-funded megabanks, Wells
+   Fargo at 0.368 and Bank of America at 0.428. Ally against Wells Fargo is +0.309. Changing
+   the comparator after seeing the result is a re-specification and has to be recorded as
+   one.
+
+No course is chosen here. AGENTS section 5 requires a failed gate criterion and its chosen
+fallback to be recorded before work changes direction, and the choice is not the
+implementer's to make alone. Milestone 2 work continues on the panel and tier coverage,
+which do not depend on the outcome; nothing that rests on G4 proceeds until this is closed.
+
+---
+
+## 0020 — The completeness check excludes four filers outright; proposal to scale rather than reject
+
+**Date** 2026-09-12
+**Status** Proposed. Extends 0013.
+
+**Context.** 0013 introduced a completeness check on reconstructed numerators after M&T
+Bank's summed components captured 29 percent of its true deposit expense and produced a
+test-cycle beta four times below the next lowest bank. Below 80 percent coverage the
+bank-quarter is marked tier X and excluded. That was calibrated on one filer.
+
+Across the fifty-one-filer universe the check fires on 184 bank-quarters and five filers,
+and it separates into two clearly different populations:
+
+| Filer | Tier X quarters | Median coverage | Range |
+|---|---|---|---|
+| M&T Bank | 31 | 0.26 | 0.02 – 0.47 |
+| E*TRADE | 3 | 0.07 | 0.00 – 0.34 |
+| Valley National | 57 | 0.55 | 0.16 – 0.75 |
+| Flagstar | 53 | 0.73 | 0.45 – 0.80 |
+| First Horizon | 40 | 0.75 | 0.65 – 0.79 |
+
+M&T and E*TRADE are decisively incomplete and the check is doing exactly what 0013 built it
+for. First Horizon is a different case: every one of its forty quarters lands between 0.65
+and 0.79, never once clearing the line. Its non-deposit funding is fully tagged — long-term
+debt, short-term borrowings and trading liabilities are all present — so the implied figure
+the check tests against is sound. It tags time and savings deposit expense but not the
+demand, NOW and money-market components, and the missing quarter is real rather than an
+artefact of the comparison.
+
+The consequence is that M&T, Flagstar and Valley National carry no headline coverage in
+either cycle and First Horizon none in the calibration cycle. Four of fifty-one filers are
+lost to this check alone.
+
+**Proposal.** Do not lower the threshold. A reconstruction capturing 75 percent of deposit
+expense understates a bank's beta by roughly a quarter, which is the distortion 0013 exists
+to prevent, and moving the line to rescue a filer is the same error in the other direction.
+
+Instead add a route that uses implied deposit expense — total interest expense less
+identifiable non-deposit funding — as the numerator directly, where the non-deposit funding
+list is demonstrably complete for that filer-quarter. This is less precise than a reported
+figure and would carry its own provenance and a tier below reported reconstruction, but it
+is a measured quantity rather than a truncated sum, and it recovers filers whose only defect
+is that they decompose deposit expense incompletely.
+
+**Alternatives.** Lower the threshold to 0.60, which admits First Horizon and most of
+Flagstar while knowingly accepting a quarter of the numerator missing, and which was chosen
+by looking at the answer. Scale the reconstructed sum up by the inverse of its coverage
+ratio, which assumes the untagged components cost the same average rate as the tagged ones —
+false, since time deposits reprice fastest and are the component most often tagged. Exclude
+the four filers and state the loss, which is the status quo.
+
+**Open.** Not decided. The proposal changes the tier hierarchy and the published sample, so
+it belongs with the metric definition in specification 3.1 rather than in an implementer's
+judgement. Nothing downstream is built on it yet.

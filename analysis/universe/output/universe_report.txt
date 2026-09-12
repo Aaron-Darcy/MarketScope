@@ -1,0 +1,103 @@
+Bank SIC population in EDGAR
+
+  SIC 6020:     0 entities,    0 reporting XBRL assets
+  SIC 6021:  1057 entities,  148 reporting XBRL assets
+  SIC 6022:  1323 entities,  308 reporting XBRL assets
+  SIC 6035:   807 entities,  116 reporting XBRL assets
+  SIC 6036:   285 entities,   55 reporting XBRL assets
+
+Deposit interest expense concepts, filers reporting each:
+   579  InterestExpenseDeposits
+    39  InterestExpenseDomesticDeposits
+     5  InterestExpenseForeignDeposits
+     0  InterestExpenseDemandDeposits
+   118  InterestExpenseSavingsDeposits
+    71  InterestExpenseMoneyMarketDeposits
+     0  InterestExpenseNegotiableOrderOfWithdrawalNOW
+   150  InterestExpenseTimeDeposits
+     0  InterestExpenseDepositsAndShortTermBorrowings
+
+Filers reporting assets:                        11224
+  deposit funded at 0.05 deposits/assets:      781
+  and reporting deposit interest expense:       621
+    carrying a bank SIC code:                   594
+    not carrying one:                           27
+
+Top 51 by peak total assets, 2015Q4-2023Q4:
+
+  1.     3,898bn  JPMORGAN CHASE & CO                          SIC 6021  covered
+  2.     3,180bn  BANK OF AMERICA CORP /DE/                    SIC 6021  covered
+  3.     2,417bn  CITIGROUP INC                                SIC 6021  covered
+  4.     1,953bn  WELLS FARGO & COMPANY/MN                     SIC 6021  covered
+  5.     1,642bn  GOLDMAN SACHS GROUP INC                      SIC 6211  covered  <- outside the SIC screen
+  6.     1,194bn  MORGAN STANLEY                               SIC 6211  covered  <- outside the SIC screen
+  7.       675bn  US BANCORP \DE\                              SIC 6021  covered
+  8.       667bn  SCHWAB CHARLES CORP                          SIC 6211  covered  <- outside the SIC screen
+  9.       562bn  PNC FINANCIAL SERVICES GROUP, INC.           SIC 6021  covered
+ 10.       555bn  TRUIST FINANCIAL CORP                        SIC 6021  covered
+ 11.       478bn  CAPITAL ONE FINANCIAL CORP                   SIC 6021  covered
+ 12.       470bn  BANK OF NEW YORK MELLON CORP                 SIC 6022  covered
+ 13.       315bn  STATE STREET CORP                            SIC 6022  covered
+ 14.       261bn  AMERICAN EXPRESS CO                          SIC 6199  covered  <- outside the SIC screen
+ 15.       227bn  CITIZENS FINANCIAL GROUP INC/RI              SIC 6022  covered
+ 16.       216bn  SUNTRUST BANKS INC                           SIC 6021  covered
+ 17.       215bn  FIFTH THIRD BANCORP                          SIC 6022  covered
+ 18.       214bn  FIRST CITIZENS BANCSHARES INC /DE/           SIC 6022  covered
+ 19.       212bn  SVB FINANCIAL GROUP                          SIC 6022  covered
+ 20.       209bn  M&T BANK CORP                                SIC 6022  covered
+ 21.       201bn  HSBC USA INC /MD/                            SIC 6021  covered
+ 22.       196bn  ALLY FINANCIAL INC.                          SIC 6022  covered
+ 23.       190bn  KEYCORP /NEW/                                SIC 6021  covered
+ 24.       189bn  HUNTINGTON BANCSHARES INC /MD/               SIC 6021  covered
+ 25.       184bn  NORTHERN TRUST CORP                          SIC 6022  covered
+ 26.       178bn  AMERIPRISE FINANCIAL INC                     SIC 6282  covered  <- outside the SIC screen
+ 27.       171bn  MUFG AMERICAS HOLDINGS CORP                  SIC 6021  covered
+ 28.       168bn  SANTANDER HOLDINGS USA, INC.                 SIC 6021  covered
+ 29.       163bn  REGIONS FINANCIAL CORP                       SIC 6021  covered
+ 30.       152bn  DISCOVER FINANCIAL SERVICES                  SIC 6141  covered  <- outside the SIC screen
+ 31.       117bn  SYNCHRONY FINANCIAL                          SIC 6199  covered  <- outside the SIC screen
+ 32.       114bn  FLAGSTAR BANK, NATIONAL ASSOCIATION          SIC 6036  covered
+ 33.       103bn  BBVA USA BANCSHARES, INC.                    SIC 6021  covered
+ 34.        95bn  COMERICA INC                                 SIC 6021  covered
+ 35.        93bn  ZIONS BANCORPORATION, NATIONAL ASSOCIATION / SIC 6021  covered
+ 36.        89bn  FIRST HORIZON CORP                           SIC 6021  covered
+ 37.        80bn  RAYMOND JAMES FINANCIAL INC                  SIC 6211  covered  <- outside the SIC screen
+ 38.        75bn  POPULAR, INC.                                SIC 6022  covered
+ 39.        75bn  WEBSTER FINANCIAL CORP                       SIC 6021  covered
+ 40.        71bn  WESTERN ALLIANCE BANCORPORATION              SIC 6022  covered
+ 41.        70bn  EAST WEST BANCORP INC                        SIC 6022  covered
+ 42.        67bn  CIT GROUP INC                                SIC 6021  covered
+ 43.        65bn  E TRADE FINANCIAL CORP                       SIC 6035  covered
+ 44.        65bn  PEOPLE'S UNITED FINANCIAL, INC.              SIC 6035  covered
+ 45.        61bn  VALLEY NATIONAL BANCORP                      SIC 6021  covered
+ 46.        60bn  SYNOVUS FINANCIAL CORP                       SIC 6021  covered
+ 47.        56bn  WINTRUST FINANCIAL CORP                      SIC 6022  covered
+ 48.        53bn  CULLEN/FROST BANKERS, INC.                   SIC 6021  covered
+ 49.        52bn  COLUMBIA BANKING SYSTEM, INC.                SIC 6022  covered
+ 50.        50bn  BOK FINANCIAL CORP                           SIC 6021  covered
+  -.        41bn  PACWEST BANCORP                              SIC 6021  covered  <- pinned
+
+EDGAR coverage across the universe:
+  covered    51
+  no_ten_k   0
+  no_xbrl    0
+  absent     0
+
+Ranked above the cut but excluded:
+       114bn  NATIONAL BANK OF GREECE SA               foreign_private_issuer
+
+Pinned into the universe: 1
+  PACWEST BANCORP                          PacWest Bancorp. Peaked at 41bn and ranks outside the fifty, but is one of the two terminal filers decision 0010 selected: it spans both cycles, sustained acute deposit outflow through 2023 and exited by merger rather than closure, which exercises the terminal filer and entity event paths together
+
+Pinned into the universe: 1
+  PACWEST BANCORP                          PacWest Bancorp. Peaked at 41bn and ranks outside the fifty, but is one of the two terminal filers decision 0010 selected: it spans both cycles, sustained acute deposit outflow through 2023 and exited by merger rather than closure, which exercises the terminal filer and entity event paths together
+
+In the universe but outside the SIC screen: 8
+  GOLDMAN SACHS GROUP INC                  SIC 6211 (Security Brokers, Dealers & Flotation Companies) 1,642bn
+  MORGAN STANLEY                           SIC 6211 (Security Brokers, Dealers & Flotation Companies) 1,194bn
+  SCHWAB CHARLES CORP                      SIC 6211 (Security Brokers, Dealers & Flotation Companies) 667bn
+  AMERICAN EXPRESS CO                      SIC 6199 (Finance Services) 261bn
+  AMERIPRISE FINANCIAL INC                 SIC 6282 (Investment Advice) 178bn
+  DISCOVER FINANCIAL SERVICES              SIC 6141 (Personal Credit Institutions) 152bn
+  SYNCHRONY FINANCIAL                      SIC 6199 (Finance Services) 117bn
+  RAYMOND JAMES FINANCIAL INC              SIC 6211 (Security Brokers, Dealers & Flotation Companies) 80bn

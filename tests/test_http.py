@@ -173,3 +173,25 @@ def test_cache_key_includes_query_parameters(tmp_path: Path) -> None:
         client.get_json(ENDPOINT, params={"series_id": "CPIAUCSL"})
 
     assert route.call_count == 2
+
+
+@respx.mock
+def test_get_text_returns_the_body_unparsed() -> None:
+    """EDGAR publishes the company browser as Atom, which must travel through the same
+    rate limiter and cache as the JSON endpoints rather than bypassing the client."""
+    respx.get(ENDPOINT).mock(return_value=httpx.Response(200, text="<feed></feed>"))
+
+    with _client() as client:
+        assert client.get_text(ENDPOINT) == "<feed></feed>"
+
+
+@respx.mock
+def test_get_text_serves_second_call_from_cache(tmp_path: Path) -> None:
+    route = respx.get(ENDPOINT).mock(return_value=httpx.Response(200, text="<feed></feed>"))
+    cache = ResponseCache(root=tmp_path, ttl=timedelta(hours=1))
+
+    with _client(cache=cache) as client:
+        client.get_text(ENDPOINT)
+        client.get_text(ENDPOINT)
+
+    assert route.call_count == 1

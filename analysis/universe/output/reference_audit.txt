@@ -1,0 +1,85 @@
+Largest 50 US depository groups by insured-bank assets at 20221231, rolled to regulatory high holder
+
+  1.     3,202bn  JPMorgan Chase & Co                      covered_top_tier
+  2.     2,437bn  Bank of America Corporation              covered_top_tier
+  3.     1,764bn  Citigroup Inc                            covered_top_tier
+  4.     1,742bn  Wells Fargo & Company                    covered_top_tier
+  5.       690bn  U.S. Bancorp                             covered_top_tier
+  6.       580bn  PNC Financial Services Group             covered_top_tier
+  7.       546bn  Truist Financial Corporation             covered_top_tier
+  8.       486bn  The Goldman Sachs Group, Inc.            covered_top_tier
+  9.       453bn  Capital One Financial Corp               covered_top_tier
+ 10.       423bn  The Toronto-Dominion Bank                absent_foreign_parent  <- not in EDGAR
+ 11.       411bn  Morgan Stanley                           covered_top_tier
+ 12.       393bn  The Charles Schwab Corporation           covered_top_tier
+ 13.       358bn  The Bank of New York Mellon Corporation  covered_top_tier
+ 14.       298bn  State Street Corporation                 covered_top_tier
+ 15.       226bn  Citizens Financial Group Inc             covered_top_tier
+ 16.       213bn  First Republic Bank                      absent_no_registration  <- not in EDGAR
+ 17.       209bn  SVB Financial Group                      covered_top_tier
+ 18.       206bn  Fifth Third Bancorp                      covered_top_tier
+ 19.       201bn  M&T Bank Corporation                     covered_top_tier
+ 20.       188bn  KeyCorp                                  covered_top_tier
+ 21.       182bn  Huntington Bancshares Inc                covered_top_tier
+ 22.       182bn  Ally Financial Inc.                      covered_top_tier
+ 23.       177bn  Bank of Montreal                         absent_foreign_parent  <- not in EDGAR
+ 24.       162bn  HSBC Holdings plc                        covered_us_subsidiary
+ 25.       155bn  American Express Company                 covered_top_tier
+ 26.       155bn  Northern Trust Corporation               covered_top_tier
+ 27.       154bn  Regions Financial Corporation            covered_top_tier
+ 28.       130bn  Discover Financial Services              covered_top_tier
+ 29.       121bn  UBS Group AG                             absent_foreign_parent  <- not in EDGAR
+ 30.       113bn  United Services Automobile Association   absent_no_registration  <- not in EDGAR
+ 31.       110bn  Signature Bank                           absent_no_registration  <- not in EDGAR
+ 32.       109bn  First Citizens BancShares Inc            covered_top_tier
+ 33.       103bn  Royal Bank of Canada                     absent_foreign_parent  <- not in EDGAR
+ 34.        99bn  Banco Santander SA                       covered_us_subsidiary
+ 35.        96bn  Synchrony Financial                      covered_top_tier
+ 36.        92bn  BNP Paribas                              absent_foreign_parent  <- not in EDGAR
+ 37.        90bn  Flagstar Bank, National Association      covered_top_tier
+ 38.        90bn  Zions Bancorporation, N.A.               covered_top_tier
+ 39.        86bn  Comerica Incorporated                    covered_top_tier
+ 40.        79bn  First Horizon Corporation                covered_top_tier
+ 41.        71bn  Webster Financial Corporation            covered_top_tier
+ 42.        68bn  Western Alliance Bancorporation          covered_top_tier
+ 43.        68bn  Popular, Inc.                            covered_top_tier
+ 44.        64bn  East West Bancorp, Inc.                  covered_top_tier
+ 45.        60bn  Synovus Financial Corp.                  covered_top_tier
+ 46.        58bn  Raymond James Financial, Inc.            covered_top_tier
+ 47.        57bn  Valley National Bancorp                  covered_top_tier
+ 48.        56bn  Wintrust Financial Corporation           covered_top_tier
+ 49.        55bn  Bank of China                            absent_foreign_parent  <- not in EDGAR
+ 50.        53bn  Standard Chartered Bank, PLC             absent_foreign_parent  <- not in EDGAR
+
+Reachability through EDGAR:
+  covered_top_tier         38
+  covered_us_subsidiary     2
+  absent_no_registration    3
+  absent_foreign_parent     7
+
+Reachable in EDGAR:   40 of 50
+Unreachable:          10 of 50
+
+Unreachable institutions, by cause:
+  [absent_no_registration]
+        213bn  First Republic Bank
+              State-chartered bank with no holding company and no registered securities. CIK 1132979 carries only ownership forms and returns 404 from company facts
+        113bn  United Services Automobile Association
+              Member-owned reciprocal inter-insurance exchange with no registered securities
+        110bn  Signature Bank
+              State-chartered bank with no holding company. CIK 1288784 carries only ownership forms and returns 404 from company facts
+  [absent_foreign_parent]
+        423bn  The Toronto-Dominion Bank
+              TD Group US Holdings files FR Y-9C; no US entity is an SEC registrant
+        177bn  Bank of Montreal
+              BMO Financial Corp files FR Y-9C; no US entity is an SEC registrant
+        121bn  UBS Group AG
+              UBS Americas Holding files FR Y-9C; the parent files 20-F without US bank detail
+        103bn  Royal Bank of Canada
+              RBC US Group Holdings files FR Y-9C; no US entity is an SEC registrant
+         92bn  BNP Paribas
+              BNP Paribas USA files FR Y-9C; no US entity is an SEC registrant
+         55bn  Bank of China
+              US branch network of a Chinese bank; no US entity is an SEC registrant
+         53bn  Standard Chartered Bank, PLC
+              US branch of a UK bank; no US entity is an SEC registrant

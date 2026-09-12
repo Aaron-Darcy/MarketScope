@@ -1,0 +1,36 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      Endpoint payloads converted to types and nothing else. Every harmonisation decision
+      belongs downstream of here, where it can be tested.
+    schema: raw
+    tables:
+      - name: universe
+        description: The committed universe. Membership changes only when the seed is rebuilt.
+        columns:
+          - name: cik
+            tests: [unique, not_null]
+      - name: sec_facts
+        description: >
+          Every USD fact the company facts endpoint holds for a universe member, across all
+          taxonomies including each filer's own extension namespace. Carries superseded
+          values as well as current ones, so precedence is applied downstream rather than
+          on load.
+        columns:
+          - name: cik
+            tests: [not_null]
+          - name: period_end
+            tests: [not_null]
+      - name: sec_filings
+        description: Complete filing history, following EDGAR's supplementary pages.
+      - name: sec_registrants
+        description: Registrant metadata resolved from submissions, not from company facts.
+        columns:
+          - name: cik
+            tests: [unique, not_null]
+      - name: fred_observations
+        description: Policy and Treasury rate series, with FRED's missing marker resolved to null.
+      - name: ingest_log
+        description: Row count and load time per raw table, for run-on-run change detection.

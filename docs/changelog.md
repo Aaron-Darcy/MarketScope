@@ -6,6 +6,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Deposit balance denominators are genuinely two-point averages. `previous_quarter_end`
+  stepped back from the first of the month rather than the first of the quarter and
+  returned its own argument, so every denominator had been a closing balance while the row
+  recorded `avg_method` as endpoint. G4 falls from +0.108 to +0.085 and no longer passes;
+  the industry benchmark is unchanged because it never used averaging.
+- Universe membership is decided by what a filer reports — total assets, deposits reaching
+  5 percent of assets, interest paid on deposits, and a 10-K rather than a 20-F or 40-F —
+  rather than by SIC code. Screening on the specification's SIC codes lost 8 of the largest
+  50 deposit-taking filers, including Goldman Sachs, Morgan Stanley and Charles Schwab. SIC
+  is retained as a descriptive attribute. SIC 6020 holds no EDGAR entities at all.
+- Filers are ranked on the highest total assets reported across 2015Q4-2023Q4 rather than
+  on a current snapshot, so an institution that stopped filing inside the window is ranked
+  on what it was rather than dropped.
+
 - Cost of deposits is denominated on interest-bearing deposits rather than total deposits,
   resolved by reported concept, summed domestic and foreign components, or total less a
   complete non-interest-bearing figure. Tier 1 coverage rises from 8 filers to 11.
@@ -30,6 +44,35 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Tier coverage measurement across the full universe, read from the warehouse rather than
+  the SEC. Tier 1 covers 75.8 percent of 3,064 bank-quarters and 43 of 51 filers reach it;
+  37 filers carry headline coverage in both cycles and can support the persistence test.
+- Bank-quarter panel lifted out of the feasibility script into `marketscope.panel`, taking
+  facts rather than an API payload so it works from the warehouse, and pinning the taxonomy
+  so an extension concept sharing a standard name is not read as the standard one.
+- DuckDB load covering the committed universe: 1,809,702 USD facts across every taxonomy,
+  709,163 filings, 51 registrants and 30,854 FRED observations, with no filer failing.
+  Rows stream in per filer through Arrow batches, and facts, filings and registrants share
+  one transaction so a partial run cannot leave them describing different sets of filers.
+- dbt project on DuckDB with four staging models — company facts, submissions, tickers and
+  the FRED series — and 21 tests.
+- Committed universe seed at `data/seeds/universe.csv`, which ingestion reads so a load
+  covers a fixed set of filers. `--check` fails when a rebuild drifts from it and
+  `--write-seed` adopts a new membership deliberately.
+- Pinned universe members, seated alongside the ranked fifty rather than displacing the
+  smallest. PacWest peaked at 41bn and ranks 58th, so the assets ranking alone would have
+  dropped a terminal filer the project selected on purpose.
+- Top-50 universe construction from EDGAR, with each member graded on how far it can be
+  followed: XBRL present, 10-K covering fiscal 2015 or later, or neither.
+- Reference audit sizing the institutions EDGAR cannot reach, against a ranking of the
+  largest 50 US depository groups rolled up from FDIC insured-institution financials to
+  regulatory high holder. 40 of 50 are reachable; 3 are absent for want of registered
+  securities and 7 are US operations of foreign banking organisations. The mapping is
+  pinned on FDIC identifiers and raises on an unrecognised group rather than assuming
+  coverage, because name matching maps First Republic Bank onto Republic First Bancorp.
+- SEC client support for the XBRL frames endpoint, SIC company enumeration through the
+  Atom company browser, and a company-facts presence check that distinguishes a registrant
+  with no XBRL from one absent from EDGAR entirely.
 - Deposit cost and cumulative deposit beta, annualised by simple multiplication and scaled
   by average interest-bearing deposits, following the convention used in Federal Reserve
   work on FR Y-9C filings.

@@ -1,0 +1,64 @@
+version: 2
+
+models:
+  - name: stg_sec__company_facts
+    description: >
+      Every USD fact for a universe member, with period length classified from the reported
+      span rather than the fiscal period label. Superseded values are retained: restatement
+      precedence is applied once, downstream, and the values it drops are the input to the
+      filing behaviour question.
+    columns:
+      - name: cik
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: source('raw', 'universe')
+                field: cik
+      - name: period_end
+        tests: [not_null]
+      - name: value
+        tests: [not_null]
+      - name: periodicity
+        tests:
+          - accepted_values:
+              arguments:
+                values: [instant, quarterly, semiannual, nine_month, annual, other]
+
+  - name: stg_sec__submissions
+    description: One row per universe member, with registrant metadata and filing history summary.
+    columns:
+      - name: cik
+        tests: [unique, not_null]
+      - name: registrant_name
+        tests: [not_null]
+      - name: ten_k_count
+        tests: [not_null]
+
+  - name: stg_sec__tickers
+    description: >
+      One row per listed security. Filers with no listed equity are absent rather than
+      present with a null ticker.
+    columns:
+      - name: ticker
+        tests: [not_null]
+      - name: cik
+        tests:
+          - relationships:
+              arguments:
+                to: source('raw', 'universe')
+                field: cik
+
+  - name: stg_fred__series
+    description: Policy and Treasury rate observations, as published and as decimal fractions.
+    columns:
+      - name: series_id
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [FEDFUNDS, DGS2, DGS10]
+      - name: observation_date
+        tests: [not_null]
+      - name: rate_percent
+        tests: [not_null]

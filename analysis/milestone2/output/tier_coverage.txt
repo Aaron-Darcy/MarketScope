@@ -1,0 +1,56 @@
+Tier coverage across the full universe
+
+Bank-quarters resolved: 3,064 across 51 filers
+
+  tier 1:  2,323   75.8%
+  tier 2:    491   16.0%
+  tier 3:     66    2.2%
+  tier X:    184    6.0%
+
+Filers by the most precise tier they reach:
+  tier 1             43
+  tier 2              5
+  tier 3              3
+  tier X              0
+  no series           0
+
+Provenance of the interest-bearing base:
+  reported              2,244
+  summed_components       445
+  derived_residual        375
+
+Provenance of the deposit expense numerator:
+  reported              2,814
+  summed_components       250
+
+Averaging method:
+  endpoint              2,902
+  closing_only            162
+
+Calibration cycle, filers at or above the 80% floor: 44 of 51
+    SCHWAB CHARLES CORP                       0/15   0.0%
+    BANK OF NEW YORK MELLON CORP              0/15   0.0%
+    M&T BANK CORP                             0/15   0.0%
+    AMERIPRISE FINANCIAL INC                  0/15   0.0%
+    FLAGSTAR BANK, NATIONAL ASSOCIATION       0/15   0.0%
+    FIRST HORIZON CORP                        0/15   0.0%
+    VALLEY NATIONAL BANCORP                   0/15   0.0%
+
+Test cycle, filers at or above the 80% floor: 41 of 51
+    SVB FINANCIAL GROUP                       4/8  50.0%
+    SUNTRUST BANKS INC                        0/8   0.0%
+    M&T BANK CORP                             0/8   0.0%
+    MUFG AMERICAS HOLDINGS CORP               0/8   0.0%
+    FLAGSTAR BANK, NATIONAL ASSOCIATION       0/8   0.0%
+    BBVA USA BANCSHARES, INC.                 0/8   0.0%
+    CIT GROUP INC                             0/8   0.0%
+    E TRADE FINANCIAL CORP                    0/8   0.0%
+    PEOPLE'S UNITED FINANCIAL, INC.           0/8   0.0%
+    VALLEY NATIONAL BANCORP                   0/8   0.0%
+
+Filers with tier X bank-quarters: 5
+  VALLEY NATIONAL BANCORP                   57 quarters
+  FLAGSTAR BANK, NATIONAL ASSOCIATION       53 quarters
+  FIRST HORIZON CORP                        40 quarters
+  M&T BANK CORP                             31 quarters
+  E TRADE FINANCIAL CORP                     3 quarters

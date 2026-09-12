@@ -15,9 +15,10 @@ project measures deposit beta for US bank holding companies directly from XBRL f
 data, calibrates it over the 2015–2019 tightening cycle, and tests whether the resulting
 cross-bank ordering holds during the far faster 2022–2023 cycle.
 
-**Status: Milestone 0 — feasibility.** The metric construction is being validated against
-a twelve-bank sample before any warehouse or presentation layer is built. See
-[docs/specification.md](docs/specification.md) for the gate criteria.
+**Status: Milestone 1 — ingestion and warehouse.** The feasibility gate closed on a
+twelve-bank sample; the universe is now the largest fifty deposit-taking US filers plus one
+pinned terminal filer, loading into DuckDB behind dbt staging models. See
+[docs/specification.md](docs/specification.md).
 
 ---
 
@@ -42,10 +43,17 @@ work:
   averaging is used and the row is marked accordingly.
 - **Fourth-quarter flows usually have to be derived** as the fiscal year less the first
   three quarters, since most filers do not file a fourth 10-Q.
-- **Failed banks stop filing.** Silicon Valley Bank, Signature and First Republic leave
-  the data after 2023. A pipeline that quietly drops them produces a survivorship-biased
-  answer that understates the effect being measured, so terminal filers are retained and
-  every headline result is reported both with and without them.
+- **Failed banks stop filing.** Silicon Valley Bank leaves the data after 2022 and PacWest
+  after 2023Q3. A pipeline that quietly drops them produces a survivorship-biased answer
+  that understates the effect being measured, so terminal filers are retained and every
+  headline result is reported both with and without them.
+- **Some banks never file at all.** First Republic and Signature registered no securities,
+  so they have no 10-K and no XBRL in EDGAR — measured at 3 of the largest 50 US depository
+  groups, alongside 7 more that are US arms of foreign banking organisations. The gap is
+  sized against FDIC data rather than assumed.
+- **Industry codes do not identify banks.** Screening EDGAR on bank SIC codes loses Goldman
+  Sachs, Morgan Stanley and Charles Schwab, which carry broker-dealer codes. Membership is
+  decided by what a filer reports instead.
 
 Derived figures are cross-checked against FFIEC and FDIC regulatory filings, which carry
 the same concepts in standardised form, so the accuracy of the tag mapping can be stated
@@ -69,9 +77,11 @@ No paid or redistribution-restricted market data is used.
 ## Repository layout
 
 ```
-src/marketscope/       ingestion clients, universe definition
+src/marketscope/       ingestion clients, universe construction, DuckDB load
 analysis/feasibility/  Milestone 0 profiling and validation
-transform/dbt/         warehouse models (from Milestone 1)
+analysis/universe/     universe construction and EDGAR coverage audit
+data/seeds/            the committed universe
+transform/dbt/         warehouse models
 site/                  Evidence.dev application (from Milestone 4)
 docs/                  specification, methodology, decision record
 tests/
@@ -94,10 +104,25 @@ Set `MARKETSCOPE_SEC_USER_AGENT` in `.env` to a string containing real contact d
 The SEC rejects requests without one and limits callers to ten requests per second; both
 constraints are enforced in `marketscope.ingestion.http`.
 
-Profile deposit concept availability across the feasibility sample:
+Load the committed universe, its filings and the rate series into DuckDB:
 
 ```
-python analysis/feasibility/tag_coverage.py
+python -m marketscope.pipeline
+cd transform/dbt && dbt build
+```
+
+The universe itself is committed to `data/seeds/universe.csv` and ingestion reads it, so a
+load covers a fixed set of filers. Rebuilding it is a separate, deliberate act:
+
+```
+python analysis/universe/build_universe.py --check       # fail if the build has drifted
+python analysis/universe/build_universe.py --write-seed  # adopt the new membership
+```
+
+Size what EDGAR cannot reach, against FDIC data:
+
+```
+python analysis/universe/reference_audit.py
 ```
 
 Responses are cached under `data/cache`, so repeated runs during development do not

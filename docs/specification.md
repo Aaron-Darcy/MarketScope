@@ -10,10 +10,34 @@ MarketScope measures deposit repricing behaviour across US bank holding companie
 primary SEC EDGAR filings and Federal Reserve data, and tests whether that behaviour is
 persistent across monetary-tightening cycles.
 
-The initial release covers the largest 50 US bank holding companies by total assets,
-identified by SIC codes 6020, 6021, 6022, 6035 and 6036, restricted to filers with a 10-K
-covering fiscal 2015 or later. Institutions that have since failed or been acquired are
-retained.
+The initial release covers the largest 50 US bank holding companies by total assets.
+Institutions that have since failed or been acquired are retained.
+
+Membership is decided by what a filer reports rather than by its SIC code, under four rules
+answerable from EDGAR alone:
+
+| Rule | Test |
+|---|---|
+| Rankable | Reports `Assets` in at least one quarter-end of the study window |
+| Deposit funded | `Deposits` reach 5 percent of assets in at least one period |
+| Deposit taking | Reports interest paid on deposits under any candidate concept |
+| Domestic registrant | Files a 10-K, not a 20-F or 40-F, covering fiscal 2015 or later |
+
+Filers are then ranked on the highest total assets reported across 2015Q4–2023Q4, rather
+than on a current snapshot, so an institution that stopped filing inside the window is
+ranked on what it was rather than dropped.
+
+SIC codes 6020, 6021, 6022, 6035 and 6036 are recorded as a descriptive attribute and no
+longer decide membership. Screening on them loses 8 of the largest 50 deposit-taking
+filers, including Goldman Sachs, Morgan Stanley and Charles Schwab under broker-dealer
+codes and American Express, Discover and Synchrony under consumer finance codes. SIC 6020
+is a group heading for which EDGAR holds no entities at all. See decision 0015.
+
+Deposit funding alone does not identify a deposit-taking institution: an insurer tags
+annuity and other deposit-type contracts under the same `Deposits` concept a bank uses for
+its funding base, so the interest test is required alongside it. The 5 percent threshold is
+not load-bearing — above $20bn of assets the largest non-depository ratio is 0.024 and the
+smallest depository ratio is 0.210.
 
 ### 1.1 Research question
 
@@ -146,13 +170,28 @@ the effect being measured. Terminal filers are retained with `last_filed_period`
 exit reason; every headline result is reported for the full sample and for surviving banks
 only, and the difference is published.
 
-A stronger form of the same problem applies before ingestion begins. A bank that operates
-without a holding company files its periodic reports with its primary federal banking
-regulator rather than the SEC, so it has no 10-K and no XBRL facts in EDGAR at all. First
-Republic Bank and Signature Bank are both absent for this reason, and both are
-institutions where the effect under study was most acute. Universe construction therefore
-cannot assume that a listed bank has EDGAR coverage; presence must be verified per filer,
-and the gap closed from regulatory data.
+A stronger form of the same problem applies before ingestion begins. A bank with no
+registered securities files its periodic reports with its primary federal banking regulator
+rather than the SEC, so it has no 10-K and no XBRL facts in EDGAR at all. First Republic
+Bank and Signature Bank are both absent for this reason, and both are institutions where
+the effect under study was most acute.
+
+The size of that gap is measured, not assumed. Against a ranking of the largest 50 US
+depository groups built from FDIC data rather than from EDGAR, 40 are reachable in EDGAR —
+38 through a top-tier registrant and 2, HSBC and Santander, through a US intermediate
+holding company filing a 10-K against registered debt. Of the 10 that are not:
+
+| Cause | Count | Institutions |
+|---|---|---|
+| No registered securities | 3 | First Republic ($213bn), USAA ($113bn), Signature ($110bn) |
+| Foreign banking organisation | 7 | Toronto-Dominion ($423bn), Bank of Montreal, UBS, Royal Bank of Canada, BNP Paribas, Bank of China, Standard Chartered |
+
+The driver is registered securities, not corporate structure: Zions Bancorporation
+dissolved its holding company in 2018, files as the bank itself, and is fully covered. The
+7 foreign banking organisations are a scope boundary rather than a coverage failure — they
+are not US bank holding companies and file FR Y-9C rather than 10-K — and are not
+recovered. The 3 without registered securities are recovered from regulatory data at
+Milestone 3. Both counts are published on the data health page. See decision 0016.
 
 **Partial-cycle coverage.** Terminal filers have filings through approximately fiscal 2022
 but not through the mid-2023 cycle peak. Their cumulative beta is computed to the last
@@ -188,7 +227,9 @@ mapping is stated rather than asserted.
 
 As a **coverage source**, they supply the institutions EDGAR does not hold at all. This is
 not optional: without regulatory data, First Republic and Signature are simply missing, and
-the survivorship comparison loses the two most consequential cases.
+the survivorship comparison loses the two most consequential cases. Section 4 measures that
+gap at 3 of the largest 50, which is small enough that this work stays at Milestone 3 and
+Milestone 1 proceeds on EDGAR alone.
 
 The mapping is not one-to-one. FDIC data is at insured-institution level (CERT) while SEC
 filings are at holding-company level (CIK), and a holding company may own several insured
@@ -318,8 +359,8 @@ Built with Evidence.dev, deployed as a static site at no running cost.
 
 | # | Deliverable | Exit condition |
 |---|---|---|
-| 0 | Feasibility profiling on the twelve-bank sample | Gate criteria in 9.1 all pass |
-| 1 | Hardened ingestion, DuckDB load, staging models | Full universe ingests reproducibly |
+| 0 | Feasibility profiling on the twelve-bank sample | Gate criteria in 9.1 all pass. **Passed** |
+| 1 | Hardened ingestion, DuckDB load, staging models | Full universe ingests reproducibly. **Passed:** 51 members, 1.81m facts, four staging models, 21 tests green |
 | 2 | Harmonisation, bank-quarter panel, restatement precedence, entity events, beta | `fct_deposit_beta` populated with tiers |
 | 3 | Cycles, rank persistence, survivorship sensitivity, regulatory validation | Headline figure exists and is defensible |
 | 4 | Site: overview, bank explorer, comparison, primary case study | Deploys publicly |
@@ -380,6 +421,8 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-09-09 | Milestone 1 closed: committed universe seed, DuckDB load of 51 filers, dbt staging models. Pinned filers seated alongside the ranked fifty, taking the universe to 51. |
+| 2026-09-09 | Universe membership moved from SIC codes to four reported-behaviour rules; SIC retained as descriptive. EDGAR coverage gap measured against an FDIC-derived ranking at 3 of 50 for want of registered securities and 7 of 50 for foreign banking organisations. Regulatory ingestion confirmed at Milestone 3. |
 | 2026-09-02 | Version 1.0. Initial specification. |
 | 2026-09-08 | G4 and benchmark passed; Milestone 0 gate closed. Denominator fixed as interest-bearing deposits with three resolution routes. Completeness check added for reconstructed numerators, excluding 31 M&T bank-quarters. Annualisation convention recorded. |
 | 2026-09-04 | Milestone 0 results. Tier denominators restated as endpoint averages, since no filer tags average deposit balances. Tier availability recorded. Survivorship section extended to banks absent from EDGAR entirely. Regulatory data promoted from validation to coverage source. Gate criteria annotated with outcomes; G4 remains open. |

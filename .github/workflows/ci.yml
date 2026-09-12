@@ -36,3 +36,9 @@ jobs:
 
       - name: Tests
         run: pytest -m "not network" --cov=marketscope --cov-report=term-missing
+
+      # Parses models, sources and tests without a warehouse, so a broken ref or a
+      # malformed schema file fails here rather than on the next load.
+      - name: dbt parse
+        working-directory: transform/dbt
+        run: dbt parse --profiles-dir .

@@ -109,6 +109,26 @@ class JsonApiClient:
         self._max_retries = max_retries
 
     def get_json(self, url: str, params: dict[str, Any] | None = None) -> Any:
+        return self._get(url, params, decode=lambda response: response.json())
+
+    def get_text(self, url: str, params: dict[str, Any] | None = None) -> str:
+        """Fetch a non-JSON endpoint through the same rate limiter, cache and retries.
+
+        EDGAR publishes the company browser as Atom rather than JSON, and it is subject to
+        the same rate limit as the JSON APIs, so it must not bypass this client.
+        """
+        payload = self._get(url, params, decode=lambda response: response.text)
+        if not isinstance(payload, str):
+            raise TypeError(f"Expected a text response from {url}, got {type(payload).__name__}")
+        return payload
+
+    def _get(
+        self,
+        url: str,
+        params: dict[str, Any] | None,
+        *,
+        decode: Callable[[httpx.Response], Any],
+    ) -> Any:
         request = self._client.build_request("GET", url, params=params)
         cache_key = str(request.url)
 
@@ -118,13 +138,13 @@ class JsonApiClient:
                 logger.debug("Cache hit for %s", cache_key)
                 return cached
 
-        payload = self._fetch_with_retries(cache_key)
+        payload = self._fetch_with_retries(cache_key, decode)
 
         if self._cache is not None:
             self._cache.put(cache_key, payload)
         return payload
 
-    def _fetch_with_retries(self, url: str) -> Any:
+    def _fetch_with_retries(self, url: str, decode: Callable[[httpx.Response], Any]) -> Any:
         last_error: Exception | None = None
 
         for attempt in range(self._max_retries + 1):
@@ -155,7 +175,7 @@ class JsonApiClient:
                 continue
 
             response.raise_for_status()
-            return response.json()
+            return decode(response)
 
         assert last_error is not None
         raise last_error

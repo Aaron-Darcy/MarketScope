@@ -9,6 +9,7 @@ dependencies = [
     "pydantic-settings>=2.3",
     "python-dotenv>=1.0",
     "duckdb>=1.0",
+    "dbt-duckdb>=1.8",
     "pandas>=2.2",
     "pyarrow>=16.0",
 ]
@@ -66,7 +67,7 @@ strict = true
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["duckdb.*"]
+module = ["duckdb.*", "pyarrow.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
