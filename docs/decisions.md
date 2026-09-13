@@ -637,3 +637,113 @@ the four filers and state the loss, which is the status quo.
 **Open.** Not decided. The proposal changes the tier hierarchy and the published sample, so
 it belongs with the metric definition in specification 3.1 rather than in an implementer's
 judgement. Nothing downstream is built on it yet.
+
+---
+
+## 0021 — Complete the concept lists rather than add an implied-expense route
+
+**Date** 2026-09-13
+**Status** Accepted. Supersedes the proposal in 0020.
+
+**Context.** 0020 proposed using implied deposit expense — total interest expense less
+identifiable non-deposit funding — as a numerator where component reconstruction fell below
+the completeness floor. That proposal was tested before being built and it fails.
+
+Across 2,524 bank-quarters where a reported deposit expense exists to check against, the
+implied figure matches it within two percent only 48.8 percent of the time, and the upper
+tail is severe: the ninetieth percentile of implied over reported is 1.914. The bias is not
+confined to broker-dealers, though those are worst — E*TRADE at 14.0, Raymond James at 5.25,
+Morgan Stanley at 4.32. Ordinary commercial banks are affected too: Zions at 1.71, Northern
+Trust at 1.96, Huntington at 1.63. Implied deposit expense is unusable as a numerator.
+
+The same measurement explains why. The non-deposit funding list, drawn from a twelve-bank
+sample, omitted the funding sources the wider universe actually uses. Federal Home Loan Bank
+advances appear for eleven filers across 1,212 facts and were never subtracted. So do
+repurchase agreements, other short-term borrowings, junior subordinated debentures,
+commercial paper and federal funds purchased. Subtracting too little leaves implied deposit
+expense too high, which makes a complete reconstruction look short.
+
+The deposit component list was incomplete in the same way, and that is the direct cause of
+the exclusions 0020 was trying to rescue. First Horizon tags `InterestExpenseOtherDomesticDeposits`
+across 139 facts and it was never summed: at 2019Q4 its time and savings components total
+$49.6m against a reported $67.2m, and the missing $17.6m is exactly that concept. Valley
+National publishes one combined `InterestExpenseNOWAccountsMoneyMarketAccountsAndSavingsDeposits`
+concept across 216 facts, also never summed, leaving only time deposits captured.
+
+**Decision.** Extend both lists to the concepts the universe uses, and resolve deposit
+expense by mutually exclusive category rather than by summing every concept present. Within
+a category the filer's own total is preferred where it publishes one, and otherwise the leaf
+concepts present are summed. Totals and leaves are never added together, because several
+filers tag both and summing everything would double count — the opposite of the
+understatement the completeness check guards against.
+
+**Alternatives.** The implied-expense route, refuted above. Lowering the floor to 0.60,
+which would have admitted understated numerators while leaving the real cause untouched.
+
+**Consequences.** Tier X falls from 184 bank-quarters to 71 and from five filers to five
+with far smaller counts. Valley National is fully recovered, 57 excluded quarters to none.
+First Horizon falls from 40 to 3. Flagstar falls from 53 to 32. M&T is unchanged at 31,
+which is the right outcome: 0013 established its reconstruction genuinely captures as little
+as 2 percent, and the completeness check was never wrong about it.
+
+The headline sample does not change. Recovered quarters are tier 3, and specification 3.1
+runs headline results on tiers 1 and 2 only, so the persistence sample stays at 37 filers.
+The gain is to the robustness analysis and to the honesty of the data health page, not to
+the headline.
+
+Gate criterion G4 is unaffected: Ally and Zions both resolve at tier 1 from reported
+concepts, and their betas are unchanged to three decimal places. Whatever is decided about
+G4 cannot be an artefact of this change.
+
+---
+
+## 0022 — Record G4 as failed and replace it with a cross-sectional test
+
+**Date** 2026-09-13
+**Status** Accepted. Closes 0019.
+
+**Context.** 0019 recorded G4 failing at +0.085 against a threshold of 0.10 once endpoint
+averaging was actually applied. The margin is robust: completing the concept lists under
+0021 left both betas unchanged, so the failure is not a data-completeness artefact.
+
+G4 asks whether the metric measures repricing behaviour or reporting differences, by
+comparing a direct bank against a branch-funded regional. Its premise is that a
+branch-funded regional is a slow repricer. Measured across the universe that premise fails
+on its own terms for the test cycle. Zions carries the second-highest non-interest-bearing
+deposit share of any filer with a headline-tier beta, 44.6 percent, and still reprices at
+0.612, mid-pack. The genuinely slow repricers are Wells Fargo at 0.409 and Regions at 0.401.
+G4 selected as its low-beta exemplar a bank that is an outlier against the relationship it
+was standing in for.
+
+**Decision.** G4 is recorded as **failed** and is not revised, rethresholded or
+recomparatored. The pass recorded on 2026-09-08 is withdrawn.
+
+It is replaced, for construct validity going forward, by a cross-sectional test of the same
+economic hypothesis across the whole universe, using a reported characteristic rather than a
+hand-assigned funding label. Non-interest-bearing deposits pay nothing by construction and
+are stickier than rate-seeking money, so a bank funded by more of them has less of its base
+to reprice. The prediction, fixed before measurement, is a negative rank correlation against
+cumulative deposit beta.
+
+**Result.** Spearman −0.358 across the 30 filers carrying a headline-tier test-cycle beta, a
+reported deposit split and a beta at or below 1.0; −0.409 across all 32 before excluding
+implausible betas. Negative as predicted.
+
+**Why this is not moving the goalposts.** The failure is recorded permanently rather than
+erased, and the replacement is not a rerun of the same comparison with friendlier inputs. It
+was specified with a directional prediction before being computed and could have come back
+flat or positive, which would have corroborated the failure rather than dissolved it. It
+rests on 30 filers instead of 2, and on a reported balance-sheet split rather than a
+judgement about which bank typifies which funding model — the judgement that G4 got wrong.
+The industry benchmark, which 0014 already calls the stronger check, continues to pass at
+0.354 and 0.480.
+
+This reasoning is recorded because the move is legitimately suspicious and a reader is
+entitled to test it. The honest summary is that G4 was a weak test, it failed, and the
+project now has a better one.
+
+**Consequences.** Specification 9.1 records G4 as failed with the replacement criterion and
+its result alongside. No fallback from 9.2 is invoked: fallbacks exist for a metric that
+cannot be constructed, and the evidence is that it can be. Two filers, Santander Holdings
+USA at 2.941 and Raymond James at 1.695, return betas above 1.0 and are carried as an open
+data quality finding for Milestone 2 rather than silently dropped.

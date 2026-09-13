@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: dim_rate_cycle
+    description: >
+      One row per tightening cycle, derived from the policy rate rather than hardcoded, as
+      specification section 2 requires. Named by recency so the study follows the series
+      forward without anyone editing a window; earlier cycles are retained unnamed as
+      context for how unusually fast the test cycle was.
+    columns:
+      - name: cycle_key
+        tests: [unique, not_null]
+      - name: cycle_name
+        tests:
+          - accepted_values:
+              arguments:
+                values: [calibration, test]
+              config:
+                where: "cycle_name is not null"
+      - name: start_quarter
+        tests: [not_null]
+      - name: end_quarter
+        tests: [not_null]
+      - name: move_fraction
+        tests: [not_null]
+      - name: months
+        tests: [not_null]

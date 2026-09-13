@@ -6,6 +6,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Deposit expense and non-deposit funding concept lists completed against the full universe
+  and resolved by mutually exclusive category, preferring a filer's own category total over
+  its parts so a filer tagging both is not double counted. Federal Home Loan Bank advances,
+  repurchase agreements and six other funding lines were never subtracted, which inflated
+  implied deposit expense and made complete reconstructions look short. Tier X falls from
+  184 bank-quarters to 71; Valley National is fully recovered and First Horizon goes from 40
+  excluded quarters to 3.
+- Gate criterion G4 is recorded as failed at +0.085 and replaced by a cross-sectional
+  construct-validity test across the universe. Non-interest-bearing deposit share correlates
+  with cumulative beta at Spearman -0.358 over 30 filers, negative as predicted.
 - Deposit balance denominators are genuinely two-point averages. `previous_quarter_end`
   stepped back from the first of the month rather than the first of the quarter and
   returned its own argument, so every denominator had been a closing balance while the row
@@ -44,6 +54,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Monetary cycle windows derived from the federal funds series into `dim_rate_cycle` rather
+  than hardcoded, as specification section 2 requires. Turning points come from a centred
+  four-quarter window on the level series; the derivation reproduces both study windows and
+  carries twelve earlier tightening cycles back to 1954 as context.
+- Construct validity check relating funding mix to deposit beta across the universe,
+  replacing the two-bank comparison in G4.
 - Tier coverage measurement across the full universe, read from the warehouse rather than
   the SEC. Tier 1 covers 75.8 percent of 3,064 bank-quarters and 43 of 51 filers reach it;
   37 filers carry headline coverage in both cycles and can support the persistence test.

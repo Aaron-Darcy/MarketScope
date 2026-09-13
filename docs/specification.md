@@ -98,8 +98,18 @@ precise tier each filer-quarter supports, and the tier is recorded on the row.
 |---|---|---|---|
 | 1 | Interest expense on deposits | Interest-bearing deposits | 11 of 12 banks, 708 bank-quarters |
 | 2 | Interest expense on deposits | Total deposits | 3 bank-quarters |
-| 3 | Interest expense on deposits, reconstructed from components | Best available base | 39 bank-quarters |
-| X | Reconstruction failed completeness check | — | 31 bank-quarters |
+| 3 | Interest expense on deposits, reconstructed from components | Best available base | 181 bank-quarters |
+| X | Reconstruction failed completeness check | — | 71 bank-quarters |
+
+Counts are across the 51-filer universe, 3,066 bank-quarters in total. Tier 1 covers 75.8
+percent and 43 filers; 37 filers carry headline coverage in both cycles and can support the
+persistence test.
+
+Reconstruction resolves deposit expense by mutually exclusive category — time deposits;
+savings, money market and NOW; interest-bearing demand; other domestic; foreign. Within a
+category the filer's own total is used where it publishes one and the leaf concepts present
+are summed otherwise, never both, because several filers tag a combined concept alongside
+its parts and adding them would double count. See decision 0021.
 
 The denominator is interest-bearing deposits wherever it can be resolved. Non-interest-bearing
 deposits have a beta of zero by construction, so including them scales a bank's measured beta
@@ -379,9 +389,16 @@ Proceed past Milestone 0 only if all hold across the twelve-bank sample:
 - **G3** Every terminal filer is retrievable through its final filed quarter. **Passed:**
   SVB to 2022-12-31, PacWest to 2023-09-30.
 - **G4** Ally Financial's test-cycle cost of deposits exceeds Zions Bancorporation's by a
-  material and economically sensible margin. A direct bank with no branch network should
-  reprice faster than a branch-funded regional. If this contrast is absent, the metric
-  construction is wrong and work stops until it is corrected. **Outstanding.**
+  material and economically sensible margin. **Failed: +0.085 against a 0.10 threshold.**
+  The contrast is present and correctly signed but below the margin set in advance. The
+  premise that a branch-funded regional is a slow repricer does not hold for the test cycle:
+  Zions carries the second-highest non-interest-bearing deposit share in the universe at 44.6
+  percent and still reprices mid-pack at 0.612. See decisions 0019 and 0022.
+- **G4′** Replacing G4 for construct validity: across the universe, a bank's
+  non-interest-bearing deposit share correlates negatively with its cumulative deposit beta,
+  since balances that pay nothing by construction cannot reprice. **Passed:** Spearman −0.358
+  across 30 filers with a plausible headline-tier beta, −0.409 across all 32. Predicted
+  negative before measurement.
 - **G5** Q4 values are derivable for at least 80 percent of bank-years. **Passed: 92.3
   percent** on interest expense on deposits, 180 of 195 bank-years.
 - **Benchmark** The industry cumulative interest-bearing deposit beta computed here must
@@ -421,6 +438,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-09-13 | G4 recorded as failed and replaced by a cross-sectional construct-validity criterion. Deposit expense and non-deposit funding concept lists completed against the full universe and resolved by mutually exclusive category; tier X falls from 184 bank-quarters to 71. |
 | 2026-09-09 | Milestone 1 closed: committed universe seed, DuckDB load of 51 filers, dbt staging models. Pinned filers seated alongside the ranked fifty, taking the universe to 51. |
 | 2026-09-09 | Universe membership moved from SIC codes to four reported-behaviour rules; SIC retained as descriptive. EDGAR coverage gap measured against an FDIC-derived ranking at 3 of 50 for want of registered securities and 7 of 50 for foreign banking organisations. Regulatory ingestion confirmed at Milestone 3. |
 | 2026-09-02 | Version 1.0. Initial specification. |

@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: int_rate_cycles
+    description: >
+      Quarterly policy rate with turning points marked. Turning points come from a centred
+      four-quarter window on the level series, because the 2015 to 2019 tightening was slow
+      enough that a change-based rule splits it into three runs.
+    columns:
+      - name: quarter_end
+        tests: [unique, not_null]
+      - name: rate_percent
+        tests: [not_null]
+      - name: rate_fraction
+        tests: [not_null]
