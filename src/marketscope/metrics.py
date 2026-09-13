@@ -23,30 +23,85 @@ EXPENSE_REPORTED_TAG = "InterestExpenseDeposits"
 TOTAL_INTEREST_EXPENSE_TAG = "InterestExpense"
 
 # Non-deposit funding lines, subtracted from total interest expense to imply what deposits
-# must have cost. Used only to test whether a reconstructed numerator is complete.
+# must have cost. Used only to test whether a reconstructed numerator is complete. The list
+# was first drawn from a twelve-bank sample and missed the funding sources regional banks
+# rely on most, notably Federal Home Loan Bank advances and repurchase agreements, which
+# inflated the implied figure and made complete reconstructions look short.
 NON_DEPOSIT_FUNDING_TAGS: tuple[str, ...] = (
     "InterestExpenseLongTermDebt",
+    "InterestExpenseOtherLongTermDebt",
     "InterestExpenseShortTermBorrowings",
+    "InterestExpenseOtherShortTermBorrowings",
+    "InterestExpenseShortTermBorrowingsExcludingFederalFundsAndSecuritiesSoldUnderAgreementsToRepurchase",
     "InterestExpenseBorrowings",
     "InterestExpenseOtherBorrowings",
+    "InterestExpenseDebt",
     "InterestExpenseSubordinatedNotesAndDebentures",
+    "InterestExpenseJuniorSubordinatedDebentures",
     "InterestExpenseFederalFundsPurchasedAndSecuritiesSoldUnderAgreementsToRepurchase",
+    "InterestExpenseFederalFundsPurchased",
+    "InterestExpenseSecuritiesSoldUnderAgreementsToRepurchase",
+    "InterestExpenseFederalHomeLoanBankAndFederalReserveBankAdvancesLongTerm",
+    "InterestExpenseFederalHomeLoanBankAndFederalReserveBankAdvancesShortTerm",
     "InterestExpenseTradingLiabilities",
+    "InterestExpenseCommercialPaper",
+    "InterestExpenseBeneficialInterestsIssuedByConsolidatedVariableInterestEntities",
+    "InterestExpenseRelatedParty",
+    "InterestExpenseLesseeAssetsUnderCapitalLease",
 )
 
 COMPONENT_COVERAGE_FLOOR = 0.80
 
-# Leaf deposit categories only. Aggregates such as InterestExpenseDomesticDeposits are
-# excluded because they overlap these and would double count when summed.
-EXPENSE_COMPONENT_TAGS: tuple[str, ...] = (
-    "InterestExpenseDemandDeposits",
-    "InterestExpenseDomesticDepositLiabilitiesChecking",
-    "InterestExpenseNegotiableOrderOfWithdrawalNOWDeposits",
-    "InterestExpenseNegotiableOrderOfWithdrawalNOW",
-    "InterestExpenseSavingsDeposits",
-    "InterestExpenseMoneyMarketDeposits",
-    "InterestExpenseTimeDeposits",
-    "InterestExpenseForeignDeposits",
+# Deposit expense categories, each contributing to the numerator at most once. A category
+# is taken from its total where the filer publishes one, and otherwise from whichever leaf
+# concepts are present. Totals and leaves are never added together: several filers tag both
+# a combined concept and its parts, and summing everything present would double count them,
+# which is the opposite of the understatement the completeness check guards against.
+#
+# The categories do not overlap, so the reconstruction is their sum.
+EXPENSE_COMPONENT_GROUPS: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
+    # Time deposits, as a total or split at the old FDIC insurance limit.
+    (
+        ("InterestExpenseTimeDeposits",),
+        (
+            "InterestExpenseTimeDeposits100000OrMore",
+            "InterestExpenseTimeDepositsLessThan100000",
+        ),
+    ),
+    # Savings, money market and NOW. Several filers publish one combined concept covering
+    # all three rather than tagging them separately.
+    (
+        ("InterestExpenseNOWAccountsMoneyMarketAccountsAndSavingsDeposits",),
+        (
+            "InterestExpenseSavingsDeposits",
+            "InterestExpenseMoneyMarketDeposits",
+            "InterestExpenseNegotiableOrderOfWithdrawalNOWDeposits",
+            "InterestExpenseNegotiableOrderOfWithdrawalNOW",
+        ),
+    ),
+    # Interest-bearing demand and checking balances tagged apart from the above.
+    (
+        (),
+        (
+            "InterestExpenseDemandDeposits",
+            "InterestExpenseDemandDepositAccounts",
+            "InterestExpenseDomesticDepositLiabilitiesChecking",
+        ),
+    ),
+    # Domestic deposits a filer places in none of the categories above.
+    (
+        (),
+        (
+            "InterestExpenseOtherDomesticDeposits",
+            "InterestExpenseDomesticDepositLiabilitiesWithdrawalPenalties",
+        ),
+    ),
+    # Foreign deposits.
+    ((), ("InterestExpenseForeignDeposits",)),
+)
+
+EXPENSE_COMPONENT_TAGS: tuple[str, ...] = tuple(
+    dict.fromkeys(tag for totals, leaves in EXPENSE_COMPONENT_GROUPS for tag in (*totals, *leaves))
 )
 
 
@@ -137,11 +192,36 @@ def resolve_deposit_interest_expense(values: Mapping[str, float]) -> Resolved | 
     if reported is not None:
         return Resolved(reported, Provenance.REPORTED)
 
-    components = [values[tag] for tag in EXPENSE_COMPONENT_TAGS if tag in values]
-    if components:
-        return Resolved(sum(components), Provenance.SUMMED_COMPONENTS)
+    components = sum_component_groups(values)
+    if components is not None:
+        return Resolved(components, Provenance.SUMMED_COMPONENTS)
 
     return None
+
+
+def sum_component_groups(values: Mapping[str, float]) -> float | None:
+    """Sum deposit expense across categories, taking each category at most once.
+
+    A filer may tag a category total alongside the parts that make it up. Summing every
+    concept present would then count those parts twice and overstate the numerator, which
+    is the opposite of the understatement the completeness check guards against.
+    """
+    total = 0.0
+    matched = False
+
+    for totals, leaves in EXPENSE_COMPONENT_GROUPS:
+        reported_total = next((values[tag] for tag in totals if tag in values), None)
+        if reported_total is not None:
+            total += reported_total
+            matched = True
+            continue
+
+        present = [values[tag] for tag in leaves if tag in values]
+        if present:
+            total += sum(present)
+            matched = True
+
+    return total if matched else None
 
 
 def implied_deposit_expense(values: Mapping[str, float]) -> float | None:

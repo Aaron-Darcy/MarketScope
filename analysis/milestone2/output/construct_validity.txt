@@ -1,0 +1,50 @@
+Construct validity: funding mix against test-cycle deposit beta
+
+Filers with a headline-tier beta and a reported deposit split: 32
+  of which carry a plausible beta at or below 1.0: 30
+
+bank                                            beta  NIB share
+ALLY FINANCIAL INC.                            0.696       0.1%
+SCHWAB CHARLES CORP                            0.258       0.3%
+SYNCHRONY FINANCIAL                            0.695       0.5%
+AMERICAN EXPRESS CO                            0.737       0.9%
+RAYMOND JAMES FINANCIAL INC                    1.695       1.2%   <- implausible, excluded
+DISCOVER FINANCIAL SERVICES                    0.700       1.6%
+CAPITAL ONE FINANCIAL CORP                     0.600       9.8%
+CITIGROUP INC                                  0.654      16.6%
+STATE STREET CORP                              0.660      19.9%
+NORTHERN TRUST CORP                            0.660      22.0%
+WEBSTER FINANCIAL CORP                         0.488      22.2%
+US BANCORP \DE\                                0.482      23.5%
+SANTANDER HOLDINGS USA, INC.                   2.941      23.6%   <- implausible, excluded
+POPULAR, INC.                                  0.470      25.3%
+CITIZENS FINANCIAL GROUP INC/RI                0.516      26.1%
+WINTRUST FINANCIAL CORP                        0.589      27.8%
+PNC FINANCIAL SERVICES GROUP, INC.             0.473      28.6%
+JPMORGAN CHASE & CO                            0.527      28.9%
+SYNOVUS FINANCIAL CORP                         0.617      30.2%
+FIRST CITIZENS BANCSHARES INC /DE/             0.572      30.5%
+TRUIST FINANCIAL CORP                          0.510      30.5%
+FIFTH THIRD BANCORP                            0.578      31.8%
+WELLS FARGO & COMPANY/MN                       0.409      32.1%
+FIRST HORIZON CORP                             0.643      33.5%
+BANK OF AMERICA CORP /DE/                      0.487      34.0%
+EAST WEST BANCORP INC                          0.668      35.8%
+WESTERN ALLIANCE BANCORPORATION                0.645      37.2%
+CULLEN/FROST BANKERS, INC.                     0.420      38.5%
+REGIONS FINANCIAL CORP                         0.401      38.5%
+COLUMBIA BANKING SYSTEM, INC.                  0.459      42.1%
+ZIONS BANCORPORATION, NATIONAL ASSOCIATION /   0.612      44.6%
+COMERICA INC                                   0.600      51.2%
+
+Spearman rank correlation, non-interest-bearing share against beta
+  plausible betas only (30 filers): -0.358
+  including implausible (32 filers): -0.409
+
+Predicted negative: a bank funded by more non-interest-bearing balances has less
+of its base to reprice. A positive or flat result would indicate the metric is
+measuring disclosure differences rather than behaviour.
+
+Betas above 1.0, carried as a data quality finding:
+  RAYMOND JAMES FINANCIAL INC                    1.695
+  SANTANDER HOLDINGS USA, INC.                   2.941

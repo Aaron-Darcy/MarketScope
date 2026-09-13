@@ -4,10 +4,11 @@ Tier coverage across bank-quarters
   tier 1: 708 bank-quarters
   tier 2: 3 bank-quarters
   tier 3: 39 bank-quarters
-  tier X: 31 bank-quarters
+  tier X: 33 bank-quarters
   banks reaching tier 1: 11 of 12
   excluded for incomplete reconstructed numerator:
     M&T Bank Corporation (31 quarters, coverage as low as 2%)
+    Zions Bancorporation, National Association (2 quarters, coverage as low as 55%)
 
 G4: direct bank against branch-funded regional, test cycle
   Ally Financial           beta 0.677

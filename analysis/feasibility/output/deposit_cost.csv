@@ -612,6 +612,8 @@ cik,bank,quarter,cost_of_deposits,tier,expense_provenance,balance_provenance,avg
 40729,Ally Financial Inc.,2025-12-31,0.03384040565785962,1,reported,reported,endpoint,
 40729,Ally Financial Inc.,2026-03-31,0.032389940204702844,1,reported,reported,endpoint,
 40729,Ally Financial Inc.,2026-06-30,0.031279732036962216,1,reported,reported,endpoint,
+109380,"Zions Bancorporation, National Association",2009-06-30,0.008246927868902937,X,summed_components,derived_residual,closing_only,0.5526351615812671
+109380,"Zions Bancorporation, National Association",2009-09-30,0.0058819196067392155,X,summed_components,derived_residual,endpoint,0.5604824624488873
 109380,"Zions Bancorporation, National Association",2010-03-31,0.007627682034165523,1,reported,derived_residual,endpoint,
 109380,"Zions Bancorporation, National Association",2010-06-30,0.007372985662437405,1,reported,derived_residual,endpoint,
 109380,"Zions Bancorporation, National Association",2010-09-30,0.006667080651233071,1,reported,derived_residual,endpoint,

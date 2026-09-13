@@ -275,3 +275,81 @@ def test_deposit_cost_keeps_components_when_no_total_is_available_to_check() -> 
     assert cost is not None
     assert cost.tier is MetricTier.TIER_3
     assert cost.component_coverage is None
+
+
+def test_component_group_prefers_a_category_total_over_its_own_parts() -> None:
+    """Several filers tag a combined savings, money market and NOW concept alongside the
+    savings leaf. Summing both would count savings twice and overstate the numerator."""
+    resolved = resolve_deposit_interest_expense(
+        {
+            "InterestExpenseNOWAccountsMoneyMarketAccountsAndSavingsDeposits": 10.0,
+            "InterestExpenseSavingsDeposits": 4.0,
+        }
+    )
+
+    assert resolved is not None
+    assert resolved.value == 10.0
+
+
+def test_component_group_sums_leaves_when_the_category_total_is_absent() -> None:
+    resolved = resolve_deposit_interest_expense(
+        {
+            "InterestExpenseSavingsDeposits": 4.0,
+            "InterestExpenseMoneyMarketDeposits": 3.0,
+        }
+    )
+
+    assert resolved is not None
+    assert resolved.value == 7.0
+
+
+def test_components_are_summed_across_categories() -> None:
+    """First Horizon tags time, savings and other domestic deposits separately, and the
+    third was the category the earlier concept list omitted."""
+    resolved = resolve_deposit_interest_expense(
+        {
+            "InterestExpenseTimeDeposits": 19.2,
+            "InterestExpenseSavingsDeposits": 30.4,
+            "InterestExpenseOtherDomesticDeposits": 17.6,
+        }
+    )
+
+    assert resolved is not None
+    assert resolved.value == pytest.approx(67.2)
+
+
+def test_time_deposits_split_by_the_insurance_limit_is_used_only_without_a_total() -> None:
+    with_total = resolve_deposit_interest_expense(
+        {
+            "InterestExpenseTimeDeposits": 9.0,
+            "InterestExpenseTimeDeposits100000OrMore": 6.0,
+            "InterestExpenseTimeDepositsLessThan100000": 3.0,
+        }
+    )
+    without_total = resolve_deposit_interest_expense(
+        {
+            "InterestExpenseTimeDeposits100000OrMore": 6.0,
+            "InterestExpenseTimeDepositsLessThan100000": 3.0,
+        }
+    )
+
+    assert with_total is not None and with_total.value == 9.0
+    assert without_total is not None and without_total.value == 9.0
+
+
+def test_no_deposit_concepts_at_all_resolves_to_nothing() -> None:
+    assert resolve_deposit_interest_expense({"InterestExpenseLongTermDebt": 5.0}) is None
+
+
+def test_federal_home_loan_bank_advances_are_treated_as_non_deposit_funding() -> None:
+    """FHLB advances are a primary regional-bank funding source. Leaving them in inflated
+    implied deposit expense and made complete reconstructions look short."""
+    implied = implied_deposit_expense(
+        {
+            "InterestExpense": 100.0,
+            "InterestExpenseFederalHomeLoanBankAndFederalReserveBankAdvancesLongTerm": 20.0,
+            "InterestExpenseSecuritiesSoldUnderAgreementsToRepurchase": 10.0,
+        }
+    )
+
+    assert implied == pytest.approx(70.0)
