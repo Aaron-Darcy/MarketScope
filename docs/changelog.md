@@ -54,6 +54,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `dim_rate_cycle` is tested to name the calibration and test cycles exactly once each.
+  A plateau at the peak marks every quarter on it as a peak, and the model collapses them
+  to one cycle only because no quarter lies strictly between adjacent peaks, so the
+  outcome is pinned by a test rather than left to that property of the join.
 - Monetary cycle windows derived from the federal funds series into `dim_rate_cycle` rather
   than hardcoded, as specification section 2 requires. Turning points come from a centred
   four-quarter window on the level series; the derivation reproduces both study windows and

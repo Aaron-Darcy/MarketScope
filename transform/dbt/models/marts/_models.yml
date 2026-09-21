@@ -12,6 +12,9 @@ models:
         tests: [unique, not_null]
       - name: cycle_name
         tests:
+          - unique:
+              config:
+                where: "cycle_name is not null"
           - accepted_values:
               arguments:
                 values: [calibration, test]
