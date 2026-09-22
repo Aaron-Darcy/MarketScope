@@ -6,6 +6,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Spearman rank correlation lifted out of the construct validity script into
+  `marketscope.ranking`. Tied values now share the mean of their positions rather than
+  being ranked in input order, and an undefined correlation raises instead of returning
+  zero, which would have read as a finding of no relationship. The construct validity
+  result is unchanged at -0.358, since no betas or shares tie.
 - Deposit expense and non-deposit funding concept lists completed against the full universe
   and resolved by mutually exclusive category, preferring a filer's own category total over
   its parts so a filer tagging both is not double counted. Federal Home Loan Bank advances,

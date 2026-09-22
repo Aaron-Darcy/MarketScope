@@ -39,6 +39,7 @@ from marketscope.metrics import (
     resolve_noninterest_bearing_deposits,
 )
 from marketscope.panel import PANEL_TAGS, previous_quarter_end, quarterly_panel
+from marketscope.ranking import spearman
 from marketscope.store import DATABASE_PATH
 
 logger = logging.getLogger(__name__)
@@ -94,23 +95,6 @@ def policy_rate_by_quarter(connection: object) -> dict[date, float]:
         by_quarter.setdefault(quarter_end(observation_date), []).append(value / 100.0)
 
     return {quarter: statistics.fmean(values) for quarter, values in by_quarter.items()}
-
-
-def spearman(xs: list[float], ys: list[float]) -> float:
-    """Rank correlation, computed directly to avoid a scipy dependency for one statistic."""
-
-    def ranks(values: list[float]) -> list[float]:
-        order = sorted(range(len(values)), key=lambda index: values[index])
-        result = [0.0] * len(values)
-        for position, index in enumerate(order):
-            result[index] = position + 1
-        return result
-
-    rx, ry = ranks(xs), ranks(ys)
-    mx, my = statistics.fmean(rx), statistics.fmean(ry)
-    numerator = sum((a - mx) * (b - my) for a, b in zip(rx, ry, strict=True))
-    denominator = (sum((a - mx) ** 2 for a in rx) * sum((b - my) ** 2 for b in ry)) ** 0.5
-    return numerator / denominator if denominator else 0.0
 
 
 def observe(connection: object, policy: dict[date, float]) -> list[Observation]:
