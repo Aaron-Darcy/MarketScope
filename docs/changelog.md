@@ -54,6 +54,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `marketscope.cycles` reads the calibration and test windows from `dim_rate_cycle` and the
+  quarterly policy rate from the view they are derived from, and raises if either study
+  cycle is missing, duplicated or joined by an unknown name, so analysis no longer needs a
+  window pinned in its own source.
 - `dim_rate_cycle` is tested to name the calibration and test cycles exactly once each.
   A plateau at the peak marks every quarter on it as a peak, and the model collapses them
   to one cycle only because no quarter lies strictly between adjacent peaks, so the
