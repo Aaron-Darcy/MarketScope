@@ -1,0 +1,31 @@
+Cycle boundary sensitivity: headline-tier cumulative deposit beta
+
+Each alternative is compared with the derived window by Spearman rank correlation
+over the filers both windows can measure. 'plausible' restricts that to filers whose
+beta lies within 0.0 to 1.0 under both windows.
+
+Calibration cycle, derived 2015-12-31 to 2019-03-31, 14 quarters, policy move 2.24pp
+
+  window                       end points                n  median  rho all rho plaus.  largest mover
+  derived                      2015-12-31 2019-03-31  43   0.321        -          -
+  start one quarter earlier    2015-09-30 2019-03-31  43   0.319   +0.976     +0.996  CIT GROUP INC -1.381
+  start one quarter later      2016-03-31 2019-03-31  44   0.348   +0.997     +0.997  SYNOVUS FINANCIAL CORP +0.056
+  end one quarter earlier      2015-12-31 2018-12-31  43   0.301   +0.892     +0.884  SYNOVUS FINANCIAL CORP -0.199
+  end one quarter later        2015-12-31 2019-06-30  43   0.369   +0.960     +0.957  SVB FINANCIAL GROUP +0.147
+
+  Implausible betas on the derived window, cost of deposits at each end:
+    SANTANDER HOLDINGS USA, INC.               1.453     2.51% ->   5.77%
+
+Test cycle, derived 2022-03-31 to 2023-12-31, 8 quarters, policy move 5.21pp
+
+  window                       end points                n  median  rho all rho plaus.  largest mover
+  derived                      2022-03-31 2023-12-31  40   0.575        -          -
+  start one quarter earlier    2021-12-31 2023-12-31  40   0.576   +0.992     +0.990  COLUMBIA BANKING SYSTEM, INC. -0.174
+  start one quarter later      2022-06-30 2023-12-31  40   0.654   +0.994     +0.993  SANTANDER HOLDINGS USA, INC. +0.327
+  end one quarter earlier      2022-03-31 2023-09-30  41   0.560   +0.876     +0.984  BANK OF NEW YORK MELLON CORP +0.783
+  end one quarter later        2022-03-31 2024-03-31  40   0.587   +0.878     +0.979  BANK OF NEW YORK MELLON CORP +0.822
+
+  Implausible betas on the derived window, cost of deposits at each end:
+    BANK OF NEW YORK MELLON CORP              -0.097    -0.06% ->  -0.57%
+    RAYMOND JAMES FINANCIAL INC                1.695     0.06% ->   8.89%
+    SANTANDER HOLDINGS USA, INC.               2.941     0.46% ->  15.78%

@@ -59,6 +59,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Cycle boundary sensitivity, shifting each derived boundary one quarter either way and
+  comparing the resulting cross-bank ordering by rank correlation. Within-cycle ordering
+  only; the cross-cycle persistence figure is deliberately not computed, so no window can
+  be chosen by its effect on the headline. Every shift holds at 0.957 or above on plausible
+  betas except ending the calibration cycle a quarter before the rate peak, at 0.884.
+  Shifting the test cycle's end falls to 0.876 across all filers, driven by a negative
+  derived fourth-quarter cost of deposits at Bank of New York Mellon, -0.57 percent.
 - `marketscope.cycles` reads the calibration and test windows from `dim_rate_cycle` and the
   quarterly policy rate from the view they are derived from, and raises if either study
   cycle is missing, duplicated or joined by an unknown name, so analysis no longer needs a
