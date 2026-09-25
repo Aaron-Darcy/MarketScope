@@ -6,6 +6,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Cycle windows are the ones `dim_rate_cycle` derives, adopted as they fall: calibration
+  2015Q4 to 2019Q1 and test 2022Q1 to 2023Q4. The calibration cycle ends a quarter earlier
+  than the 2019Q2 originally pinned, because the quarterly average rate peaks in 2019Q1, so
+  the derivation reproduces the test window but not the calibration window as an earlier
+  entry stated. Milestone 0 scripts keep the windows the gate was measured on.
 - Spearman rank correlation lifted out of the construct validity script into
   `marketscope.ranking`. Tied values now share the mean of their positions rather than
   being ranked in input order, and an undefined correlation raises instead of returning

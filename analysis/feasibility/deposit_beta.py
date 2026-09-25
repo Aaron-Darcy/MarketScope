@@ -13,6 +13,10 @@ cycle, then applies two checks.
       An aggregate computed here that lands far from that indicates a units, averaging or
       tag mapping error rather than a finding.
 
+Cycle windows are pinned here rather than read from dim_rate_cycle. They are the windows
+the gate was measured on, which the derived windows do not reproduce exactly, and the gate
+results are recorded against them. See decision 0023.
+
 Usage:
     python analysis/feasibility/deposit_beta.py
 """

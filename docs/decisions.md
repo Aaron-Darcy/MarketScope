@@ -747,3 +747,89 @@ its result alongside. No fallback from 9.2 is invoked: fallbacks exist for a met
 cannot be constructed, and the evidence is that it can be. Two filers, Santander Holdings
 USA at 2.941 and Raymond James at 1.695, return betas above 1.0 and are carried as an open
 data quality finding for Milestone 2 rather than silently dropped.
+
+---
+
+## 0023 — Adopt the derived cycle windows as they fall
+
+**Date** 2026-09-25
+**Status** Accepted
+
+**Context.** Specification section 2 requires the cycle windows to be derived from the
+federal funds series rather than hardcoded, and `dim_rate_cycle` now does so. Until now the
+analysis scripts each pinned their own windows, and they did not agree with one another:
+the test cycle ended at 2023Q3 in the gate script and at 2023Q4 in the tier coverage and
+construct validity scripts.
+
+The derivation does not reproduce the pinned windows exactly. It places the test cycle at
+2022Q1 to 2023Q4, matching two of the three scripts. It ends the calibration cycle at
+2019Q1, a quarter before the 2019Q2 the specification pinned, because the quarterly average
+of the monthly effective rate is 2.403 percent in 2019Q1 and 2.397 percent in 2019Q2. The
+last hike of that cycle was in December 2018, so 2019Q1 is the first full quarter at the
+peak, and the rule is right by its own definition. It also means the specification's
+window was a judgement that happened to include one more quarter.
+
+The test cycle peaks on a plateau, 2023Q4 to 2024Q2 at 5.33 percent. The rule ends the
+cycle at the first quarter of the plateau, consistent with specification 3.2, which
+measures a beta from cycle start to cycle peak.
+
+**Test.** Before adopting the windows, `analysis/milestone2/cycle_sensitivity.py` shifts
+each derived boundary one quarter either way and compares the resulting headline-tier
+betas with the derived ones by Spearman rank correlation across the filers both windows
+can measure. The shifts cover both of the old pinned ends without choosing them by hand.
+
+| Cycle | Shift | Filers | ρ, all | ρ, plausible betas |
+|---|---|---|---|---|
+| Calibration | start 2015Q3 | 43 | 0.976 | 0.996 |
+| Calibration | start 2016Q1 | 43 | 0.997 | 0.997 |
+| Calibration | end 2018Q4 | 43 | 0.892 | 0.884 |
+| Calibration | end 2019Q2, the old pinned end | 43 | 0.960 | 0.957 |
+| Test | start 2021Q4 | 40 | 0.992 | 0.990 |
+| Test | start 2022Q2 | 40 | 0.994 | 0.993 |
+| Test | end 2023Q3, the gate script's end | 40 | 0.876 | 0.984 |
+| Test | end 2024Q1 | 40 | 0.878 | 0.979 |
+
+A plausible beta lies between 0 and 1: above 1 is the ceiling the construct validity check
+already applies, and below 0 means deposit cost fell across a tightening cycle.
+
+Only within-cycle ordering was compared. The cross-cycle persistence correlation, which
+these windows exist to feed, was not computed under any alternative, so no window could be
+chosen by how the headline comes out.
+
+**Decision.** Adopt the derived windows as they fall: calibration 2015Q4 to 2019Q1, test
+2022Q1 to 2023Q4. Analysis from Milestone 2 onward reads both from `dim_rate_cycle` through
+`marketscope.cycles` and pins no window of its own. The Milestone 0 scripts keep their
+pinned windows unchanged, since they are the record of what the gate measured.
+
+**Alternatives.** Keep 2019Q2 as a hand override. The ordering barely differs, at 0.960,
+and an override would reintroduce exactly the per-script judgement section 2 exists to
+remove. End the test cycle at 2023Q3 to keep a fourth quarter out of the endpoint. Its
+disagreement with the derived end comes from one filer, below, and moving a boundary to
+avoid one bad value is fixing data by moving the window. End at the last quarter of the
+plateau. Deposit costs keep rising after the policy peak, so a later end lifts the median
+beta, from 0.575 to 0.587 a quarter on, but section 3.2 defines the beta to the peak and the
+ordering holds at 0.979.
+
+**Consequences.** The calibration cycle loses a quarter, fifteen to fourteen, which moves
+the tier coverage floor every filer is tested against. Tier coverage is rerun against the
+derived windows. The construct validity window was already 2022Q1 to 2023Q4 and does not
+change.
+
+The one fragile comparison is ending the calibration cycle a quarter before the peak, at
+0.884. That is an argument for the rule rather than against it: 2018Q4 is not a turning
+point, and cutting a cycle before the rate has finished moving is the kind of choice that
+changes the answer.
+
+The test-cycle end comparisons fall to 0.876 and 0.878 across all filers because Bank of
+New York Mellon's derived 2023Q4 cost of deposits is −0.57 percent, between 3.46 percent in
+2023Q3 and 3.71 percent in 2024Q1. Its 2024Q4 and 2025Q4 values are negative too, so the
+fourth-quarter derivation fails for this filer and the fault is not in the window.
+Specification 7.2 already requires derived Q4 values to be non-negative and within band of
+neighbouring quarters. That check is not yet built and has now found its first case. It is
+carried as an open Milestone 2 data quality finding alongside the Santander and Raymond
+James betas above 1.0 recorded in 0022.
+
+Two endpoints in the design, the calibration start and the test end, are fourth quarters
+and therefore derived as fiscal year less nine months. This follows from where the rate
+turned and is not chosen, but it means those endpoints carry whatever error the
+derivation carries.

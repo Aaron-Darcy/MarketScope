@@ -69,14 +69,25 @@ reported as a subordinate investigation rather than a co-headline result.
 
 ## 2. Cycle definitions
 
-| Cycle | Window | Move | Duration |
+| Cycle | Window | Move | Span |
 |---|---|---|---|
-| Calibration | 2015Q4 – 2019Q2 | ~0.25% to ~2.50% | ~36 months |
-| Trough | 2020Q2 – 2022Q1 | ~0.25% | — |
-| Test | 2022Q1 – 2023Q4 | ~0.25% to ~5.33% | ~16 months |
+| Calibration | 2015Q4 – 2019Q1 | 0.16% to 2.40% | 39 months |
+| Trough | 2020Q2 – 2022Q1 | 0.06% to 0.12% | — |
+| Test | 2022Q1 – 2023Q4 | 0.12% to 5.33% | 21 months |
 
 Windows are derived from the FRED federal funds series into a `dim_rate_cycle` table
-rather than hardcoded, so the boundary logic is inspectable and adjustable.
+rather than hardcoded, so the boundary logic is inspectable and adjustable. A cycle runs
+from the last quarter at the floor to the first quarter at the peak. Rates are quarterly
+averages of the monthly effective rate, the same values a beta is computed from, which is
+why they differ from the target-range figures a cycle is usually quoted in and why spans
+are measured between quarter ends rather than between policy meetings.
+
+The derived calibration cycle ends at 2019Q1, a quarter earlier than the 2019Q2 originally
+pinned, because the quarterly average peaks there. The derived windows are adopted as they
+fall; the cross-bank ordering they produce largely holds under a one-quarter shift at
+either boundary, with the exceptions recorded in decision 0023. Analysis from Milestone 2
+onward reads the windows from the table and pins none of its own. The Milestone 0 scripts
+keep the windows the gate was measured on, since they are the record of that measurement.
 
 The cycles differ materially in pace and magnitude. Deposit betas are expected to run
 higher in faster, larger cycles, so **absolute beta levels are not expected to transfer
@@ -438,6 +449,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-09-25 | Cycle windows restated as derived by `dim_rate_cycle`: calibration 2015Q4–2019Q1, test 2022Q1–2023Q4, rates as quarterly averages. Analysis reads windows from the table. See decision 0023. |
 | 2026-09-13 | G4 recorded as failed and replaced by a cross-sectional construct-validity criterion. Deposit expense and non-deposit funding concept lists completed against the full universe and resolved by mutually exclusive category; tier X falls from 184 bank-quarters to 71. |
 | 2026-09-09 | Milestone 1 closed: committed universe seed, DuckDB load of 51 filers, dbt staging models. Pinned filers seated alongside the ranked fifty, taking the universe to 51. |
 | 2026-09-09 | Universe membership moved from SIC codes to four reported-behaviour rules; SIC retained as descriptive. EDGAR coverage gap measured against an FDIC-derived ranking at 3 of 50 for want of registered securities and 7 of 50 for foreign banking organisations. Regulatory ingestion confirmed at Milestone 3. |
