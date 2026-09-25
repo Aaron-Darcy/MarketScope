@@ -26,6 +26,7 @@ from typing import Any
 import pandas as pd
 
 from marketscope import store
+from marketscope.cycles import STUDY_CYCLES, RateCycle, read_study_cycles
 from marketscope.metrics import MetricTier, resolve_deposit_cost
 from marketscope.panel import PANEL_TAGS, previous_quarter_end, quarterly_panel
 from marketscope.store import DATABASE_PATH
@@ -34,16 +35,6 @@ from marketscope.universe import SeedRow
 logger = logging.getLogger(__name__)
 
 OUTPUT_DIR = Path(__file__).parent / "output"
-
-QUARTER_LAST_DAY = {3: 31, 6: 30, 9: 30, 12: 31}
-
-# The specification's cycle windows. Coverage is measured against these rather than against
-# whatever a filer happens to report, so a bank that stops filing mid-cycle is visible as a
-# coverage gap rather than as a complete short series.
-CYCLES: dict[str, tuple[date, date]] = {
-    "calibration": (date(2015, 12, 31), date(2019, 6, 30)),
-    "test": (date(2022, 3, 31), date(2023, 12, 31)),
-}
 
 # Specification 7.2: a bank needs this share of quarters to carry a headline result.
 COVERAGE_FLOOR = 0.80
@@ -59,22 +50,6 @@ TIER_ORDER: tuple[MetricTier, ...] = (
     MetricTier.TIER_3,
     MetricTier.EXCLUDED,
 )
-
-
-def cycle_quarters(cycle: tuple[date, date]) -> list[date]:
-    """Every quarter end inside a cycle window, inclusive of both bounds."""
-    start, end = cycle
-    quarters: list[date] = []
-    current = start
-
-    while current <= end:
-        quarters.append(current)
-        month = current.month + 3
-        year = current.year + (month - 1) // 12
-        month = (month - 1) % 12 + 1
-        current = date(year, month, QUARTER_LAST_DAY[month])
-
-    return quarters
 
 
 @dataclass(frozen=True)
@@ -143,12 +118,17 @@ def bank_quarters(member: SeedRow, panel: dict[date, dict[str, float]]) -> list[
     return rows
 
 
-def summarise_bank(member: SeedRow, rows: list[BankQuarter]) -> BankSummary:
+def summarise_bank(
+    member: SeedRow, rows: list[BankQuarter], cycles: dict[str, RateCycle]
+) -> BankSummary:
+    # Coverage is measured against the cycle windows rather than against whatever a filer
+    # happens to report, so a bank that stops filing mid-cycle is visible as a coverage gap
+    # rather than as a complete short series.
     by_quarter = {row.quarter: row for row in rows}
 
     coverage = {}
-    for name, cycle in CYCLES.items():
-        quarters = cycle_quarters(cycle)
+    for name, cycle in cycles.items():
+        quarters = cycle.quarters()
         covered = sum(
             1
             for quarter in quarters
@@ -166,6 +146,7 @@ def summarise_bank(member: SeedRow, rows: list[BankQuarter]) -> BankSummary:
 def run(database: Path, output_dir: Path) -> tuple[list[BankQuarter], list[BankSummary]]:
     connection = store.connect(database, read_only=True)
     try:
+        cycles = read_study_cycles(connection)
         members = store.read_universe(connection)
         logger.info("Resolving deposit cost for %d members", len(members))
 
@@ -176,7 +157,7 @@ def run(database: Path, output_dir: Path) -> tuple[list[BankQuarter], list[BankS
             facts = store.read_facts(connection, member.cik, tags=PANEL_TAGS)
             member_rows = bank_quarters(member, quarterly_panel(facts))
             rows.extend(member_rows)
-            summaries.append(summarise_bank(member, member_rows))
+            summaries.append(summarise_bank(member, member_rows, cycles))
     finally:
         connection.close()
 
@@ -259,7 +240,7 @@ def summarise(rows: list[BankQuarter], summaries: list[BankSummary]) -> str:
     for method, count in Counter(row.avg_method for row in rows).most_common():
         lines.append(f"  {method:<20} {count:>6,}")
 
-    for name in CYCLES:
+    for name in STUDY_CYCLES:
         eligible = [s for s in summaries if s.coverage[name].is_eligible]
         lines += [
             "",

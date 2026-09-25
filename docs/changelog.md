@@ -6,6 +6,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Tier coverage measures each filer against the windows in `dim_rate_cycle` rather than its
+  own pinned copy. The calibration cycle is now fourteen quarters rather than fifteen; 44
+  filers still clear the 80 percent floor in it and 37 in both cycles, so the persistence
+  sample is unchanged.
 - Cycle windows are the ones `dim_rate_cycle` derives, adopted as they fall: calibration
   2015Q4 to 2019Q1 and test 2022Q1 to 2023Q4. The calibration cycle ends a quarter earlier
   than the 2019Q2 originally pinned, because the quarterly average rate peaks in 2019Q1, so

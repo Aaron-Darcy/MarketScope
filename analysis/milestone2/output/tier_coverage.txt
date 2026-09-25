@@ -28,13 +28,13 @@ Averaging method:
   closing_only            179
 
 Calibration cycle, filers at or above the 80% floor: 44 of 51
-    SCHWAB CHARLES CORP                       0/15   0.0%
-    BANK OF NEW YORK MELLON CORP              0/15   0.0%
-    M&T BANK CORP                             0/15   0.0%
-    AMERIPRISE FINANCIAL INC                  0/15   0.0%
-    FLAGSTAR BANK, NATIONAL ASSOCIATION       0/15   0.0%
-    FIRST HORIZON CORP                        0/15   0.0%
-    VALLEY NATIONAL BANCORP                   0/15   0.0%
+    SCHWAB CHARLES CORP                       0/14   0.0%
+    BANK OF NEW YORK MELLON CORP              0/14   0.0%
+    M&T BANK CORP                             0/14   0.0%
+    AMERIPRISE FINANCIAL INC                  0/14   0.0%
+    FLAGSTAR BANK, NATIONAL ASSOCIATION       0/14   0.0%
+    FIRST HORIZON CORP                        0/14   0.0%
+    VALLEY NATIONAL BANCORP                   0/14   0.0%
 
 Test cycle, filers at or above the 80% floor: 41 of 51
     SVB FINANCIAL GROUP                       4/8  50.0%
