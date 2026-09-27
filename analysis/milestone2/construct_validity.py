@@ -31,6 +31,7 @@ from pathlib import Path
 import pandas as pd
 
 from marketscope import store
+from marketscope.cycles import RateCycle, read_study_cycles
 from marketscope.metrics import (
     TOTAL_DEPOSITS_TAG,
     MetricTier,
@@ -45,12 +46,6 @@ from marketscope.store import DATABASE_PATH
 logger = logging.getLogger(__name__)
 
 OUTPUT_DIR = Path(__file__).parent / "output"
-
-POLICY_SERIES = "FEDFUNDS"
-QUARTER_LAST_DAY = {3: 31, 6: 30, 9: 30, 12: 31}
-
-CYCLE_START = date(2022, 3, 31)
-CYCLE_END = date(2023, 12, 31)
 
 # Headline tiers only. A reconstructed numerator carries its own uncertainty and would
 # blur a test whose whole purpose is to detect measurement error.
@@ -72,39 +67,14 @@ class Observation:
         return self.beta <= IMPLAUSIBLE_BETA
 
 
-def quarter_end(day: date) -> date:
-    month = ((day.month - 1) // 3 + 1) * 3
-    return date(day.year, month, QUARTER_LAST_DAY[month])
-
-
-def policy_rate_by_quarter(connection: object) -> dict[date, float]:
-    """Quarter-averaged federal funds rate as a decimal fraction.
-
-    FRED publishes the series monthly in percentage points while deposit costs here are
-    decimal fractions. A beta computed across mismatched units is out by two orders of
-    magnitude and still looks plausible enough to miss.
-    """
-    rows = connection.execute(  # type: ignore[attr-defined]
-        "select observation_date, value from raw.fred_observations "
-        "where series_id = ? and value is not null",
-        [POLICY_SERIES],
-    ).fetchall()
-
-    by_quarter: dict[date, list[float]] = {}
-    for observation_date, value in rows:
-        by_quarter.setdefault(quarter_end(observation_date), []).append(value / 100.0)
-
-    return {quarter: statistics.fmean(values) for quarter, values in by_quarter.items()}
-
-
-def observe(connection: object, policy: dict[date, float]) -> list[Observation]:
+def observe(connection: object, cycle: RateCycle) -> list[Observation]:
     observations: list[Observation] = []
 
     for member in store.read_universe(connection):  # type: ignore[arg-type]
         panel = quarterly_panel(store.read_facts(connection, member.cik, tags=PANEL_TAGS))  # type: ignore[arg-type]
 
         costs: dict[date, float] = {}
-        for quarter in (CYCLE_START, CYCLE_END):
+        for quarter in (cycle.start, cycle.end):
             resolved = resolve_deposit_cost(
                 panel.get(quarter, {}), panel.get(previous_quarter_end(quarter))
             )
@@ -113,7 +83,7 @@ def observe(connection: object, policy: dict[date, float]) -> list[Observation]:
 
         shares = []
         for quarter, values in panel.items():
-            if not CYCLE_START <= quarter <= CYCLE_END:
+            if not cycle.covers(quarter):
                 continue
             total = values.get(TOTAL_DEPOSITS_TAG)
             noninterest = resolve_noninterest_bearing_deposits(values)
@@ -124,7 +94,7 @@ def observe(connection: object, policy: dict[date, float]) -> list[Observation]:
             continue
 
         beta = cumulative_beta(
-            costs[CYCLE_START], costs[CYCLE_END], policy[CYCLE_START], policy[CYCLE_END]
+            costs[cycle.start], costs[cycle.end], cycle.start_rate, cycle.end_rate
         )
         if beta is None:
             continue
@@ -143,7 +113,7 @@ def observe(connection: object, policy: dict[date, float]) -> list[Observation]:
 def run(database: Path, output_dir: Path) -> list[Observation]:
     connection = store.connect(database, read_only=True)
     try:
-        observations = observe(connection, policy_rate_by_quarter(connection))
+        observations = observe(connection, read_study_cycles(connection)["test"])
     finally:
         connection.close()
 

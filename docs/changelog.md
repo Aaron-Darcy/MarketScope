@@ -6,6 +6,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Construct validity reads the test cycle, and the policy rate at each of its ends, from
+  `dim_rate_cycle` rather than pinning the window and averaging the raw FRED table itself.
+  No analysis script from Milestone 2 onward now pins a cycle window. The result is
+  unchanged at -0.358; betas differ only in the sixteenth significant figure, from the
+  order in which averaging and the percentage conversion are applied.
 - Tier coverage measures each filer against the windows in `dim_rate_cycle` rather than its
   own pinned copy. The calibration cycle is now fourteen quarters rather than fifteen; 44
   filers still clear the 80 percent floor in it and 37 in both cycles, so the persistence
