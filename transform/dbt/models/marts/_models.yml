@@ -28,3 +28,47 @@ models:
         tests: [not_null]
       - name: months
         tests: [not_null]
+
+  - name: fct_deposit_beta
+    description: >
+      Cumulative deposit beta for every universe member in every study cycle, measured
+      between the cost of deposits at the cycle's two ends against the policy move over the
+      same quarters. The row carries the tier of each endpoint and the less precise of the
+      two as the beta's own tier, so no comparison can mix tiers without showing it.
+      Members with no beta keep their row. Which tiers and coverage a headline result
+      requires is decided by the analysis, not here.
+    columns:
+      - name: cik
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: source('raw', 'universe')
+                field: cik
+      - name: cycle_name
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [calibration, test]
+      - name: measured_end_quarter
+        description: >
+          The cycle's end quarter, or the filer's last resolved quarter where its series
+          ends inside the cycle.
+        tests: [not_null]
+      - name: partial_cycle
+        description: The filer's series ends before the cycle peak and the beta runs to its last quarter.
+        tests: [not_null]
+      - name: metric_tier
+        description: The less precise of the two endpoint tiers. Null where either endpoint is unresolved.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['1', '2', '3', 'X']
+      - name: tier_changes_in_cycle
+        description: More than one tier appears among the filer's quarters in the cycle.
+        tests: [not_null]
+      - name: deposit_beta
+        description: Null where either endpoint is unresolved or at tier X.
+      - name: cycle_quarters
+        tests: [not_null]
