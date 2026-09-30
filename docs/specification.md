@@ -105,12 +105,12 @@ Different filers make different concepts available. Forcing every filer into one
 destroys comparability silently. Cost of deposits is therefore computed at the most
 precise tier each filer-quarter supports, and the tier is recorded on the row.
 
-| Tier | Numerator | Denominator | Sample availability |
+| Tier | Numerator | Denominator | Bank-quarters |
 |---|---|---|---|
-| 1 | Interest expense on deposits | Interest-bearing deposits | 11 of 12 banks, 708 bank-quarters |
-| 2 | Interest expense on deposits | Total deposits | 3 bank-quarters |
-| 3 | Interest expense on deposits, reconstructed from components | Best available base | 181 bank-quarters |
-| X | Reconstruction failed completeness check | — | 71 bank-quarters |
+| 1 | Interest expense on deposits | Interest-bearing deposits | 2,323 |
+| 2 | Interest expense on deposits | Total deposits | 491 |
+| 3 | Interest expense on deposits, reconstructed from components | Best available base | 181 |
+| X | Reconstruction failed completeness check | — | 71 |
 
 Counts are across the 51-filer universe, 3,066 bank-quarters in total. Tier 1 covers 75.8
 percent and 43 filers; 37 filers carry headline coverage in both cycles and can support the
@@ -452,6 +452,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-09-30 | Tier table in 3.1 restated across the universe. Tiers 1 and 2 still carried twelve-bank sample figures, 708 and 3 bank-quarters, beside universe figures for tiers 3 and X; across the universe they are 2,323 and 491. |
 | 2026-09-30 | Model layout amended: `int_deposit_cost` is a dbt Python model calling the `marketscope` library, replacing the four intermediate SQL models that would have reimplemented the metric. See decision 0024. |
 | 2026-09-25 | Cycle windows restated as derived by `dim_rate_cycle`: calibration 2015Q4–2019Q1, test 2022Q1–2023Q4, rates as quarterly averages. Analysis reads windows from the table. See decision 0023. |
 | 2026-09-13 | G4 recorded as failed and replaced by a cross-sectional construct-validity criterion. Deposit expense and non-deposit funding concept lists completed against the full universe and resolved by mutually exclusive category; tier X falls from 184 bank-quarters to 71. |
