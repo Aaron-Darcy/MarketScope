@@ -13,3 +13,44 @@ models:
         tests: [not_null]
       - name: rate_fraction
         tests: [not_null]
+
+  - name: int_deposit_cost
+    description: >
+      Annualised cost of deposits per bank-quarter at the most precise tier the quarter
+      supports, with the provenance of its numerator and denominator. Resolved by the
+      `marketscope` library rather than in SQL, so the metric has one tested
+      implementation (decision 0024). A bank-quarter that cannot be resolved at any tier is
+      absent; one whose reconstruction failed the completeness check is present at tier X.
+    columns:
+      - name: cik
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: source('raw', 'universe')
+                field: cik
+      - name: quarter_end
+        tests: [not_null]
+      - name: cost_of_deposits
+        tests: [not_null]
+      - name: metric_tier
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['1', '2', '3', 'X']
+      - name: expense_provenance
+        tests:
+          - accepted_values:
+              arguments:
+                values: [reported, summed_components]
+      - name: balance_provenance
+        tests:
+          - accepted_values:
+              arguments:
+                values: [reported, summed_components, derived_residual]
+      - name: avg_method
+        tests:
+          - accepted_values:
+              arguments:
+                values: [endpoint, closing_only]

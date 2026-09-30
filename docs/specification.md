@@ -315,12 +315,8 @@ staging/
 
 intermediate/
   int_bank_universe
-  int_fact_precedence
-  int_deposit_expense_harmonised
-  int_deposit_balance_harmonised
-  int_bank_quarter_panel
   int_rate_cycles
-  int_deposit_cost
+  int_deposit_cost          (Python model)
   int_filing_timeliness
 
 marts/
@@ -335,6 +331,13 @@ marts/
   mart_filing_behaviour
   mart_data_quality
 ```
+
+`int_deposit_cost` is a dbt Python model that resolves each bank-quarter through the
+`marketscope` library — restatement precedence, fourth-quarter derivation, the quarterly
+panel, and tier and provenance assignment — so the metric has one implementation rather than
+a Python one for analysis and a SQL one for the warehouse. The fact precedence, harmonised
+expense, harmonised balance and bank-quarter panel steps are therefore not separate models.
+See decision 0024.
 
 Sources carry freshness checks. A snapshot on the raw fact table captures restatements
 over time. Macros cover tag-fallback resolution and cycle-window logic. Generated dbt
@@ -449,6 +452,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-09-30 | Model layout amended: `int_deposit_cost` is a dbt Python model calling the `marketscope` library, replacing the four intermediate SQL models that would have reimplemented the metric. See decision 0024. |
 | 2026-09-25 | Cycle windows restated as derived by `dim_rate_cycle`: calibration 2015Q4–2019Q1, test 2022Q1–2023Q4, rates as quarterly averages. Analysis reads windows from the table. See decision 0023. |
 | 2026-09-13 | G4 recorded as failed and replaced by a cross-sectional construct-validity criterion. Deposit expense and non-deposit funding concept lists completed against the full universe and resolved by mutually exclusive category; tier X falls from 184 bank-quarters to 71. |
 | 2026-09-09 | Milestone 1 closed: committed universe seed, DuckDB load of 51 filers, dbt staging models. Pinned filers seated alongside the ranked fifty, taking the universe to 51. |

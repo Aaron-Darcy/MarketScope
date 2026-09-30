@@ -1,0 +1,88 @@
+from __future__ import annotations
+
+from collections import defaultdict
+from collections.abc import Iterable, Mapping
+from datetime import date
+from typing import Any
+
+import pandas as pd
+
+from marketscope.facts import Fact
+from marketscope.metrics import resolve_deposit_cost
+from marketscope.panel import previous_quarter_end, quarterly_panel
+
+# The staging columns a fact is rebuilt from, in the order `facts_from_rows` reads them.
+FACT_FIELDS: tuple[str, ...] = (
+    "cik",
+    "taxonomy",
+    "tag",
+    "unit",
+    "value",
+    "period_start",
+    "period_end",
+    "filed",
+    "accession",
+    "form",
+    "fiscal_year",
+    "fiscal_period",
+    "frame",
+)
+
+DEPOSIT_COST_COLUMNS: tuple[str, ...] = (
+    "cik",
+    "quarter_end",
+    "cost_of_deposits",
+    "metric_tier",
+    "expense_provenance",
+    "balance_provenance",
+    "avg_method",
+    "component_coverage",
+)
+
+
+def facts_from_rows(rows: Iterable[tuple[Any, ...]]) -> dict[int, list[Fact]]:
+    """Group staged fact rows, ordered as `FACT_FIELDS`, into facts by filer."""
+    by_cik: dict[int, list[Fact]] = defaultdict(list)
+    for row in rows:
+        record = dict(zip(FACT_FIELDS, row, strict=True))
+        cik = int(record.pop("cik"))
+        by_cik[cik].append(Fact(**record))
+    return dict(by_cik)
+
+
+def bank_quarter_rows(cik: int, panel: Mapping[date, Mapping[str, float]]) -> list[tuple[Any, ...]]:
+    """Resolve every quarter of one filer's panel, in `DEPOSIT_COST_COLUMNS` order.
+
+    Quarters with no resolvable numerator or denominator produce no row, so an absent
+    bank-quarter is distinguishable from one resolved at tier X.
+    """
+    rows: list[tuple[Any, ...]] = []
+    for quarter in sorted(panel):
+        cost = resolve_deposit_cost(panel[quarter], panel.get(previous_quarter_end(quarter)))
+        if cost is None:
+            continue
+        rows.append(
+            (
+                cik,
+                quarter,
+                cost.rate,
+                cost.tier.value,
+                cost.expense_provenance.value,
+                cost.balance_provenance.value,
+                cost.avg_method,
+                cost.component_coverage,
+            )
+        )
+    return rows
+
+
+def deposit_cost_frame(rows: Iterable[tuple[Any, ...]]) -> pd.DataFrame:
+    """Resolve the bank-quarter cost of deposits for every filer in a set of fact rows.
+
+    Concepts outside the panel are ignored by `quarterly_panel`, so a caller may pass
+    unfiltered facts; filtering to `PANEL_TAGS` first only saves building them.
+    """
+    resolved: list[tuple[Any, ...]] = []
+    for cik, facts in sorted(facts_from_rows(rows).items()):
+        resolved.extend(bank_quarter_rows(cik, quarterly_panel(facts)))
+    return pd.DataFrame(resolved, columns=list(DEPOSIT_COST_COLUMNS))

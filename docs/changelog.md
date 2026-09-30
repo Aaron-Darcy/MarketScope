@@ -73,6 +73,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `int_deposit_cost`, the cost of deposits per bank-quarter in the warehouse, as a dbt
+  Python model calling `marketscope.deposit_cost` rather than a SQL reimplementation of the
+  metric (decision 0024). Reproduces the tier coverage script's 3,066 bank-quarters exactly.
+  Tested for one row per bank-quarter, the defined tier, provenance and averaging values,
+  and the specification's 0 to 8 percent range at warn severity, which flags 55
+  bank-quarters on its first run: the Santander, Raymond James and Bank of New York Mellon
+  findings already carried, Flagstar's tier 3 costs from 2024, and small negative costs at
+  three custody banks between 2020 and 2022.
 - Cycle boundary sensitivity, shifting each derived boundary one quarter either way and
   comparing the resulting cross-bank ordering by rank correlation. Within-cycle ordering
   only; the cross-cycle persistence figure is deliberately not computed, so no window can
