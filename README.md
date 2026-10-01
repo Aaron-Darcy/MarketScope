@@ -15,9 +15,11 @@ project measures deposit beta for US bank holding companies directly from XBRL f
 data, calibrates it over the 2015–2019 tightening cycle, and tests whether the resulting
 cross-bank ordering holds during the far faster 2022–2023 cycle.
 
-**Status: Milestone 1 — ingestion and warehouse.** The feasibility gate closed on a
-twelve-bank sample; the universe is now the largest fifty deposit-taking US filers plus one
-pinned terminal filer, loading into DuckDB behind dbt staging models. See
+**Status: Milestone 2 in progress — harmonisation and beta.** The universe of the largest
+fifty deposit-taking US filers plus one pinned terminal filer loads into DuckDB behind dbt
+staging models. Cost of deposits is resolved for 3,066 bank-quarters, each with a
+comparability tier, and `fct_deposit_beta` carries a tiered beta for every member in both
+study cycles. The restatement table and entity events remain. See
 [docs/specification.md](docs/specification.md).
 
 ---
