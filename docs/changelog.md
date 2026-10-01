@@ -73,6 +73,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `docs/methodology.md`, covering every step from ingestion to `fct_deposit_beta` and each
+  data problem in specification section 4 with its current state. Entity events, the
+  restatement table, the derived-Q4 test and the survivorship comparison are recorded as not
+  yet built, and the open data quality findings are listed with figures.
 - `fct_deposit_beta`, the cumulative deposit beta for every universe member in every study
   cycle, measured between the endpoint costs of deposits against the policy move over the
   same quarters. Each row carries both endpoint tiers, the less precise of the two as the

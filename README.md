@@ -146,5 +146,5 @@ pytest
   gate criteria
 - [docs/decisions.md](docs/decisions.md) — decision record
 - [docs/changelog.md](docs/changelog.md) — change history
-- `docs/methodology.md` — written from Milestone 2, once the harmonisation rules are
-  settled against real data
+- [docs/methodology.md](docs/methodology.md) — how each figure is produced, the data
+  problems behind it, and what is not yet handled
