@@ -4,6 +4,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ## [Unreleased]
 
+### Fixed
+
+- `fct_deposit_beta.metric_tier` is null where either endpoint is unresolved, as its
+  column description states. DuckDB's `greatest` skips nulls, so Popular's calibration row,
+  which has no start endpoint and no beta, carried tier 1. A test now requires the tier
+  and both endpoint tiers to be present or absent together.
+
 ### Changed
 
 - Construct validity reads the test cycle, and the policy rate at each of its ends, from

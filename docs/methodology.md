@@ -363,7 +363,8 @@ with no beta keep their row, and a dbt test fails if any member is missing a row
 cycle.
 
 - **Tier.** Each endpoint's tier is recorded, and `metric_tier` is the less precise of the
-  two. `tier_changes_in_cycle` flags a filer whose quarters within the cycle carry more than
+  two. It is null if either endpoint is missing, so a filter on tier cannot admit a row
+  that has no beta. `tier_changes_in_cycle` flags a filer whose quarters within the cycle carry more than
   one tier: CIT, M&T and Flagstar in the calibration cycle.
 - **Tier X.** No beta is computed from a tier X endpoint. Its numerator is known to be
   understated, and the beta would read as a slow repricer.
