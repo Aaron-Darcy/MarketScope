@@ -80,6 +80,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Derived fourth-quarter plausibility test from specification 7.2, at warn severity: a
+  derived quarter is flagged if negative or more than one percentage point outside its
+  neighbours' range (decision 0025). It flags 14 quarters, including newly found Q4
+  spikes at Santander in 2011 to 2014 and CIT in 2014, and corrects the methodology's
+  statement that none of the 2020 to 2022 negative costs fell in a fourth quarter.
 - `q4_derived` on `int_deposit_cost`, true where the deposit expense numerator or any
   component of a reconstructed one was derived as fiscal year less nine months. Set on 760
   of 3,066 bank-quarters; every other value in the table is unchanged. `build_panel`

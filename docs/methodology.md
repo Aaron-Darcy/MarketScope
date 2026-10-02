@@ -485,9 +485,12 @@ derived. Of those, 742 are December quarters; the other 18 belong to Raymond Jam
 fiscal year ends in September, and to Discover, whose fiscal year ended in November until
 2012.
 
-**Not yet built.** Specification 7.2 requires derived fourth quarters to be non-negative
-and within a band of neighbouring quarters. The flag makes that test possible, but the
-test does not exist yet.
+**Tested.** Specification 7.2 requires a derived fourth quarter to be non-negative and
+within band of its neighbouring quarters. `assert_derived_fourth_quarter_is_plausible`
+flags a derived quarter that is negative, or that lies more than one percentage point
+outside the range of its two neighbours, at warn severity. The band is three times the
+largest distance seen among second quarters, the only quarters whose neighbours are both
+reported (0025). It flags 14 quarters, listed in section 10.
 
 **Known failure.** BNY Mellon's derived fourth quarters are negative in 2023, 2024 and
 2025: −0.57, −1.58 and −0.74 percent, against neighbouring quarters of roughly 3.5 percent.
@@ -555,7 +558,26 @@ The small negatives fall in years of zero US rates. The filers involved are cust
 and Citigroup, which hold large foreign deposits on which negative euro and yen rates were
 passed through. That explanation is plausible but has not been confirmed against filings.
 BNY Mellon's 2020–2022 negatives belong to this group, not to the fourth-quarter failure.
-None of them is a fourth quarter.
+
+Six of these small negatives are derived fourth quarters, which the methodology first
+stated none were: State Street, Northern Trust and BNY Mellon in 2020Q4, the first two
+again in 2021Q4, and Citigroup in 2020Q4. Where the neighbouring quarters are negative or
+near zero too, the derivation is not the likely cause. Citigroup's −0.02 percent lies
+between neighbours of 0.50 and 0.27 percent and is not consistent with them, so it is left
+open (0025).
+
+**Derived fourth quarters outside their neighbours: 14 quarters**
+(`assert_derived_fourth_quarter_is_plausible`).
+
+| Filer | Quarters | Value against neighbours | Assessment |
+|---|---|---|---|
+| BNY Mellon | 2023Q4, 2024Q4, 2025Q4 | −0.57% to −1.58% against about 2–4% | Q4 derivation failure (8.4) |
+| Santander Holdings USA | 2011Q4–2014Q4 | 1.90% to 3.20% against about 0.5% | Q4 derivation failure, undiagnosed |
+| CIT Group | 2014Q4 | 3.58% against 1.67% and 1.69% | Q4 derivation failure, undiagnosed |
+| State Street, Northern Trust, BNY Mellon, Citigroup | 6, in 2020Q4 and 2021Q4 | small negatives | Above |
+
+The Santander and CIT quarters fall before the calibration cycle and feed no beta.
+BNY Mellon's 2023Q4 is the end of its test-cycle beta.
 
 **Betas outside 0 to 1: five rows** (`assert_deposit_beta_is_plausible`).
 
@@ -593,7 +615,7 @@ python analysis/milestone2/cycle_sensitivity.py    # section 5
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 
-`dbt build` currently reports two warnings: the two warn-severity tests in section 10.
+`dbt build` currently reports three warnings: the three warn-severity tests in section 10.
 Outputs are written to each script's `output/` directory. Every figure in this document was
 read from those outputs or from the warehouse after the build above, on 1 October 2026.
 Because EDGAR data is live, a later load can differ wherever a filer has restated.
