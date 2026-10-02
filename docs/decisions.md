@@ -833,3 +833,60 @@ Two endpoints in the design, the calibration start and the test end, are fourth 
 and therefore derived as fiscal year less nine months. This follows from where the rate
 turned and is not chosen, but it means those endpoints carry whatever error the
 derivation carries.
+
+---
+
+## 0024 — Resolve the deposit panel in a dbt Python model, not in SQL
+
+**Date** 2026-09-30
+**Status** Accepted. Amends the model layout in specification 7.1.
+
+**Context.** Milestone 2 exits when `fct_deposit_beta` is populated with tiers. Specification
+7.1 lays the path to it out as SQL models — `int_fact_precedence`,
+`int_deposit_expense_harmonised`, `int_deposit_balance_harmonised`, `int_bank_quarter_panel`
+and `int_deposit_cost` — which implies reimplementing the metric in SQL. The metric already
+exists in Python: restatement precedence and fourth-quarter derivation in
+`marketscope.facts`, the quarterly panel in `marketscope.panel`, and the tiers, resolution
+routes, category-wise reconstruction and completeness check in `marketscope.metrics`. Every
+Milestone 0 and Milestone 2 result was produced by that code and it carries the project's
+unit tests.
+
+**Decision.** `int_deposit_cost` is a dbt Python model. It reads the panel concepts from
+`stg_sec__company_facts` and hands them to `marketscope.deposit_cost`, which builds each
+filer's panel and resolves every bank-quarter through the same functions the analysis
+scripts call. The four intermediate SQL models that would have reimplemented those steps are
+not built. `fct_deposit_beta` and everything downstream of the resolved bank-quarter stay in
+SQL, where cycle windows and cross-bank joins belong.
+
+**Evidence.** Built against the current warehouse, the model reproduces the tier coverage
+script's output exactly: 3,066 bank-quarters across 51 filers, every tier, provenance and
+averaging method identical, and costs equal to within 1e-16. The model runs in about five
+seconds.
+
+**Alternatives.** Reimplement the metric in SQL as the layout specifies. That produces two
+implementations of a definition that changed three times during Milestone 0 and once during
+Milestone 2 (0011, 0012, 0013, 0021), and each change would then have to be made twice and
+kept in step by nothing stronger than a parity test. The category-wise reconstruction, the
+refusal of a partial non-interest-bearing residual and the tiled-quarter Q4 derivation are
+all awkward in SQL and are exactly where a silent divergence would land. Alternatively, a
+standalone Python step writing the panel into the raw schema for dbt to read as a source.
+That keeps one implementation too, but puts derived data in a schema whose contract is that
+it holds endpoint payloads and nothing else, and moves the step outside the DAG, so a
+`dbt build` could run on a panel resolved from an older load.
+
+**Consequences.** The metric has one implementation and one set of unit tests, and dbt
+tests its output: tier values, provenance values, one row per bank-quarter, and the 0 to 8
+percent range from specification 7.2 at warn severity. The price is that the intermediate
+steps are not separately materialised, so a harmonised expense or balance cannot be queried
+in the warehouse on its own; the tier coverage script remains the place to inspect them.
+dbt Python models require the `marketscope` package in the environment dbt runs from, which
+the project's own install already provides. `mypy` now covers `transform/dbt/models` so the
+model is checked like the rest of the code.
+
+The range test fires on its first run, on 55 bank-quarters. It catches both open findings
+already carried — Santander Holdings USA and Raymond James above 8 percent from 2023, and
+Bank of New York Mellon's negative derived fourth quarters — plus Flagstar's tier 3 costs
+above 8 percent from 2024, and small negative costs of at most 0.16 percent at State
+Street, Northern Trust and Citigroup between 2020 and 2022. The last group is probably
+genuine rather than a fault: custody banks passed negative euro and yen rates on to foreign
+depositors in those years. None is resolved here.

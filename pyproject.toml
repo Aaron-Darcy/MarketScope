@@ -61,7 +61,7 @@ ignore = ["E501"]
 [tool.mypy]
 python_version = "3.11"
 mypy_path = "src"
-files = ["src", "tests", "analysis"]
+files = ["src", "tests", "analysis", "transform/dbt/models"]
 explicit_package_bases = true
 strict = true
 warn_unreachable = true

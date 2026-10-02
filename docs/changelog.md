@@ -73,6 +73,29 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `docs/methodology.md`, covering every step from ingestion to `fct_deposit_beta` and each
+  data problem in specification section 4 with its current state. Entity events, the
+  restatement table, the derived-Q4 test and the survivorship comparison are recorded as not
+  yet built, and the open data quality findings are listed with figures.
+- `fct_deposit_beta`, the cumulative deposit beta for every universe member in every study
+  cycle, measured between the endpoint costs of deposits against the policy move over the
+  same quarters. Each row carries both endpoint tiers, the less precise of the two as the
+  beta's `metric_tier`, a `tier_changes_in_cycle` flag and quarter counts at tier 1 and at
+  tiers 1 or 2, leaving headline eligibility to the analysis. A filer whose series ends
+  inside a cycle is measured to its last resolved quarter and marked `partial_cycle`,
+  which applies to SVB and PacWest in the test cycle. Members with no beta keep their
+  row, and a test requires every member once per cycle. Reproduces all 32 test-cycle
+  betas in the construct validity output. A warn-severity test flags the five betas
+  outside 0 to 1: Santander in both cycles, and Raymond James, Flagstar at tier 3 and
+  Bank of New York Mellon at -0.097 in the test cycle.
+- `int_deposit_cost`, the cost of deposits per bank-quarter in the warehouse, as a dbt
+  Python model calling `marketscope.deposit_cost` rather than a SQL reimplementation of the
+  metric (decision 0024). Reproduces the tier coverage script's 3,066 bank-quarters exactly.
+  Tested for one row per bank-quarter, the defined tier, provenance and averaging values,
+  and the specification's 0 to 8 percent range at warn severity, which flags 55
+  bank-quarters on its first run: the Santander, Raymond James and Bank of New York Mellon
+  findings already carried, Flagstar's tier 3 costs from 2024, and small negative costs at
+  three custody banks between 2020 and 2022.
 - Cycle boundary sensitivity, shifting each derived boundary one quarter either way and
   comparing the resulting cross-bank ordering by rank correlation. Within-cycle ordering
   only; the cross-cycle persistence figure is deliberately not computed, so no window can
