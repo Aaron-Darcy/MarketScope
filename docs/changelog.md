@@ -6,6 +6,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- CI runs `actions/checkout` and `actions/setup-python` at v7, which target Node 24 in
+  place of the deprecated Node 20, on a pinned `ubuntu-24.04` image rather than
+  `ubuntu-latest`.
 - Construct validity reads the test cycle, and the policy rate at each of its ends, from
   `dim_rate_cycle` rather than pinning the window and averaging the raw FRED table itself.
   No analysis script from Milestone 2 onward now pins a cycle window. The result is
