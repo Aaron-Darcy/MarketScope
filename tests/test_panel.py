@@ -5,7 +5,7 @@ from datetime import date
 import pytest
 
 from marketscope.facts import Fact
-from marketscope.panel import previous_quarter_end, quarter_end, quarterly_panel
+from marketscope.panel import build_panel, previous_quarter_end, quarter_end, quarterly_panel
 
 
 def _instant(tag: str, value: float, end: date, *, filed: date, taxonomy: str = "us-gaap") -> Fact:
@@ -32,6 +32,10 @@ def _duration(
         period_end=end,
         filed=filed,
     )
+
+
+FILED_Q3 = date(2022, 11, 1)
+FILED_FY = date(2023, 2, 1)
 
 
 @pytest.mark.parametrize(
@@ -109,6 +113,26 @@ def test_the_fourth_quarter_is_derived_where_a_filer_files_no_fourth_ten_q() -> 
     panel = quarterly_panel(facts)
 
     assert panel[date(2022, 12, 31)]["InterestExpenseDeposits"] == pytest.approx(20.0)
+
+
+def test_a_derived_fourth_quarter_is_recorded_against_its_quarter() -> None:
+    facts = [
+        _duration(
+            "InterestExpenseDeposits", 10.0, date(2022, 7, 1), date(2022, 9, 30), filed=FILED_Q3
+        ),
+        _duration(
+            "InterestExpenseDeposits", 30.0, date(2022, 1, 1), date(2022, 9, 30), filed=FILED_Q3
+        ),
+        _duration(
+            "InterestExpenseDeposits", 50.0, date(2022, 1, 1), date(2022, 12, 31), filed=FILED_FY
+        ),
+        _instant("Deposits", 100.0, date(2022, 12, 31), filed=FILED_FY),
+    ]
+
+    panel = build_panel(facts)
+
+    assert panel.derived == {date(2022, 12, 31): frozenset({"InterestExpenseDeposits"})}
+    assert panel.values == quarterly_panel(facts)
 
 
 def test_a_restated_value_replaces_the_original() -> None:

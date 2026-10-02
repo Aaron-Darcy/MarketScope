@@ -4,6 +4,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ## [Unreleased]
 
+### Fixed
+
+- `fct_deposit_beta.metric_tier` is null where either endpoint is unresolved, as its
+  column description states. DuckDB's `greatest` skips nulls, so Popular's calibration row,
+  which has no start endpoint and no beta, carried tier 1. A test now requires the tier
+  and both endpoint tiers to be present or absent together.
+
 ### Changed
 
 - Construct validity reads the test cycle, and the policy rate at each of its ends, from
@@ -73,6 +80,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Derived fourth-quarter plausibility test from specification 7.2, at warn severity: a
+  derived quarter is flagged if negative or more than one percentage point outside its
+  neighbours' range (decision 0025). It flags 14 quarters, including newly found Q4
+  spikes at Santander in 2011 to 2014 and CIT in 2014, and corrects the methodology's
+  statement that none of the 2020 to 2022 negative costs fell in a fourth quarter.
+- `q4_derived` on `int_deposit_cost`, true where the deposit expense numerator or any
+  component of a reconstructed one was derived as fiscal year less nine months. Set on 760
+  of 3,066 bank-quarters; every other value in the table is unchanged. `build_panel`
+  returns the panel with the derived concepts per quarter, and `quarterly_panel` is now a
+  view over it.
 - `docs/methodology.md`, covering every step from ingestion to `fct_deposit_beta` and each
   data problem in specification section 4 with its current state. Entity events, the
   restatement table, the derived-Q4 test and the survivorship comparison are recorded as not
