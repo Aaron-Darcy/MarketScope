@@ -476,13 +476,18 @@ and it is still outstanding.
 
 ### 8.4 Fourth-quarter derivation
 
-**Handled.** Section 3.4.
+**Handled.** Section 3.4. `build_panel` records which concepts were derived in each
+quarter, and `int_deposit_cost` carries `q4_derived` on every row. The flag is true where
+the reported numerator was derived, or where any component of a reconstructed numerator
+was. A derived concept that does not feed the numerator, such as total interest expense
+used only for the completeness check, does not set it. 760 of 3,066 bank-quarters are
+derived. Of those, 742 are December quarters; the other 18 belong to Raymond James, whose
+fiscal year ends in September, and to Discover, whose fiscal year ended in November until
+2012.
 
 **Not yet built.** Specification 7.2 requires derived fourth quarters to be non-negative
-and within a band of neighbouring quarters. That test does not exist yet, because
-`int_deposit_cost` does not carry a `q4_derived` flag: `quarterly_panel` discards the
-`derived` marker when it collapses facts into the panel. As a result, no row in the
-warehouse records whether its numerator was derived.
+and within a band of neighbouring quarters. The flag makes that test possible, but the
+test does not exist yet.
 
 **Known failure.** BNY Mellon's derived fourth quarters are negative in 2023, 2024 and
 2025: −0.57, −1.58 and −0.74 percent, against neighbouring quarters of roughly 3.5 percent.

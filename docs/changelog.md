@@ -80,6 +80,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `q4_derived` on `int_deposit_cost`, true where the deposit expense numerator or any
+  component of a reconstructed one was derived as fiscal year less nine months. Set on 760
+  of 3,066 bank-quarters; every other value in the table is unchanged. `build_panel`
+  returns the panel with the derived concepts per quarter, and `quarterly_panel` is now a
+  view over it.
 - `docs/methodology.md`, covering every step from ingestion to `fct_deposit_beta` and each
   data problem in specification section 4 with its current state. Entity events, the
   restatement table, the derived-Q4 test and the survivorship comparison are recorded as not
