@@ -179,6 +179,12 @@ If neither is available, no fourth quarter is derived. A year with a missing qua
 never filled by assumption. Balances need no derivation, because a 10-K reports the
 year-end instant directly.
 
+Derivation is a fallback. Where any filing reports the fourth quarter directly, usually as
+a comparative in the next first-quarter 10-Q, the reported value is used and nothing is
+derived (0026). The annual figure a derivation starts from can differ in scope from the
+quarterly concept it is subtracted against, and a reported quarter does not carry that
+risk.
+
 Section 8.4 records where this fails.
 
 ---
@@ -332,16 +338,18 @@ on the headline.
 |---|---|---|
 | Calibration start ±1 | 0.976, 0.997 | 0.996, 0.997 |
 | Calibration end −1, +1 | 0.892, 0.960 | 0.884, 0.957 |
-| Test start ±1 | 0.992, 0.994 | 0.990, 0.993 |
-| Test end −1, +1 | 0.876, 0.878 | 0.984, 0.979 |
+| Test start ±1 | 0.992, 0.994 | 0.991, 0.993 |
+| Test end −1, +1 | 0.987, 0.983 | 0.985, 0.980 |
 
-The test-end drop across all filers comes from one filer, BNY Mellon, whose derived 2023Q4
-cost of deposits is negative (section 8.4).
+When the windows were adopted the test-end comparisons across all filers stood at 0.876 and
+0.878, and 0023 records them at those values. The whole drop came from BNY Mellon's derived
+2023Q4, which was negative. With its reported fourth quarter used instead (section 8.4),
+the drop disappears.
 
 Two of the four cycle endpoints, the calibration start (2015Q4) and the test end (2023Q4),
-are fourth quarters. Their flows are therefore derived. That follows from when the rate
-turned rather than from any choice, but those endpoints carry whatever error the
-derivation carries.
+are fourth quarters. For most filers their flows are therefore derived. That follows from
+when the rate turned rather than from any choice, but those endpoints carry whatever error
+the derivation carries.
 
 ---
 
@@ -480,8 +488,8 @@ and it is still outstanding.
 quarter, and `int_deposit_cost` carries `q4_derived` on every row. The flag is true where
 the reported numerator was derived, or where any component of a reconstructed numerator
 was. A derived concept that does not feed the numerator, such as total interest expense
-used only for the completeness check, does not set it. 760 of 3,066 bank-quarters are
-derived. Of those, 742 are December quarters; the other 18 belong to Raymond James, whose
+used only for the completeness check, does not set it. 743 of 3,066 bank-quarters are
+derived. Of those, 725 are December quarters; the other 18 belong to Raymond James, whose
 fiscal year ends in September, and to Discover, whose fiscal year ended in November until
 2012.
 
@@ -490,13 +498,19 @@ within band of its neighbouring quarters. `assert_derived_fourth_quarter_is_plau
 flags a derived quarter that is negative, or that lies more than one percentage point
 outside the range of its two neighbours, at warn severity. The band is three times the
 largest distance seen among second quarters, the only quarters whose neighbours are both
-reported (0025). It flags 14 quarters, listed in section 10.
+reported (0025). It flags 11 quarters, listed in section 10.
 
-**Known failure.** BNY Mellon's derived fourth quarters are negative in 2023, 2024 and
-2025: −0.57, −1.58 and −0.74 percent, against neighbouring quarters of roughly 3.5 percent.
-The 2023Q4 value is the endpoint of its test-cycle beta, which comes out at −0.097. The
-likely cause is a mismatch between the annual figure and the nine-month figure being
-subtracted from it. It has not been diagnosed.
+**Diagnosed failure: BNY Mellon.** BNY Mellon's 10-K tags only deposits in domestic offices
+under `InterestExpenseDeposits`, the concept its 10-Qs use for total deposit expense, and
+tags foreign offices separately. Fiscal year less nine months therefore subtracted a total
+from a domestic figure, and its derived fourth quarters were negative in 2023 and 2024, at
+−0.57 and −1.58 percent, where it reports 3.81 and 3.32 percent. BNY Mellon reports each
+fourth quarter as a comparative in the next first-quarter 10-Q, and every one of the
+eleven it has reported disagrees with the derived value. Reported fourth quarters are now
+used wherever they exist (0026), which moves its test-cycle beta from −0.097 to 0.744.
+
+Its 2025Q4 has not been reported in any later filing yet, so it is still derived and still
+wrong, at −0.74 percent. It feeds no beta and is flagged.
 
 ### 8.5 Tag drift and restatements
 
@@ -541,15 +555,15 @@ These are carried rather than resolved. Each is caught by a warn-severity dbt te
 the affected values stay on their rows so that excluding them is a visible decision in the
 analysis.
 
-**Cost of deposits outside 0 to 8 percent: 55 bank-quarters** (`assert_deposit_cost_is_plausible`).
+**Cost of deposits outside 0 to 8 percent: 54 bank-quarters** (`assert_deposit_cost_is_plausible`).
 
 | Filer | Quarters | Range | Assessment |
 |---|---|---|---|
 | Santander Holdings USA | 14 | above 8%, from 2023Q1, peak 17.8% | Fault, undiagnosed |
 | Flagstar | 9 | above 8%, from 2024Q1, peak 13.0%, tier 3 | Fault, undiagnosed |
 | Raymond James | 7 | above 8%, from 2023Q2, peak 10.2% | Fault, undiagnosed |
-| BNY Mellon | 3 | negative derived Q4, 2023–2025 | Q4 derivation failure (8.4) |
-| BNY Mellon | 5 | −0.03% to −0.08%, 2020Q4–2022Q1 | Probably genuine |
+| BNY Mellon | 1 | −0.74%, derived 2025Q4 | Q4 derivation failure (8.4) |
+| BNY Mellon | 6 | −0.05% to −0.08%, 2020Q4–2022Q1 | Probably genuine |
 | State Street | 8 | down to −0.16%, 2020Q2–2022Q1 | Probably genuine |
 | Northern Trust | 8 | down to −0.06%, 2020Q2–2022Q1 | Probably genuine |
 | Citigroup | 1 | −0.02%, 2020Q4 | Probably genuine |
@@ -559,27 +573,27 @@ and Citigroup, which hold large foreign deposits on which negative euro and yen 
 passed through. That explanation is plausible but has not been confirmed against filings.
 BNY Mellon's 2020–2022 negatives belong to this group, not to the fourth-quarter failure.
 
-Six of these small negatives are derived fourth quarters, which the methodology first
-stated none were: State Street, Northern Trust and BNY Mellon in 2020Q4, the first two
-again in 2021Q4, and Citigroup in 2020Q4. Where the neighbouring quarters are negative or
-near zero too, the derivation is not the likely cause. Citigroup's −0.02 percent lies
-between neighbours of 0.50 and 0.27 percent and is not consistent with them, so it is left
-open (0025).
+Five of these small negatives are derived fourth quarters, which the methodology first
+stated none were: State Street and Northern Trust in 2020Q4 and 2021Q4, and Citigroup in
+2020Q4. BNY Mellon's 2020Q4 and 2021Q4 are reported, not derived, and are negative as
+reported (0026). Where the neighbouring quarters are negative or near zero too, the
+derivation is not the likely cause. Citigroup's −0.02 percent lies between neighbours of
+0.50 and 0.27 percent and is not consistent with them, so it is left open (0025).
 
-**Derived fourth quarters outside their neighbours: 14 quarters**
+**Derived fourth quarters outside their neighbours: 11 quarters**
 (`assert_derived_fourth_quarter_is_plausible`).
 
 | Filer | Quarters | Value against neighbours | Assessment |
 |---|---|---|---|
-| BNY Mellon | 2023Q4, 2024Q4, 2025Q4 | −0.57% to −1.58% against about 2–4% | Q4 derivation failure (8.4) |
+| BNY Mellon | 2025Q4 | −0.74% against 2.72% and 2.22% | Q4 derivation failure (8.4) |
 | Santander Holdings USA | 2011Q4–2014Q4 | 1.90% to 3.20% against about 0.5% | Q4 derivation failure, undiagnosed |
 | CIT Group | 2014Q4 | 3.58% against 1.67% and 1.69% | Q4 derivation failure, undiagnosed |
-| State Street, Northern Trust, BNY Mellon, Citigroup | 6, in 2020Q4 and 2021Q4 | small negatives | Above |
+| State Street, Northern Trust, Citigroup | 5, in 2020Q4 and 2021Q4 | small negatives | Above |
 
-The Santander and CIT quarters fall before the calibration cycle and feed no beta.
-BNY Mellon's 2023Q4 is the end of its test-cycle beta.
+The Santander and CIT quarters fall before the calibration cycle and feed no beta, and
+neither does BNY Mellon's 2025Q4.
 
-**Betas outside 0 to 1: five rows** (`assert_deposit_beta_is_plausible`).
+**Betas outside 0 to 1: four rows** (`assert_deposit_beta_is_plausible`).
 
 | Filer | Cycle | Tier | Beta | Cost at each end |
 |---|---|---|---|---|
@@ -587,7 +601,6 @@ BNY Mellon's 2023Q4 is the end of its test-cycle beta.
 | Santander Holdings USA | Calibration | 1 | 1.453 | 2.51% → 5.77% |
 | Raymond James | Test | 1 | 1.695 | 0.06% → 8.89% |
 | Flagstar | Test | 3 | 1.295 | 0.28% → 7.03% |
-| BNY Mellon | Test | 1 | −0.097 | −0.06% → −0.57% |
 
 A beta above 1 means deposit costs rose by more than the policy rate. A beta below 0 means
 they fell across a tightening cycle. Either points to a faulty endpoint, not to a real
@@ -617,5 +630,5 @@ python analysis/universe/reference_audit.py        # section 2.3
 
 `dbt build` currently reports three warnings: the three warn-severity tests in section 10.
 Outputs are written to each script's `output/` directory. Every figure in this document was
-read from those outputs or from the warehouse after the build above, on 1 October 2026.
+read from those outputs or from the warehouse after the build above, on 3 October 2026.
 Because EDGAR data is live, a later load can differ wherever a filer has restated.

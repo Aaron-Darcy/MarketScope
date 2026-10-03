@@ -225,8 +225,11 @@ affected bank-quarters are flagged and banks with a material mid-cycle acquisiti
 shown separately in rankings.
 
 **Fourth-quarter derivation.** Most filers do not file a fourth 10-Q, so Q4 flow items are
-derived as fiscal year less the first three quarters. Derived rows carry `q4_derived` and
-are tested for non-negativity and plausibility against neighbouring quarters.
+derived as fiscal year less the first three quarters. A fourth quarter that any filing
+reports directly, as a comparative or in a quarterly trend, is used instead, because an
+annual concept can differ in scope from the quarterly one (decision 0026). Derived rows
+carry `q4_derived` and are tested for non-negativity and plausibility against neighbouring
+quarters.
 
 **Tag drift and restatements.** The taxonomy changes annually and filers change which
 concepts they use. The company facts endpoint returns multiple values for the same period
@@ -452,6 +455,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-10-03 | Fourth-quarter derivation in section 4 runs only where no filing reports the quarter directly. BNY Mellon's 10-K tags domestic deposit expense under the concept its 10-Qs use for the total, so its derived quarters were wrong in every year they could be checked. See decision 0026. |
 | 2026-09-30 | Tier table in 3.1 restated across the universe. Tiers 1 and 2 still carried twelve-bank sample figures, 708 and 3 bank-quarters, beside universe figures for tiers 3 and X; across the universe they are 2,323 and 491. |
 | 2026-09-30 | Model layout amended: `int_deposit_cost` is a dbt Python model calling the `marketscope` library, replacing the four intermediate SQL models that would have reimplemented the metric. See decision 0024. |
 | 2026-09-25 | Cycle windows restated as derived by `dim_rate_cycle`: calibration 2015Q4–2019Q1, test 2022Q1–2023Q4, rates as quarterly averages. Analysis reads windows from the table. See decision 0023. |

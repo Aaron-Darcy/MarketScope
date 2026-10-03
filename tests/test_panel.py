@@ -135,6 +135,33 @@ def test_a_derived_fourth_quarter_is_recorded_against_its_quarter() -> None:
     assert panel.values == quarterly_panel(facts)
 
 
+def test_a_reported_fourth_quarter_is_used_rather_than_derived() -> None:
+    """BNY Mellon tags its fourth quarter as a comparative in the next first-quarter 10-Q,
+    and its annual figure covers less than its quarterly ones: 2023 is 4,703 for the year
+    against 5,016 for nine months, which derives a negative quarter where 2,108 is
+    reported."""
+    facts = [
+        _duration(
+            "InterestExpenseDeposits", 5016.0, date(2023, 1, 1), date(2023, 9, 30), filed=FILED_Q3
+        ),
+        _duration(
+            "InterestExpenseDeposits", 4703.0, date(2023, 1, 1), date(2023, 12, 31), filed=FILED_FY
+        ),
+        _duration(
+            "InterestExpenseDeposits",
+            2108.0,
+            date(2023, 10, 1),
+            date(2023, 12, 31),
+            filed=date(2024, 5, 3),
+        ),
+    ]
+
+    panel = build_panel(facts)
+
+    assert panel.values[date(2023, 12, 31)]["InterestExpenseDeposits"] == 2108.0
+    assert panel.derived == {}
+
+
 def test_a_restated_value_replaces_the_original() -> None:
     facts = [
         _instant("Deposits", 100.0, date(2022, 12, 31), filed=date(2023, 2, 1)),

@@ -937,3 +937,54 @@ Northern Trust and BNY Mellon the neighbouring quarters are negative or near zer
 the derivation is not the likely cause and the negative-rate explanation stands. Citigroup
 is less clear: its 2020Q4 is −0.02 percent between neighbours of 0.50 and 0.27, inside the
 band but not consistent with them, and is left open.
+
+---
+
+## 0026 — Use a reported fourth quarter wherever one exists
+
+**Date** 2026-10-03
+**Status** Accepted. Refines the derivation in specification 4.
+
+**Context.** 0023 and 0025 carried BNY Mellon's negative derived fourth quarters, among them
+−0.57 percent at 2023Q4, the endpoint of its test-cycle beta, as a derivation failure with
+an undiagnosed cause. The cause is a difference of scope between two forms that use the
+same concept. BNY Mellon's 10-Qs tag total deposit interest expense as
+`InterestExpenseDeposits`. Its 10-K tags deposits in domestic offices under that concept and
+deposits in foreign offices under `InterestExpenseForeignDeposits`. From 2019 to 2022 the
+two annual figures sum exactly to the four reported quarters: $958m and $636m against
+$1,594m in 2019, $980m and $607m against $1,587m in 2022. Fiscal year less nine months
+therefore returns the fourth quarter's domestic expense less nine months of foreign
+expense.
+
+The fourth quarter was never missing. BNY Mellon reports it as a comparative in the next
+first-quarter 10-Q, so a reported 2023Q4 of $2,108m was in the warehouse throughout.
+`build_panel` applied derived quarters after reported ones, and the derived value
+overwrote it.
+
+**Decision.** Where any filing reports a fourth quarter directly, that value is used.
+Derivation runs only where none does. It exists to supply an absent figure, not to compete
+with a published one.
+
+**Alternatives.** Refuse a derived quarter that comes out negative. Negative deposit
+interest expense is genuine at the custody banks in 2020 and 2021 — BNY Mellon itself
+reports −$45m for 2021Q4 — so the rule would discard real values while leaving a
+mis-scoped positive derivation in place. Read the annual figure as domestic plus foreign
+wherever both are tagged. That rebuilds one filer's 10-K presentation inside the
+derivation and needs a rule for every other split a filer might use, where a reported
+quarter settles the question outright wherever one exists.
+
+**Consequences.** Twenty-five derived quarter values across four filers have a reported
+counterpart. BNY Mellon's eleven disagree with it in every year, by between 45 and 500
+percent. The other fourteen, ten at PacWest, three at Flagstar and one at CIT, agree
+exactly. Seventeen bank-quarters in `int_deposit_cost` change from derived to reported,
+leaving 743 of 3,066 derived. Five costs change, all BNY Mellon's from 2020Q4 to 2024Q4:
+2023Q4 moves from −0.57 to 3.81 percent and the test-cycle beta from −0.097 to 0.744. The
+three warn-severity tests fall from 55, 14 and 5 rows to 54, 11 and 4.
+
+BNY Mellon's 2025Q4 has no reported counterpart yet and is still derived, at −0.74
+percent, and the derived-quarter test still flags it. It feeds no beta. Any year in which
+no 10-Q reports the fourth quarter will derive wrongly for this filer, because the scope
+difference is in its 10-K. That is recorded rather than special-cased.
+
+The analysis outputs that read the affected quarters, among them the cycle sensitivity in
+0023, are rerun after this change rather than restated here.
