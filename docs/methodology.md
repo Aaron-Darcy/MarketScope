@@ -338,16 +338,18 @@ on the headline.
 |---|---|---|
 | Calibration start ±1 | 0.976, 0.997 | 0.996, 0.997 |
 | Calibration end −1, +1 | 0.892, 0.960 | 0.884, 0.957 |
-| Test start ±1 | 0.992, 0.994 | 0.990, 0.993 |
-| Test end −1, +1 | 0.876, 0.878 | 0.984, 0.979 |
+| Test start ±1 | 0.992, 0.994 | 0.991, 0.993 |
+| Test end −1, +1 | 0.987, 0.983 | 0.985, 0.980 |
 
-The test-end drop across all filers comes from one filer, BNY Mellon, whose derived 2023Q4
-cost of deposits is negative (section 8.4).
+When the windows were adopted the test-end comparisons across all filers stood at 0.876 and
+0.878, and 0023 records them at those values. The whole drop came from BNY Mellon's derived
+2023Q4, which was negative. With its reported fourth quarter used instead (section 8.4),
+the drop disappears.
 
 Two of the four cycle endpoints, the calibration start (2015Q4) and the test end (2023Q4),
-are fourth quarters. Their flows are therefore derived. That follows from when the rate
-turned rather than from any choice, but those endpoints carry whatever error the
-derivation carries.
+are fourth quarters. For most filers their flows are therefore derived. That follows from
+when the rate turned rather than from any choice, but those endpoints carry whatever error
+the derivation carries.
 
 ---
 
@@ -628,5 +630,5 @@ python analysis/universe/reference_audit.py        # section 2.3
 
 `dbt build` currently reports three warnings: the three warn-severity tests in section 10.
 Outputs are written to each script's `output/` directory. Every figure in this document was
-read from those outputs or from the warehouse after the build above, on 1 October 2026.
+read from those outputs or from the warehouse after the build above, on 3 October 2026.
 Because EDGAR data is live, a later load can differ wherever a filer has restated.

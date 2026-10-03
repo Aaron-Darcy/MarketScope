@@ -21,6 +21,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Milestone 2 analysis outputs rerun on reported fourth quarters. In the cycle sensitivity,
+  moving the test cycle's end a quarter either way now holds at 0.987 and 0.983 across all
+  filers, where BNY Mellon's derived 2023Q4 had pulled both to about 0.88; the derived
+  test-cycle median beta is 0.583. Construct validity is unchanged at -0.358, because BNY
+  Mellon tags no non-interest-bearing deposit split and was never in its sample.
 - Construct validity reads the test cycle, and the policy rate at each of its ends, from
   `dim_rate_cycle` rather than pinning the window and averaging the raw FRED table itself.
   No analysis script from Milestone 2 onward now pins a cycle window. The result is
