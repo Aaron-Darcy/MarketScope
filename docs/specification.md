@@ -130,15 +130,21 @@ where no interest-bearing base can be resolved at all.
 
 Three routes reach that base, in order of directness, each recorded on the row:
 
-| Provenance | Route | Filers |
+| Provenance | Route | Tier 1 bank-quarters |
 |---|---|---|
-| `reported` | `InterestBearingDepositLiabilities` | 8 |
-| `summed_components` | Domestic plus foreign components | JPMorgan, Citigroup |
-| `derived_residual` | Total deposits less non-interest-bearing deposits | Zions |
+| `reported` | `InterestBearingDepositLiabilities` | 1,494 |
+| `summed_components` | Domestic plus foreign components | 441 |
+| `derived_residual` | Total deposits less non-interest-bearing deposits | 388 |
 
 The residual route requires a *complete* non-interest-bearing figure. A partial one, such as a
 domestic component with no foreign counterpart, would understate what is subtracted and
 silently overstate the base, so it is refused rather than approximated.
+
+Interest-bearing and non-interest-bearing deposits partition total deposits, so a reported or
+summed base must reconcile with them to within 2 percent wherever all three are tagged. A base
+that does not is passed over for the next route. Several filers tag a single deposit line under
+the aggregate concept, and dividing by it inflates the cost of deposits by the inverse of that
+line's share. A base that cannot be checked is used as reported. See decision 0027.
 
 All denominators are two-point averages of period-end balances. Milestone 0 established
 that no filer in the sample tags an average deposit balance in any taxonomy, including its
@@ -455,6 +461,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-10-03 | Interest-bearing base in 3.1 must reconcile to total deposits less non-interest-bearing deposits where all three are tagged, and is passed over for the next route where it does not. Provenance table restated across the universe as tier 1 bank-quarters; it still showed twelve-bank sample filer counts. See decision 0027. |
 | 2026-10-03 | Fourth-quarter derivation in section 4 runs only where no filing reports the quarter directly. BNY Mellon's 10-K tags domestic deposit expense under the concept its 10-Qs use for the total, so its derived quarters were wrong in every year they could be checked. See decision 0026. |
 | 2026-09-30 | Tier table in 3.1 restated across the universe. Tiers 1 and 2 still carried twelve-bank sample figures, 708 and 3 bank-quarters, beside universe figures for tiers 3 and X; across the universe they are 2,323 and 491. |
 | 2026-09-30 | Model layout amended: `int_deposit_cost` is a dbt Python model calling the `marketscope` library, replacing the four intermediate SQL models that would have reimplemented the metric. See decision 0024. |

@@ -10,6 +10,7 @@ from marketscope.metrics import (
     cost_of_deposits,
     cumulative_beta,
     implied_deposit_expense,
+    reconciles_to_total,
     resolve_deposit_cost,
     resolve_deposit_interest_expense,
     resolve_interest_bearing_deposits,
@@ -22,13 +23,94 @@ def test_interest_bearing_prefers_the_reported_concept() -> None:
         {
             "InterestBearingDepositLiabilities": 800.0,
             "Deposits": 1000.0,
-            "NoninterestBearingDepositLiabilities": 150.0,
+            "NoninterestBearingDepositLiabilities": 200.0,
         }
     )
 
     assert resolved is not None
     assert resolved.value == 800.0
     assert resolved.provenance is Provenance.REPORTED
+
+
+def test_interest_bearing_passes_over_a_reported_base_that_does_not_reconcile() -> None:
+    """Santander Holdings USA tags one deposit line under the aggregate concept: $11.6bn
+    against $77.1bn of deposits, of which $15.5bn pay no interest."""
+    resolved = resolve_interest_bearing_deposits(
+        {
+            "InterestBearingDepositLiabilities": 11_592.0,
+            "NoninterestBearingDepositLiabilities": 15_505.0,
+            "Deposits": 77_073.0,
+        }
+    )
+
+    assert resolved is not None
+    assert resolved.value == pytest.approx(61_568.0)
+    assert resolved.provenance is Provenance.DERIVED_RESIDUAL
+
+
+def test_interest_bearing_passes_over_components_that_do_not_reconcile() -> None:
+    resolved = resolve_interest_bearing_deposits(
+        {
+            "InterestBearingDepositLiabilitiesDomestic": 500.0,
+            "InterestBearingDepositLiabilitiesForeign": 100.0,
+            "NoninterestBearingDepositLiabilities": 200.0,
+            "Deposits": 1000.0,
+        }
+    )
+
+    assert resolved is not None
+    assert resolved.value == 800.0
+    assert resolved.provenance is Provenance.DERIVED_RESIDUAL
+
+
+def test_interest_bearing_uses_a_reported_base_that_cannot_be_checked() -> None:
+    resolved = resolve_interest_bearing_deposits(
+        {"InterestBearingDepositLiabilities": 300.0, "Deposits": 1000.0}
+    )
+
+    assert resolved is not None
+    assert resolved.value == 300.0
+    assert resolved.provenance is Provenance.REPORTED
+
+
+@pytest.mark.parametrize(
+    ("interest_bearing", "expected"),
+    [(800.0, True), (815.0, True), (830.0, False), (700.0, False)],
+)
+def test_reconciliation_allows_a_small_gap_to_the_total(
+    interest_bearing: float, expected: bool
+) -> None:
+    values = {"Deposits": 1000.0, "NoninterestBearingDepositLiabilities": 200.0}
+
+    assert reconciles_to_total(interest_bearing, values) is expected
+
+
+def test_reconciliation_cannot_be_made_without_a_complete_noninterest_figure() -> None:
+    values = {"Deposits": 1000.0, "NoninterestBearingDepositLiabilitiesDomestic": 200.0}
+
+    assert reconciles_to_total(800.0, values) is None
+
+
+def test_deposit_cost_divides_by_the_reconciled_base_at_both_ends() -> None:
+    """The opening balance goes through the same check, so a quarter whose previous
+    quarter end tagged a single line under the aggregate is not averaged against it."""
+    current = {
+        "InterestExpenseDeposits": 10.0,
+        "InterestBearingDepositLiabilities": 800.0,
+        "NoninterestBearingDepositLiabilities": 200.0,
+        "Deposits": 1000.0,
+    }
+    previous = {
+        "InterestBearingDepositLiabilities": 150.0,
+        "NoninterestBearingDepositLiabilities": 200.0,
+        "Deposits": 1000.0,
+    }
+
+    cost = resolve_deposit_cost(current, previous)
+
+    assert cost is not None
+    assert cost.tier is MetricTier.TIER_1
+    assert cost.rate == pytest.approx(0.05)
 
 
 def test_interest_bearing_sums_domestic_and_foreign_components() -> None:
