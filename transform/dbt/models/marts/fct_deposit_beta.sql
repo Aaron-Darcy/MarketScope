@@ -111,8 +111,13 @@ select
     start_cost.metric_tier as start_tier,
     end_cost.metric_tier as end_tier,
     -- The beta is only as comparable as its less precise endpoint. Tiers sort in order of
-    -- decreasing precision, so the greater of the two is that endpoint's tier.
-    greatest(start_cost.metric_tier, end_cost.metric_tier) as metric_tier,
+    -- decreasing precision, so the greater of the two is that endpoint's tier. DuckDB's
+    -- greatest skips nulls, so without the guard a row with one endpoint missing would
+    -- carry the other endpoint's tier and read as a measured beta.
+    case
+        when start_cost.metric_tier is not null and end_cost.metric_tier is not null
+        then greatest(start_cost.metric_tier, end_cost.metric_tier)
+    end as metric_tier,
     coverage.tiers_in_cycle > 1 as tier_changes_in_cycle,
     start_cost.cost_of_deposits as start_cost_of_deposits,
     end_cost.cost_of_deposits as end_cost_of_deposits,

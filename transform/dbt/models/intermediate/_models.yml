@@ -54,3 +54,8 @@ models:
           - accepted_values:
               arguments:
                 values: [endpoint, closing_only]
+      - name: q4_derived
+        description: >
+          The deposit expense numerator, or any component of a reconstructed one, was
+          derived as the fiscal year less the first nine months rather than reported.
+        tests: [not_null]

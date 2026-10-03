@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Iterable
+from dataclasses import dataclass
 from datetime import date, timedelta
 
 from marketscope.facts import Fact, Periodicity, derive_fourth_quarter, latest_filed
@@ -65,17 +66,36 @@ def previous_quarter_end(day: date) -> date:
     return quarter_end(first_of_quarter - timedelta(days=1))
 
 
+@dataclass(frozen=True)
+class Panel:
+    """A filer's metric inputs by quarter end, with the concepts whose value was derived."""
+
+    values: dict[date, dict[str, float]]
+    derived: dict[date, frozenset[str]]
+
+
 def quarterly_panel(
     facts: Iterable[Fact],
     *,
     taxonomy: str | None = DEFAULT_TAXONOMY,
 ) -> dict[date, dict[str, float]]:
+    """Collapse a filer's facts into deposit metric inputs keyed by quarter end."""
+    return build_panel(facts, taxonomy=taxonomy).values
+
+
+def build_panel(
+    facts: Iterable[Fact],
+    *,
+    taxonomy: str | None = DEFAULT_TAXONOMY,
+) -> Panel:
     """Collapse a filer's facts into deposit metric inputs keyed by quarter end.
 
     Balances are taken from instants and expenses from quarterly durations, with the
     fourth quarter derived where a filer publishes no fourth 10-Q. Restatement precedence
     is applied per concept first, so a revised figure replaces the original rather than
-    both reaching the panel.
+    both reaching the panel. A derived value is recorded against its quarter, because the
+    fiscal year less nine months fails in ways a reported quarter cannot, and the failures
+    are only testable if the derived rows can be found.
 
     The taxonomy is pinned because a filer may declare a concept in its own extension
     namespace under a name the standard taxonomy also uses, and the two are not the same
@@ -88,7 +108,8 @@ def quarterly_panel(
         if fact.tag in PANEL_TAGS:
             by_tag[fact.tag].append(fact)
 
-    panel: dict[date, dict[str, float]] = defaultdict(dict)
+    values: dict[date, dict[str, float]] = defaultdict(dict)
+    derived: dict[date, set[str]] = defaultdict(set)
 
     for tag, group in by_tag.items():
         current = latest_filed(group)
@@ -96,11 +117,16 @@ def quarterly_panel(
         if tag in BALANCE_TAGS:
             for fact in current:
                 if fact.periodicity is Periodicity.INSTANT:
-                    panel[fact.period_end][tag] = fact.value
+                    values[fact.period_end][tag] = fact.value
             continue
 
         quarterly = [fact for fact in current if fact.periodicity is Periodicity.QUARTERLY]
         for fact in quarterly + derive_fourth_quarter(current):
-            panel[fact.period_end][tag] = fact.value
+            values[fact.period_end][tag] = fact.value
+            if fact.derived:
+                derived[fact.period_end].add(tag)
 
-    return dict(panel)
+    return Panel(
+        values=dict(values),
+        derived={quarter: frozenset(tags) for quarter, tags in derived.items()},
+    )

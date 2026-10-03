@@ -890,3 +890,50 @@ above 8 percent from 2024, and small negative costs of at most 0.16 percent at S
 Street, Northern Trust and Citigroup between 2020 and 2022. The last group is probably
 genuine rather than a fault: custody banks passed negative euro and yen rates on to foreign
 depositors in those years. None is resolved here.
+
+---
+
+## 0025 — Band derived fourth quarters against the range of their neighbours
+
+**Date** 2026-10-02
+**Status** Accepted
+
+**Context.** Specification 7.2 requires a derived fourth quarter to be non-negative and
+"within band of neighbouring quarters" without saying what the band is. With `q4_derived`
+now on `int_deposit_cost`, the test can be written, and the band has to be chosen.
+
+A threshold calibrated on every reported quarter is contaminated. A first and a third
+quarter each have a derived fourth quarter as one neighbour, so a faulty Q4 makes its
+reported neighbours look like outliers too: BNY Mellon's 2023Q3 and 2024Q1 sit more than
+two points from the midpoint of their neighbours only because 2023Q4 is −0.57 percent.
+Only a second quarter has two reported neighbours.
+
+**Decision.** Measure how far a quarter lies outside the range of its two neighbours,
+which is zero for any quarter lying between them, so a quarter on a steady trend is never
+flagged however fast rates move. Across the 693 second quarters with two reported
+neighbours the largest such distance is 0.33 percentage points. The band is set at one
+percentage point, three times that. A derived fourth quarter is flagged if it is negative,
+or if it lies more than one point outside its neighbours' range. The test warns rather
+than fails, like the other plausibility tests.
+
+**Alternatives.** Distance from the neighbours' midpoint, which flags a quarter on a
+steep trend and, calibrated on all reported quarters, sets a threshold inflated by the
+faults it exists to catch. A ratio band on the neighbours, which is unstable where costs
+are near zero, as they were in 2020 and 2021. A percentile of the clean distribution
+rather than a multiple of its maximum. The 99.9th percentile of 693 observations sets the
+line at 0.18 points and is tighter than the data supports.
+
+**Consequences.** Fourteen derived quarters are flagged. Three are BNY Mellon's negative
+fourth quarters of 2023 to 2025, the case recorded in 0023. Five are new: Santander
+Holdings USA at 2.61, 2.67, 1.90 and 3.20 percent in the fourth quarters of 2011 to 2014,
+against neighbours near 0.5 percent, and CIT Group at 3.58 percent in 2014Q4 against
+neighbours of 1.67 and 1.69. All five fall before the calibration cycle and feed no beta.
+The remaining six are negative fourth quarters in 2020 and 2021 at State Street, Northern
+Trust, BNY Mellon and Citigroup, caught by the non-negativity rule rather than the band.
+
+That last group corrects the methodology as first written, which stated that none of the
+small negative costs of 2020 to 2022 fell in a fourth quarter. Six do. At State Street,
+Northern Trust and BNY Mellon the neighbouring quarters are negative or near zero too, so
+the derivation is not the likely cause and the negative-rate explanation stands. Citigroup
+is less clear: its 2020Q4 is −0.02 percent between neighbours of 0.50 and 0.27, inside the
+band but not consistent with them, and is left open.

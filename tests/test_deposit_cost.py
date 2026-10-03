@@ -12,6 +12,7 @@ from marketscope.deposit_cost import (
     deposit_cost_frame,
     facts_from_rows,
 )
+from marketscope.panel import Panel
 
 FILED = date(2023, 2, 1)
 
@@ -101,9 +102,56 @@ def test_each_filer_is_resolved_against_its_own_facts() -> None:
 
 
 def test_a_quarter_without_a_denominator_produces_no_row() -> None:
-    panel = {date(2022, 6, 30): {"InterestExpenseDeposits": 10.0}}
+    panel = Panel(values={date(2022, 6, 30): {"InterestExpenseDeposits": 10.0}}, derived={})
 
     assert bank_quarter_rows(1, panel) == []
+
+
+def _fiscal_2022(cik: int, tag: str, nine_month: float, annual: float) -> list[tuple[Any, ...]]:
+    return [
+        _row(cik, tag, nine_month, date(2022, 9, 30), date(2022, 1, 1)),
+        _row(cik, tag, annual, date(2022, 12, 31), date(2022, 1, 1)),
+    ]
+
+
+def test_a_derived_fourth_quarter_numerator_is_flagged() -> None:
+    frame = deposit_cost_frame(
+        [
+            *_tier_one_quarter(1, date(2022, 9, 30), date(2022, 7, 1)),
+            *_fiscal_2022(1, "InterestExpenseDeposits", 25.0, 40.0),
+            _row(1, "InterestBearingDepositLiabilities", 1_000.0, date(2022, 12, 31)),
+        ]
+    )
+
+    flags = dict(zip(frame["quarter_end"], frame["q4_derived"], strict=True))
+    assert flags == {date(2022, 9, 30): False, date(2022, 12, 31): True}
+
+
+def test_a_reconstructed_numerator_is_flagged_when_any_component_is_derived() -> None:
+    frame = deposit_cost_frame(
+        [
+            *_fiscal_2022(1, "InterestExpenseTimeDeposits", 15.0, 24.0),
+            _row(1, "InterestExpenseSavingsDeposits", 4.0, date(2022, 12, 31), date(2022, 10, 1)),
+            _row(1, "InterestBearingDepositLiabilities", 1_000.0, date(2022, 12, 31)),
+        ]
+    )
+
+    (row,) = frame.itertuples()
+    assert row.expense_provenance == "summed_components"
+    assert row.q4_derived
+
+
+def test_a_derived_concept_outside_the_numerator_does_not_flag_the_row() -> None:
+    """Total interest expense is derived for the completeness check, not the numerator."""
+    frame = deposit_cost_frame(
+        [
+            *_tier_one_quarter(1, date(2022, 12, 31), date(2022, 10, 1)),
+            *_fiscal_2022(1, "InterestExpense", 60.0, 80.0),
+        ]
+    )
+
+    (row,) = frame.itertuples()
+    assert not row.q4_derived
 
 
 def test_no_facts_give_an_empty_frame_with_the_expected_columns() -> None:
