@@ -91,7 +91,7 @@ def build_panel(
     """Collapse a filer's facts into deposit metric inputs keyed by quarter end.
 
     Balances are taken from instants and expenses from quarterly durations, with the
-    fourth quarter derived where a filer publishes no fourth 10-Q. Restatement precedence
+    fourth quarter derived where no filing reports it directly. Restatement precedence
     is applied per concept first, so a revised figure replaces the original rather than
     both reaching the panel. A derived value is recorded against its quarter, because the
     fiscal year less nine months fails in ways a reported quarter cannot, and the failures
@@ -121,7 +121,15 @@ def build_panel(
             continue
 
         quarterly = [fact for fact in current if fact.periodicity is Periodicity.QUARTERLY]
-        for fact in quarterly + derive_fourth_quarter(current):
+        reported = {fact.period_end for fact in quarterly}
+        # A fourth quarter some later filing reports directly, as a comparative or in a
+        # five-quarter trend, is a published figure. The derivation is only a fallback, and
+        # it trusts the annual concept to cover what the quarterly one does, which BNY
+        # Mellon's does not in any year it can be checked.
+        fallback = [
+            fact for fact in derive_fourth_quarter(current) if fact.period_end not in reported
+        ]
+        for fact in quarterly + fallback:
             values[fact.period_end][tag] = fact.value
             if fact.derived:
                 derived[fact.period_end].add(tag)

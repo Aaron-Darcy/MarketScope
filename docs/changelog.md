@@ -6,6 +6,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Fixed
 
+- A fourth quarter that a later filing reports directly is used rather than overwritten by
+  one derived from the fiscal year (decision 0026). BNY Mellon's 10-K tags only domestic
+  deposit expense under the concept its 10-Qs use for the total, so its derived fourth
+  quarters were wrong in all eleven years a reported one exists to check against, and its
+  2023Q4 cost of deposits read −0.57 percent where 3.81 percent is reported. Its test-cycle
+  beta moves from −0.097 to 0.744. Seventeen bank-quarters stop being marked derived and
+  only BNY Mellon's costs change. The cost, derived-quarter and beta plausibility tests
+  fall from 55, 14 and 5 rows to 54, 11 and 4.
 - `fct_deposit_beta.metric_tier` is null where either endpoint is unresolved, as its
   column description states. DuckDB's `greatest` skips nulls, so Popular's calibration row,
   which has no start endpoint and no beta, carried tier 1. A test now requires the tier
