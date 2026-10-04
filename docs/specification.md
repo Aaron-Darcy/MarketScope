@@ -421,7 +421,8 @@ Proceed past Milestone 0 only if all hold across the twelve-bank sample:
   non-interest-bearing deposit share correlates negatively with its cumulative deposit beta,
   since balances that pay nothing by construction cannot reprice. **Passed:** Spearman −0.358
   across 30 filers with a plausible headline-tier beta, −0.409 across all 32. Predicted
-  negative before measurement.
+  negative before measurement. Rerun on the reconciled deposit base of decision 0027, which
+  makes all 32 betas plausible: −0.356.
 - **G5** Q4 values are derivable for at least 80 percent of bank-years. **Passed: 92.3
   percent** on interest expense on deposits, 180 of 195 bank-years.
 - **Benchmark** The industry cumulative interest-bearing deposit beta computed here must
@@ -461,6 +462,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-10-04 | G4′ result in 9.1 annotated with its rerun on the reconciled deposit base: −0.356 across 32 filers, none excluded. The recorded pass is unchanged. |
 | 2026-10-03 | Interest-bearing base in 3.1 must reconcile to total deposits less non-interest-bearing deposits where all three are tagged, and is passed over for the next route where it does not. Provenance table restated across the universe as tier 1 bank-quarters; it still showed twelve-bank sample filer counts. See decision 0027. |
 | 2026-10-03 | Fourth-quarter derivation in section 4 runs only where no filing reports the quarter directly. BNY Mellon's 10-K tags domestic deposit expense under the concept its 10-Qs use for the total, so its derived quarters were wrong in every year they could be checked. See decision 0026. |
 | 2026-09-30 | Tier table in 3.1 restated across the universe. Tiers 1 and 2 still carried twelve-bank sample figures, 708 and 3 bank-quarters, beside universe figures for tiers 3 and X; across the universe they are 2,323 and 491. |

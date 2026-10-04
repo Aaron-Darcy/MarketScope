@@ -353,15 +353,17 @@ on the headline.
 
 | Boundary moved | ρ, all filers | ρ, plausible betas |
 |---|---|---|
-| Calibration start ±1 | 0.976, 0.997 | 0.996, 0.997 |
-| Calibration end −1, +1 | 0.892, 0.960 | 0.884, 0.957 |
-| Test start ±1 | 0.992, 0.994 | 0.991, 0.993 |
-| Test end −1, +1 | 0.987, 0.983 | 0.985, 0.980 |
+| Calibration start ±1 | 0.972, 0.997 | 0.995, 0.997 |
+| Calibration end −1, +1 | 0.887, 0.957 | 0.887, 0.957 |
+| Test start ±1 | 0.991, 0.992 | 0.991, 0.992 |
+| Test end −1, +1 | 0.986, 0.979 | 0.986, 0.979 |
 
 When the windows were adopted the test-end comparisons across all filers stood at 0.876 and
 0.878, and 0023 records them at those values. The whole drop came from BNY Mellon's derived
 2023Q4, which was negative. With its reported fourth quarter used instead (section 8.4),
-the drop disappears.
+the drop disappears. Since every beta is now plausible except where a shifted endpoint
+reaches CIT's unreconcilable 2015Q3 (section 10), the two columns agree everywhere but the
+calibration start.
 
 Two of the four cycle endpoints, the calibration start (2015Q4) and the test end (2023Q4),
 are fourth quarters. For most filers their flows are therefore derived. That follows from
@@ -436,9 +438,14 @@ reprices mid-pack. G4 has not been rerun with a different comparator or threshol
 G4 was replaced by a cross-sectional test of the same hypothesis, with the prediction
 fixed before measurement. A bank funded by more non-interest-bearing deposits has less of
 its base to reprice, so its share should correlate negatively with test-cycle beta. Across
-the 30 filers with a headline-tier beta, a reported deposit split and a beta of at most 1.0,
-the Spearman correlation is −0.358. Across all 32, it is −0.409. Reproduce with
-`python analysis/milestone2/construct_validity.py`.
+the 32 filers with a headline-tier beta and a reported deposit split, the Spearman
+correlation is −0.356. Reproduce with `python analysis/milestone2/construct_validity.py`.
+
+When the test was adopted (0022), two of the 32 carried betas above 1.0 and were excluded,
+giving −0.358 across 30 and −0.409 across all 32. Both betas came from a single deposit
+line tagged as the interest-bearing base, and on the reconciled base of 0027 every beta in
+the sample is plausible. The result did not depend on the exclusion: it is negative, and of
+much the same size, on every version of the sample.
 
 This is the weaker half of validation. It shows the metric orders banks in an economically
 sensible direction. It does not show that any individual bank's figure is accurate. That
@@ -654,5 +661,5 @@ python analysis/universe/reference_audit.py        # section 2.3
 `dbt build` currently reports two warnings, from the cost and derived-quarter tests in
 section 10. The beta range test is also warn-severity and currently passes.
 Outputs are written to each script's `output/` directory. Every figure in this document was
-read from those outputs or from the warehouse after the build above, on 3 October 2026.
+read from those outputs or from the warehouse after the build above, on 4 October 2026.
 Because EDGAR data is live, a later load can differ wherever a filer has restated.

@@ -15,9 +15,9 @@ Filers by the most precise tier they reach:
   no series           0
 
 Provenance of the interest-bearing base:
-  reported              2,244
-  summed_components       445
-  derived_residual        377
+  reported              2,150
+  derived_residual        475
+  summed_components       441
 
 Provenance of the deposit expense numerator:
   reported              2,814

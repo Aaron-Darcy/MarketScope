@@ -31,6 +31,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Milestone 2 analysis outputs rerun on the reconciled deposit base. Construct validity now
+  covers 32 filers with no beta excluded as implausible, at -0.356, against -0.358 on the
+  30 plausible betas and -0.409 on all 32 when the test was adopted. Every one-quarter
+  boundary shift in the cycle sensitivity holds at 0.887 or above on plausible betas.
 - Milestone 2 analysis outputs rerun on reported fourth quarters. In the cycle sensitivity,
   moving the test cycle's end a quarter either way now holds at 0.987 and 0.983 across all
   filers, where BNY Mellon's derived 2023Q4 had pulled both to about 0.88; the derived
