@@ -223,9 +223,9 @@ and 2023. The interest-bearing base is reached by three routes, tried in order:
 
 | Provenance | Route | Bank-quarters |
 |---|---|---|
-| `reported` | `InterestBearingDepositLiabilities` | 2,244 |
-| `summed_components` | Domestic plus foreign, only when both are present | 445 |
-| `derived_residual` | Total deposits less a complete non-interest-bearing figure | 377 |
+| `reported` | `InterestBearingDepositLiabilities` | 2,150 |
+| `summed_components` | Domestic plus foreign, only when both are present | 441 |
+| `derived_residual` | Total deposits less a complete non-interest-bearing figure | 475 |
 
 These counts include the tier 2 rows. On those, `reported` means total deposits as
 reported.
@@ -234,6 +234,23 @@ The residual route refuses a partial non-interest-bearing figure, such as a dome
 component with no foreign one. Subtracting too little would overstate the base without any
 sign. The route also refuses a residual that is zero or negative. Total deposits is used
 only when no interest-bearing route resolves.
+
+**Reconciliation.** A reported or summed base is checked against the filer's own total and
+non-interest-bearing figures, which together partition deposits, and is passed over for the
+next route if it misses by more than 2 percent of total deposits (0027). Santander, Raymond
+James and Flagstar tag a single deposit line under `InterestBearingDepositLiabilities`:
+Flagstar's is exactly its money-market line. US Bancorp's figure excluded time deposits of
+$100,000 or more until 2015Q3. Dividing by one line inflates the cost of deposits by the
+inverse of that line's share, which put Santander's at 15.78 percent at the end of the test
+cycle.
+
+Where a reported base can be checked, it either reconciles to within 0.1 percent (1,482
+period ends) or misses by more than 8 percent (94). The tolerance therefore separates two
+populations and does not decide any case. Of the 2,452 bank-quarters on an interest-bearing
+base, 1,810 are checked and reconcile, 475 are the residual and reconcile by construction,
+and 167 cannot be checked because the filer tags no total or no complete
+non-interest-bearing figure. Those 167 belong to Regions, KeyCorp, BNY Mellon, SunTrust, HSBC
+USA, Truist and CIT. CIT's two are almost certainly the same fault (section 10).
 
 ### 4.3 Tiers
 
@@ -336,15 +353,17 @@ on the headline.
 
 | Boundary moved | ρ, all filers | ρ, plausible betas |
 |---|---|---|
-| Calibration start ±1 | 0.976, 0.997 | 0.996, 0.997 |
-| Calibration end −1, +1 | 0.892, 0.960 | 0.884, 0.957 |
-| Test start ±1 | 0.992, 0.994 | 0.991, 0.993 |
-| Test end −1, +1 | 0.987, 0.983 | 0.985, 0.980 |
+| Calibration start ±1 | 0.972, 0.997 | 0.995, 0.997 |
+| Calibration end −1, +1 | 0.887, 0.957 | 0.887, 0.957 |
+| Test start ±1 | 0.991, 0.992 | 0.991, 0.992 |
+| Test end −1, +1 | 0.986, 0.979 | 0.986, 0.979 |
 
 When the windows were adopted the test-end comparisons across all filers stood at 0.876 and
 0.878, and 0023 records them at those values. The whole drop came from BNY Mellon's derived
 2023Q4, which was negative. With its reported fourth quarter used instead (section 8.4),
-the drop disappears.
+the drop disappears. Since every beta is now plausible except where a shifted endpoint
+reaches CIT's unreconcilable 2015Q3 (section 10), the two columns agree everywhere but the
+calibration start.
 
 Two of the four cycle endpoints, the calibration start (2015Q4) and the test end (2023Q4),
 are fourth quarters. For most filers their flows are therefore derived. That follows from
@@ -419,9 +438,14 @@ reprices mid-pack. G4 has not been rerun with a different comparator or threshol
 G4 was replaced by a cross-sectional test of the same hypothesis, with the prediction
 fixed before measurement. A bank funded by more non-interest-bearing deposits has less of
 its base to reprice, so its share should correlate negatively with test-cycle beta. Across
-the 30 filers with a headline-tier beta, a reported deposit split and a beta of at most 1.0,
-the Spearman correlation is −0.358. Across all 32, it is −0.409. Reproduce with
-`python analysis/milestone2/construct_validity.py`.
+the 32 filers with a headline-tier beta and a reported deposit split, the Spearman
+correlation is −0.356. Reproduce with `python analysis/milestone2/construct_validity.py`.
+
+When the test was adopted (0022), two of the 32 carried betas above 1.0 and were excluded,
+giving −0.358 across 30 and −0.409 across all 32. Both betas came from a single deposit
+line tagged as the interest-bearing base, and on the reconciled base of 0027 every beta in
+the sample is plausible. The result did not depend on the exclusion: it is negative, and of
+much the same size, on every version of the sample.
 
 This is the weaker half of validation. It shows the metric orders banks in an economically
 sensible direction. It does not show that any individual bank's figure is accurate. That
@@ -555,13 +579,10 @@ These are carried rather than resolved. Each is caught by a warn-severity dbt te
 the affected values stay on their rows so that excluding them is a visible decision in the
 analysis.
 
-**Cost of deposits outside 0 to 8 percent: 54 bank-quarters** (`assert_deposit_cost_is_plausible`).
+**Cost of deposits outside 0 to 8 percent: 24 bank-quarters** (`assert_deposit_cost_is_plausible`).
 
 | Filer | Quarters | Range | Assessment |
 |---|---|---|---|
-| Santander Holdings USA | 14 | above 8%, from 2023Q1, peak 17.8% | Fault, undiagnosed |
-| Flagstar | 9 | above 8%, from 2024Q1, peak 13.0%, tier 3 | Fault, undiagnosed |
-| Raymond James | 7 | above 8%, from 2023Q2, peak 10.2% | Fault, undiagnosed |
 | BNY Mellon | 1 | −0.74%, derived 2025Q4 | Q4 derivation failure (8.4) |
 | BNY Mellon | 6 | −0.05% to −0.08%, 2020Q4–2022Q1 | Probably genuine |
 | State Street | 8 | down to −0.16%, 2020Q2–2022Q1 | Probably genuine |
@@ -580,37 +601,46 @@ reported (0026). Where the neighbouring quarters are negative or near zero too, 
 derivation is not the likely cause. Citigroup's −0.02 percent lies between neighbours of
 0.50 and 0.27 percent and is not consistent with them, so it is left open (0025).
 
-**Derived fourth quarters outside their neighbours: 11 quarters**
+Until decision 0027 the test also caught 30 bank-quarters above 8 percent at Santander,
+Raymond James and Flagstar. Each tagged one deposit line as its whole interest-bearing
+base, and each is now measured on the reconciled base (section 4.2).
+
+**Derived fourth quarters outside their neighbours: 7 quarters**
 (`assert_derived_fourth_quarter_is_plausible`).
 
 | Filer | Quarters | Value against neighbours | Assessment |
 |---|---|---|---|
 | BNY Mellon | 2025Q4 | −0.74% against 2.72% and 2.22% | Q4 derivation failure (8.4) |
-| Santander Holdings USA | 2011Q4–2014Q4 | 1.90% to 3.20% against about 0.5% | Q4 derivation failure, undiagnosed |
-| CIT Group | 2014Q4 | 3.58% against 1.67% and 1.69% | Q4 derivation failure, undiagnosed |
+| CIT Group | 2014Q4 | 3.58% against 1.67% and 1.69% | Unreconcilable base, below |
 | State Street, Northern Trust, Citigroup | 5, in 2020Q4 and 2021Q4 | small negatives | Above |
 
-The Santander and CIT quarters fall before the calibration cycle and feed no beta, and
-neither does BNY Mellon's 2025Q4.
+Neither BNY Mellon's 2025Q4 nor CIT's 2014Q4 feeds a beta.
 
-**Betas outside 0 to 1: four rows** (`assert_deposit_beta_is_plausible`).
+CIT's 2014Q4 is tier 1, on a reported interest-bearing base of $7.1bn against $15.8bn of
+deposits, while its neighbouring quarters are tier 2 on total deposits. CIT tags the
+interest-bearing concept in only two quarters and never tags non-interest-bearing
+deposits, so the base cannot be reconciled. At 2015Q3 the same concept is below CIT's own
+time deposits, which cannot be true of the whole interest-bearing base. The spike is
+almost certainly a single deposit line, as at Santander, but the rule in 0027 cannot
+refuse it.
 
-| Filer | Cycle | Tier | Beta | Cost at each end |
-|---|---|---|---|---|
-| Santander Holdings USA | Test | 1 | 2.941 | 0.46% → 15.78% |
-| Santander Holdings USA | Calibration | 1 | 1.453 | 2.51% → 5.77% |
-| Raymond James | Test | 1 | 1.695 | 0.06% → 8.89% |
-| Flagstar | Test | 3 | 1.295 | 0.28% → 7.03% |
+Santander's fourth quarters of 2011 to 2014, flagged here until 0027 and recorded in 0025
+as derivation failures, were not. Its 10-K year-end balances tagged a single deposit line
+as the interest-bearing base while its 10-Qs did not until 2016, so only the fourth
+quarters were inflated.
 
-A beta above 1 means deposit costs rose by more than the policy rate. A beta below 0 means
-they fell across a tightening cycle. Either points to a faulty endpoint, not to a real
-bank's behaviour. The construct validity test excludes betas above 1 and reports the
-result both with and without them.
+**Betas outside 0 to 1: none** (`assert_deposit_beta_is_plausible`).
 
-Of the three betas with a `closing_only` endpoint, two are on this list: Santander in the
-calibration cycle (2015Q4) and Flagstar in the test cycle (2022Q1). The third is Discover
-in the calibration cycle. Taking the closing balance alone may contribute to those two
-values. It has not been checked whether it accounts for them.
+The test caught four rows before 0027: Santander in both cycles, Raymond James and
+Flagstar in the test cycle, all with costs measured on a single deposit line. Before 0026
+it also caught BNY Mellon's test-cycle beta of −0.097. A beta above 1 means deposit costs
+rose by more than the policy rate and a beta below 0 means they fell across a tightening
+cycle. Either points to a faulty endpoint rather than to a real bank's behaviour, and every
+case so far has been one.
+
+Three betas have a `closing_only` endpoint: Santander and Discover in the calibration cycle
+(2015Q4) and Flagstar in the test cycle (2022Q1). Taking the closing balance alone errs
+where the balance moved within the quarter. Its size has not been measured for these three.
 
 ---
 
@@ -628,7 +658,8 @@ python analysis/milestone2/cycle_sensitivity.py    # section 5
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 
-`dbt build` currently reports three warnings: the three warn-severity tests in section 10.
+`dbt build` currently reports two warnings, from the cost and derived-quarter tests in
+section 10. The beta range test is also warn-severity and currently passes.
 Outputs are written to each script's `output/` directory. Every figure in this document was
-read from those outputs or from the warehouse after the build above, on 3 October 2026.
+read from those outputs or from the warehouse after the build above, on 4 October 2026.
 Because EDGAR data is live, a later load can differ wherever a filer has restated.

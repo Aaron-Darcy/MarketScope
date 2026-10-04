@@ -52,6 +52,12 @@ NON_DEPOSIT_FUNDING_TAGS: tuple[str, ...] = (
 
 COMPONENT_COVERAGE_FLOOR = 0.80
 
+# Interest-bearing and non-interest-bearing deposits partition total deposits, so a base
+# that leaves part of the total unaccounted for is one deposit line rather than the base.
+# Across the universe a reported base either reconciles to within 0.1 percent or misses by
+# more than 8 percent, so the tolerance separates the two without being tuned to either.
+BASE_RECONCILIATION_TOLERANCE = 0.02
+
 # Deposit expense categories, each contributing to the numerator at most once. A category
 # is taken from its total where the filer publishes one, and otherwise from whichever leaf
 # concepts are present. Totals and leaves are never added together: several filers tag both
@@ -155,6 +161,20 @@ def resolve_noninterest_bearing_deposits(values: Mapping[str, float]) -> Resolve
     return None
 
 
+def reconciles_to_total(interest_bearing: float, values: Mapping[str, float]) -> bool | None:
+    """Whether an interest-bearing base and non-interest-bearing deposits make up the total.
+
+    None where the check cannot be made, because the filer tags no total or no complete
+    non-interest-bearing figure for the quarter.
+    """
+    total = values.get(TOTAL_DEPOSITS_TAG)
+    noninterest_bearing = resolve_noninterest_bearing_deposits(values)
+    if total is None or noninterest_bearing is None or total <= 0:
+        return None
+    gap = abs(interest_bearing + noninterest_bearing.value - total)
+    return gap <= BASE_RECONCILIATION_TOLERANCE * total
+
+
 def resolve_interest_bearing_deposits(values: Mapping[str, float]) -> Resolved | None:
     """Resolve interest-bearing deposits by the most direct route the filer supports.
 
@@ -163,17 +183,22 @@ def resolve_interest_bearing_deposits(values: Mapping[str, float]) -> Resolved |
     interest-bearing share. That share varies widely by business model and moved sharply
     during 2022 and 2023, which makes total deposits unusable for cross-bank comparison.
 
+    A reported or summed base that fails to reconcile to total deposits is passed over for
+    the next route. Several filers tag a single deposit line under the aggregate concept,
+    and dividing by it overstates the cost of deposits by the inverse of that line's share.
+    A base that cannot be checked is used as the filer reports it.
+
     The residual route requires a complete non-interest-bearing figure. A partial one, such
     as a domestic component with no foreign counterpart, would understate what is subtracted
     and silently overstate the interest-bearing base, so it is refused rather than
     approximated.
     """
     reported = values.get(IB_REPORTED_TAG)
-    if reported is not None:
+    if reported is not None and reconciles_to_total(reported, values) is not False:
         return Resolved(reported, Provenance.REPORTED)
 
     summed = _sum_if_complete(values, IB_COMPONENT_TAGS)
-    if summed is not None:
+    if summed is not None and reconciles_to_total(summed, values) is not False:
         return Resolved(summed, Provenance.SUMMED_COMPONENTS)
 
     total = values.get(TOTAL_DEPOSITS_TAG)

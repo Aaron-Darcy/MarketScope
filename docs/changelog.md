@@ -6,6 +6,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Fixed
 
+- An interest-bearing deposit base that does not reconcile to total deposits less
+  non-interest-bearing deposits is passed over for the next route (decision 0027).
+  Santander, Raymond James and Flagstar tag a single deposit line under the aggregate
+  concept, and US Bancorp's excluded large time deposits until 2015Q3, which inflated their
+  costs of deposits by the inverse of the line's share. Every beta outside 0 to 1 is
+  resolved: Santander's fall from 1.453 and 2.941 to 0.240 and 0.548, Raymond James's from
+  1.695 to 0.601 and Flagstar's from 1.295 to 0.647. 104 costs change and no tier does. The
+  cost, derived-quarter and beta plausibility tests fall to 24, 7 and 0 rows, and
+  Santander's 2011 to 2014 fourth-quarter spikes turn out to be the same fault rather than a
+  derivation failure.
 - A fourth quarter that a later filing reports directly is used rather than overwritten by
   one derived from the fiscal year (decision 0026). BNY Mellon's 10-K tags only domestic
   deposit expense under the concept its 10-Qs use for the total, so its derived fourth
@@ -21,6 +31,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Milestone 2 analysis outputs rerun on the reconciled deposit base. Construct validity now
+  covers 32 filers with no beta excluded as implausible, at -0.356, against -0.358 on the
+  30 plausible betas and -0.409 on all 32 when the test was adopted. Every one-quarter
+  boundary shift in the cycle sensitivity holds at 0.887 or above on plausible betas.
 - Milestone 2 analysis outputs rerun on reported fourth quarters. In the cycle sensitivity,
   moving the test cycle's end a quarter either way now holds at 0.987 and 0.983 across all
   filers, where BNY Mellon's derived 2023Q4 had pulled both to about 0.88; the derived

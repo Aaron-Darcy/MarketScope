@@ -988,3 +988,84 @@ difference is in its 10-K. That is recorded rather than special-cased.
 
 The analysis outputs that read the affected quarters, among them the cycle sensitivity in
 0023, are rerun after this change rather than restated here.
+
+---
+
+## 0027 — Refuse an interest-bearing base that does not reconcile to total deposits
+
+**Date** 2026-10-03
+**Status** Accepted. Refines 0012. Resolves the betas above 1.0 carried by 0022 and the
+costs above 8 percent carried by 0024.
+
+**Context.** Three filers' costs of deposits rose steadily past 8 percent from 2023 and
+stayed there, and Santander Holdings USA and Raymond James returned test-cycle betas of
+2.941 and 1.695. The cause is the same in each case. The filer tags one line of its
+deposit table under `InterestBearingDepositLiabilities`, the concept 0012 reads as the
+whole interest-bearing base. At 2023Q4 Santander tags $11.6bn against $77.1bn of deposits,
+of which $15.5bn pay no interest, so its cost of deposits was measured on about a fifth of
+the $61.6bn base and came out at 15.78 percent. Flagstar tags $30.7bn, exactly its
+money-market line, against an interest-bearing base of $61.0bn. Raymond James's tagged
+figure covers between 10 and 40 percent of its base in every quarter it appears. US
+Bancorp, until 2015Q3, tagged interest-bearing deposits excluding time deposits of
+$100,000 or more, which it tagged separately: at 2015Q3, $185.9bn interest-bearing, $83.5bn
+non-interest-bearing and $25.9bn of large time deposits sum exactly to $295.3bn of
+deposits.
+
+Interest-bearing and non-interest-bearing deposits partition total deposits. A base that
+leaves part of the total unaccounted for is therefore not the base, and the filer's own
+figures say so wherever all three are tagged.
+
+**Decision.** Wherever a filer tags total deposits and a complete non-interest-bearing
+figure, a reported or summed interest-bearing base must reconcile with them to within 2
+percent of total deposits. A base that does not is passed over for the next route in
+0012's order, which for every case found is the residual, total deposits less
+non-interest-bearing deposits. A base that cannot be checked is used as reported.
+
+**Evidence for the tolerance.** A reported base can be checked in 1,576 period ends across
+the universe. 1,482 reconcile to within 0.1 percent and the other 94 miss by more than 8
+percent. Nothing falls between, so any tolerance from 0.1 to 8 percent selects the same
+quarters and the 2 percent figure carries no weight. The 94 are Santander's 47, US
+Bancorp's 17, Raymond James's 15, Flagstar's 14 and one Synovus quarter in 2011. Summed
+domestic and foreign components can be checked in 375 period ends. HSBC USA's four
+quarters from 2011Q3 to 2012Q2 miss by 3 to 11 percent and are refused. Its 2017Q3 and
+2017Q4 miss by under 1 percent and pass.
+
+**Alternatives.** Mark the affected quarters tier X. The filer's own total and
+non-interest-bearing figures already give the right base, and excluding a measurable
+quarter discards it for no gain. Treat any cost above 8 percent as missing. That fixes a
+symptom by moving a threshold, and a mis-scoped line covering 90 percent of the base would
+pass under it unnoticed. Use the residual wherever it is available and ignore the reported
+concept. Where the reported base reconciles the two agree to within 0.1 percent anyway, so
+this changes no value, but it would record a derived figure where the filer published one.
+
+**Consequences.** 98 bank-quarters change route, 94 from a reported base and HSBC's four
+from summed components, and 104 costs change, the other six through the opening balance
+of the following quarter. No tier changes, because every refused base resolves to the
+residual at the same tier. Every beta outside 0 to 1 is resolved.
+
+| Filer | Cycle | Before | After |
+|---|---|---|---|
+| Santander Holdings USA | Calibration | 1.453 | 0.240 |
+| Santander Holdings USA | Test | 2.941 | 0.548 |
+| Raymond James | Test | 1.695 | 0.601 |
+| Flagstar, tier 3 | Test | 1.295 | 0.647 |
+| US Bancorp | Calibration | 0.361 | 0.367 |
+
+US Bancorp moves through its opening balance: its calibration cycle starts at 2015Q4, and
+2015Q3 was the last quarter its reported base excluded large time deposits.
+
+The cost range test falls from 54 bank-quarters to 24, all of them negative, and the beta
+range test from 4 rows to none. The derived fourth-quarter test falls from 11 to 7, which
+corrects 0025: Santander's fourth quarters of 2011 to 2014 were not a derivation failure.
+Its 10-K year-end balances tagged the single line while its 10-Qs did not until 2016, so
+only the fourth quarters were inflated.
+
+The check cannot be made on 167 bank-quarters, because the filer tags no total or no
+complete non-interest-bearing figure: Regions 45, KeyCorp 28, BNY Mellon 25, SunTrust 25,
+HSBC USA 22, Truist 20 and CIT 2. Regions and SunTrust tag interest-bearing shares of 62
+to 80 percent of total deposits, which is plausible. CIT's two are not. At 2014Q4 and
+2015Q3 its tagged figure is 45 and 26 percent of deposits at a lender funded almost
+entirely by interest-bearing deposits, and at 2015Q3 it is below CIT's own time deposits,
+which cannot be true of the whole base. They are very likely the same fault, and this rule
+cannot refuse them. 2014Q4 is CIT's derived fourth quarter flagged under 0025. Neither
+quarter is a beta endpoint.
