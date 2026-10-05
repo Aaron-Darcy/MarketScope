@@ -48,8 +48,10 @@ All of these are public and free to redistribute. Nothing licensed is used (spec
   hours.
 - **Units.** Only USD facts are loaded. Share counts, ratios and per-share figures are most
   of each payload and nothing downstream reads them.
-- **Taxonomies.** Facts are loaded from every taxonomy present, including each filer's own
-  extension namespace. Section 3.3 explains why the metric then reads `us-gaap` alone.
+- **Taxonomies.** Facts are loaded from every taxonomy the endpoint publishes: us-gaap,
+  dei, srt, invest, ecd and the filing-fee taxonomy ffd. The endpoint publishes no filer's
+  own extension namespace, so concepts a filer defines for itself never reach the warehouse
+  (0029). Section 3.3 explains why the metric then reads `us-gaap` alone.
 - **Full replace.** Every run replaces the raw tables inside one transaction rather than
   merging into them. The company facts endpoint republishes a filer's whole history when a
   value is revised, so an upsert would leave the superseded value in place looking current.
@@ -160,10 +162,10 @@ question, so they are dropped in one place, inside the panel, and recorded as ch
 
 ### 3.3 Taxonomy pin
 
-The panel reads `us-gaap` only. A filer can declare a concept in its own extension
-namespace under a name the standard taxonomy also uses, and the two are not the same
-concept. Reading every namespace is only for profiling, and the Milestone 0 search for
-tagged average balances is the one place it was used (0011).
+The panel reads `us-gaap` only. One concept name in two taxonomies is two concepts, and
+eight names in the warehouse, `NetCapital` and `DerivativeNotionalAmount` among them, are
+tagged under both us-gaap and srt or invest. Reading every taxonomy is only for profiling,
+and the Milestone 0 search for tagged average balances is the one place it was used (0011).
 
 ### 3.4 Fourth-quarter derivation
 
@@ -293,10 +295,12 @@ Tier X by filer: Flagstar 32 quarters, M&T 31, First Horizon 3, E*TRADE 3, Zions
 
 ### 4.5 Averaging
 
-No filer tags an average deposit balance in any taxonomy, its own extension included
-(0011). Average balances appear only in untagged MD&A tables. Every denominator is
-therefore the mean of the opening and closing period-end balances, with
-`avg_method = 'endpoint'`.
+No filer tags an average deposit balance in any taxonomy the company facts endpoint
+publishes (0011). Average balances appear in the rate and volume tables of the MD&A. The
+endpoint publishes no extension namespace, so whether a filer tags them under its own
+concepts has not been tested (0029). Either way, no reported average reaches the pipeline.
+Every denominator is therefore the mean of the opening and closing period-end balances,
+with `avg_method = 'endpoint'`.
 
 - The opening balance is the previous quarter end resolved through the same base as the
   closing balance. Averaging an interest-bearing close against a total-deposit open would

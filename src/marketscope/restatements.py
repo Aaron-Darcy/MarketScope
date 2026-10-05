@@ -37,8 +37,8 @@ def revision_rows(cik: int, facts: Iterable[Fact]) -> list[tuple[Any, ...]]:
     the value as originally published and the row marked current holds the value the panel
     uses.
     """
-    # A period key carries no taxonomy, and an extension concept sharing a standard name is
-    # a different concept, so each taxonomy's revisions are found separately.
+    # A period key carries no taxonomy, and one concept name in two taxonomies is two
+    # concepts, so each taxonomy's revisions are found separately.
     by_taxonomy: dict[str, list[Fact]] = defaultdict(list)
     for fact in facts:
         by_taxonomy[fact.taxonomy].append(fact)

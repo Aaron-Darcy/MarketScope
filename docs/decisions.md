@@ -1122,3 +1122,46 @@ carried by an ordinary filing — 27,400 by a 10-Q and 17,870 by a 10-K — agai
 a change of segments, and the adoption of new accounting standards, and the table alone
 cannot tell those from error corrections. Classifying them is the first task of the
 secondary question, and nothing is claimed here about how often filers restate.
+
+---
+
+## 0029 — Extension namespaces were never searched; narrow the averaging finding
+
+**Date** 2026-10-05
+**Status** Accepted. Corrects the evidence recorded in 0011, whose decision stands.
+
+**Context.** 0011 records that Milestone 0 scanned every taxonomy present for the twelve
+sample filers, "including each filer's own extension namespace", and found no average
+deposit balance. The methodology, specification 3.1 and comments in the pipeline, the
+fact extraction and the panel say the same thing, and the pipeline's docstring justified
+loading every taxonomy by the extension concepts it would capture.
+
+The company facts endpoint publishes no extension namespace. The 1,809,702 facts loaded
+for 51 filers come from six taxonomies — us-gaap, ffd, invest, dei, srt and ecd — and none
+is a filer's own, although the pipeline loads every taxonomy a payload carries. The
+Milestone 0 scan read the same payloads, so it could not have found an extension concept
+had one existed. The statement was a belief about what the endpoint returns, written up as
+a finding, and nobody checked it until the restatement work listed the taxonomies in the
+warehouse.
+
+**Decision.** The finding is narrowed to what was searched: no filer tags an average
+deposit balance in any taxonomy the endpoint publishes. Whether filers tag averages under
+their own concepts is unknown. Every document and comment that says otherwise is
+corrected.
+
+Endpoint averaging stands. A filer's own average concept, if it exists, is reachable only
+through each filing's XBRL instance or the SEC's Financial Statement and Notes data sets,
+which carry custom tags, and would have to be identified filer by filer. Until then no
+reported average can reach the pipeline whatever the answer.
+
+**Alternatives.** Search the extension namespaces now, through the Financial Statement and
+Notes data sets. Worth doing, but the question it answers is narrower than the one that
+matters, which is how far endpoint averaging misses the true average. Specification 5
+already measures that against the true averages in regulatory filings at Milestone 3, and
+that measurement holds whether or not any filer tags an average.
+
+**Consequences.** No figure changes. The taxonomy pin in the panel keeps its place for a
+different reason than the one recorded: eight concept names in the warehouse, among them
+`NetCapital` and `DerivativeNotionalAmount`, are tagged under both us-gaap and srt or
+invest, and one name in two taxonomies is two concepts. Tests that used a hypothetical
+filer namespace now use srt, which is a case the data contains.

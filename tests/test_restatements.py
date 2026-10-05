@@ -62,12 +62,12 @@ def test_numbering_restarts_for_each_period() -> None:
     ]
 
 
-def test_a_standard_and_an_extension_concept_sharing_a_name_are_not_compared() -> None:
-    """An extension concept under a standard name is a different concept, so a different
-    value for it is not a revision of the standard one."""
+def test_concepts_of_one_name_in_two_taxonomies_are_not_compared() -> None:
+    """One name in two taxonomies is two concepts, so a different value under the other
+    taxonomy is not a revision."""
     facts = [
         _fact(100.0, date(2023, 2, 1), "a"),
-        _fact(999.0, date(2023, 8, 1), "b", taxonomy="jpm"),
+        _fact(999.0, date(2023, 8, 1), "b", taxonomy="srt"),
     ]
 
     assert revision_rows(1, facts) == []

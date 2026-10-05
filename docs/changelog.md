@@ -6,6 +6,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Fixed
 
+- The record that Milestone 0 searched each filer's own extension namespace for average
+  deposit balances is withdrawn (decision 0029). The company facts endpoint publishes no
+  extension namespace: the warehouse holds six standard taxonomies and nothing else, and
+  the search read the same payloads. The averaging finding is narrowed to the taxonomies
+  the endpoint publishes, and comments and documents claiming extension concepts are
+  loaded are corrected. No figure changes.
 - An interest-bearing deposit base that does not reconcile to total deposits less
   non-interest-bearing deposits is passed over for the next route (decision 0027).
   Santander, Raymond James and Flagstar tag a single deposit line under the aggregate

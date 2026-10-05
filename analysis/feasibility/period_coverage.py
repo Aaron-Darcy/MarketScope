@@ -70,8 +70,9 @@ def average_balance_concepts(payload: dict[str, Any]) -> list[dict[str, Any]]:
 
     Average balance sheets are normally presented in the rate and volume tables of the
     MD&A rather than the face financial statements, and are frequently not tagged at all.
-    Where a filer does tag them it is often in its own extension namespace, so this scans
-    every taxonomy rather than us-gaap alone.
+    This scans every taxonomy the payload carries rather than us-gaap alone. The payload
+    carries no filer's own extension namespace, so a concept tagged there cannot be found
+    this way (decision 0029).
     """
     found: list[dict[str, Any]] = []
 

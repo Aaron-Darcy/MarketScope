@@ -147,9 +147,10 @@ the aggregate concept, and dividing by it inflates the cost of deposits by the i
 line's share. A base that cannot be checked is used as reported. See decision 0027.
 
 All denominators are two-point averages of period-end balances. Milestone 0 established
-that no filer in the sample tags an average deposit balance in any taxonomy, including its
-own extension namespace, so reported averages are not available and every row carries
-`avg_method = 'endpoint'`. The distinction the field was intended to record does not arise
+that no filer in the sample tags an average deposit balance in any taxonomy the company
+facts endpoint publishes, so reported averages are not available and every row carries
+`avg_method = 'endpoint'`. The endpoint publishes no filer's own extension namespace, which
+was therefore never searched (decision 0029). The distinction the field was intended to record does not arise
 in practice; it is retained because a filer may begin tagging averages later.
 
 Rules:
@@ -470,6 +471,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-10-05 | Averaging finding in 3.1 narrowed to the taxonomies the company facts endpoint publishes. It publishes no filer extension namespace, so the statement that extension namespaces were searched was wrong. See decision 0029. |
 | 2026-10-05 | Revisions recorded as changes of value in `int_fact_revisions`, added to the model layout in 7.1. The snapshot on the raw fact table is deferred, since one load of the company facts endpoint already carries every filing's value. Section 4 names the table. See decision 0028. |
 | 2026-10-04 | G4′ result in 9.1 annotated with its rerun on the reconciled deposit base: −0.356 across 32 filers, none excluded. The recorded pass is unchanged. |
 | 2026-10-03 | Interest-bearing base in 3.1 must reconcile to total deposits less non-interest-bearing deposits where all three are tagged, and is passed over for the next route where it does not. Provenance table restated across the universe as tier 1 bank-quarters; it still showed twelve-bank sample filer counts. See decision 0027. |

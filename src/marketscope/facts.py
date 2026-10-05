@@ -103,8 +103,9 @@ def extract_facts(
 ) -> list[Fact]:
     """Flatten a company facts payload into rows.
 
-    Passing ``taxonomy=None`` reads every taxonomy present, including the filer's own
-    extension namespace, which is where concepts absent from us-gaap are published.
+    Passing ``taxonomy=None`` reads every taxonomy the payload carries. The company facts
+    endpoint publishes standard taxonomies only, so a filer's own extension concepts never
+    appear in it.
     """
     wanted_tags = set(tags) if tags is not None else None
     wanted_units = set(units)

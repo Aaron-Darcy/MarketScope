@@ -55,9 +55,10 @@ class FilerPayload:
 def fetch_filer(client: SecClient, member: SeedRow) -> FilerPayload:
     """Pull everything the warehouse holds for one filer.
 
-    Facts are read across every taxonomy rather than us-gaap alone, because a filer
-    publishes concepts absent from the standard taxonomy in its own extension namespace,
-    and excluding those would discard exactly the disclosures that differ between filers.
+    Facts are read across every taxonomy the endpoint publishes rather than us-gaap
+    alone, so the raw layer is a copy of the payload and the choice of taxonomy is made
+    downstream, where it can be tested. The endpoint publishes no filer's own extension
+    namespace.
     """
     submissions = client.submissions(member.cik)
     payload = client.company_facts(member.cik)
