@@ -9,7 +9,8 @@ from typing import Any
 
 import pandas as pd
 
-from marketscope.deposit_cost import FACT_FIELDS, deposit_cost_frame
+from marketscope.deposit_cost import deposit_cost_frame
+from marketscope.facts import FACT_FIELDS
 from marketscope.panel import PANEL_TAGS
 
 

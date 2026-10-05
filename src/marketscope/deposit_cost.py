@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from collections import defaultdict
 from collections.abc import Iterable
 from typing import Any
 
 import pandas as pd
 
-from marketscope.facts import Fact
+from marketscope.facts import facts_from_rows
 from marketscope.metrics import (
     EXPENSE_COMPONENT_TAGS,
     EXPENSE_REPORTED_TAG,
@@ -15,23 +14,6 @@ from marketscope.metrics import (
     resolve_deposit_cost,
 )
 from marketscope.panel import Panel, build_panel, previous_quarter_end
-
-# The staging columns a fact is rebuilt from, in the order `facts_from_rows` reads them.
-FACT_FIELDS: tuple[str, ...] = (
-    "cik",
-    "taxonomy",
-    "tag",
-    "unit",
-    "value",
-    "period_start",
-    "period_end",
-    "filed",
-    "accession",
-    "form",
-    "fiscal_year",
-    "fiscal_period",
-    "frame",
-)
 
 DEPOSIT_COST_COLUMNS: tuple[str, ...] = (
     "cik",
@@ -44,16 +26,6 @@ DEPOSIT_COST_COLUMNS: tuple[str, ...] = (
     "component_coverage",
     "q4_derived",
 )
-
-
-def facts_from_rows(rows: Iterable[tuple[Any, ...]]) -> dict[int, list[Fact]]:
-    """Group staged fact rows, ordered as `FACT_FIELDS`, into facts by filer."""
-    by_cik: dict[int, list[Fact]] = defaultdict(list)
-    for row in rows:
-        record = dict(zip(FACT_FIELDS, row, strict=True))
-        cik = int(record.pop("cik"))
-        by_cik[cik].append(Fact(**record))
-    return dict(by_cik)
 
 
 def numerator_derived(cost: DepositCost, derived: frozenset[str]) -> bool:

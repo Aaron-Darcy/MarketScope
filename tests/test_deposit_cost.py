@@ -5,13 +5,8 @@ from typing import Any
 
 import pytest
 
-from marketscope.deposit_cost import (
-    DEPOSIT_COST_COLUMNS,
-    FACT_FIELDS,
-    bank_quarter_rows,
-    deposit_cost_frame,
-    facts_from_rows,
-)
+from marketscope.deposit_cost import DEPOSIT_COST_COLUMNS, bank_quarter_rows, deposit_cost_frame
+from marketscope.facts import FACT_FIELDS, facts_from_rows
 from marketscope.panel import Panel
 
 FILED = date(2023, 2, 1)

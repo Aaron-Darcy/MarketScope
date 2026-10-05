@@ -50,6 +50,34 @@ class Fact:
         return (self.tag, self.unit, self.period_start, self.period_end)
 
 
+# The staging columns a fact is rebuilt from, in the order `facts_from_rows` reads them.
+FACT_FIELDS: tuple[str, ...] = (
+    "cik",
+    "taxonomy",
+    "tag",
+    "unit",
+    "value",
+    "period_start",
+    "period_end",
+    "filed",
+    "accession",
+    "form",
+    "fiscal_year",
+    "fiscal_period",
+    "frame",
+)
+
+
+def facts_from_rows(rows: Iterable[tuple[Any, ...]]) -> dict[int, list[Fact]]:
+    """Group staged fact rows, ordered as `FACT_FIELDS`, into facts by filer."""
+    by_cik: dict[int, list[Fact]] = defaultdict(list)
+    for row in rows:
+        record = dict(zip(FACT_FIELDS, row, strict=True))
+        cik = int(record.pop("cik"))
+        by_cik[cik].append(Fact(**record))
+    return dict(by_cik)
+
+
 def classify_period(start: date | None, end: date) -> Periodicity:
     if start is None:
         return Periodicity.INSTANT
