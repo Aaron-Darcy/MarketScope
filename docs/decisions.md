@@ -1069,3 +1069,56 @@ entirely by interest-bearing deposits, and at 2015Q3 it is below CIT's own time 
 which cannot be true of the whole base. They are very likely the same fault, and this rule
 cannot refuse them. 2014Q4 is CIT's derived fourth quarter flagged under 0025. Neither
 quarter is a beta endpoint.
+
+---
+
+## 0028 — Record revisions as changes of value within a load, and defer the raw snapshot
+
+**Date** 2026-10-05
+**Status** Accepted. Amends the model layout in specification 7.1.
+
+**Context.** Specification 4 requires the values restatement precedence discards to be
+kept in a separate table so restatement magnitude can be measured, and 7.1 plans a dbt
+snapshot on the raw fact table to capture restatements over time. Neither existed.
+`marketscope.facts.superseded` could list the discarded values, but nothing called it, and
+it returned every value other than the current one. That includes every comparative
+column, which republishes a value unchanged. Of 946,834 us-gaap periods in the warehouse,
+506,522 are reported more than once and 44,829 change value. A table of everything not
+current would be dominated by repeats and would make every period look restated.
+
+**Decision.** `int_fact_revisions` holds one row per change of value: the value in force
+and the filing that first published it, and the replacing value and the filing that first
+published that. It is a dbt Python model calling `marketscope.restatements`, and
+`marketscope.facts.revisions` replaces `superseded`. Revisions are ordered by the same
+precedence `latest_filed` applies, so the last revision of a period ends on the value the
+panel uses, and a dbt test requires exactly one such row per revised period.
+
+The table covers us-gaap, where the financial statements are tagged. Outside it, 18,978 of
+19,022 changes were filing-fee facts from prospectus supplements, where every note offered
+on a date reports its own amount against the same instant and separate offerings read as
+revisions of one fact.
+
+The raw snapshot is not built. The company facts endpoint keeps the value from every filing
+that reported a period, comparatives and amendments included, so one load already holds the
+revision history of everything EDGAR publishes. A snapshot would add only changes to the
+endpoint's own content between loads, such as a fact withdrawn, and nothing yet needs that.
+It is deferred, not dropped: if the scheduled refresh at Milestone 6 shows the endpoint
+changing past values, it becomes necessary.
+
+**Alternatives.** Window functions in SQL. That is a second implementation of precedence
+that could disagree with the panel's without anything noticing; sharing the ordering
+function makes disagreement impossible. Keeping every non-current value, as `superseded`
+did, which buries 48,206 changes under half a million repeats. Building the snapshot now as
+7.1 specifies, which costs a stateful table in a project whose raw layer is otherwise
+replaced on every load, to capture something not yet observed.
+
+**Consequences.** 48,206 revisions across 44,829 periods at all 51 filers. 2,883 periods
+are revised more than once, at most nine times. The metric's own concepts account for
+1,167 revisions across 1,124 periods at 47 filers.
+
+A revision is a change of published value, not necessarily a correction. Most are first
+carried by an ordinary filing — 27,400 by a 10-Q and 17,870 by a 10-K — against 553 by a
+10-K/A and 903 by a 10-Q/A. They include reclassifications, recasts after an acquisition or
+a change of segments, and the adoption of new accounting standards, and the table alone
+cannot tell those from error corrections. Classifying them is the first task of the
+secondary question, and nothing is claimed here about how often filers restate.

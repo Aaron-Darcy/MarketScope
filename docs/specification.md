@@ -240,8 +240,10 @@ quarters.
 **Tag drift and restatements.** The taxonomy changes annually and filers change which
 concepts they use. The company facts endpoint returns multiple values for the same period
 from original and amended filings. Precedence: the most recently filed value wins for the
-analytical panel. Superseded values are retained in a separate table so restatement
-magnitude can be measured, which is the input to the secondary question.
+analytical panel. Every change of value is retained in a separate table,
+`int_fact_revisions`, so restatement magnitude can be measured, which is the input to the
+secondary question. A comparative that repeats a published value unchanged is not a
+change.
 
 ---
 
@@ -326,6 +328,7 @@ intermediate/
   int_bank_universe
   int_rate_cycles
   int_deposit_cost          (Python model)
+  int_fact_revisions        (Python model)
   int_filing_timeliness
 
 marts/
@@ -348,9 +351,14 @@ a Python one for analysis and a SQL one for the warehouse. The fact precedence, 
 expense, harmonised balance and bank-quarter panel steps are therefore not separate models.
 See decision 0024.
 
-Sources carry freshness checks. A snapshot on the raw fact table captures restatements
-over time. Macros cover tag-fallback resolution and cycle-window logic. Generated dbt
-documentation is published alongside the site.
+`int_fact_revisions` records every change of value within a load, through the same
+library precedence the panel uses. The company facts endpoint keeps every filing's value
+for a period, so one load holds the full revision history EDGAR publishes, and a snapshot
+on the raw fact table would add only changes to the endpoint's own content between loads.
+That snapshot is deferred until a scheduled refresh shows it is needed. See decision 0028.
+
+Sources carry freshness checks. Macros cover tag-fallback resolution and cycle-window
+logic. Generated dbt documentation is published alongside the site.
 
 ### 7.2 Tests
 
@@ -462,6 +470,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-10-05 | Revisions recorded as changes of value in `int_fact_revisions`, added to the model layout in 7.1. The snapshot on the raw fact table is deferred, since one load of the company facts endpoint already carries every filing's value. Section 4 names the table. See decision 0028. |
 | 2026-10-04 | G4′ result in 9.1 annotated with its rerun on the reconciled deposit base: −0.356 across 32 filers, none excluded. The recorded pass is unchanged. |
 | 2026-10-03 | Interest-bearing base in 3.1 must reconcile to total deposits less non-interest-bearing deposits where all three are tagged, and is passed over for the next route where it does not. Provenance table restated across the universe as tier 1 bank-quarters; it still showed twelve-bank sample filer counts. See decision 0027. |
 | 2026-10-03 | Fourth-quarter derivation in section 4 runs only where no filing reports the quarter directly. BNY Mellon's 10-K tags domestic deposit expense under the concept its 10-Qs use for the total, so its derived quarters were wrong in every year they could be checked. See decision 0026. |
