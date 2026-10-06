@@ -171,12 +171,12 @@ def test_a_restated_value_replaces_the_original() -> None:
     assert quarterly_panel(facts)[date(2022, 12, 31)]["Deposits"] == 110.0
 
 
-def test_an_extension_concept_sharing_a_standard_name_is_not_read_as_the_standard_one() -> None:
-    """A filer may declare a concept in its own namespace under a name the standard
-    taxonomy also uses. The two are not the same concept."""
+def test_a_concept_of_the_same_name_in_another_taxonomy_is_not_read() -> None:
+    """Filers tag `NetCapital` under both us-gaap and srt. One name in two taxonomies is
+    two concepts."""
     facts = [
         _instant("Deposits", 100.0, date(2022, 12, 31), filed=date(2023, 2, 1)),
-        _instant("Deposits", 999.0, date(2022, 12, 31), filed=date(2023, 2, 1), taxonomy="jpm"),
+        _instant("Deposits", 999.0, date(2022, 12, 31), filed=date(2023, 2, 1), taxonomy="srt"),
     ]
 
     assert quarterly_panel(facts)[date(2022, 12, 31)]["Deposits"] == 100.0
@@ -184,7 +184,7 @@ def test_an_extension_concept_sharing_a_standard_name_is_not_read_as_the_standar
 
 def test_reading_every_namespace_is_available_for_profiling() -> None:
     facts = [
-        _instant("Deposits", 999.0, date(2022, 12, 31), filed=date(2023, 2, 1), taxonomy="jpm")
+        _instant("Deposits", 999.0, date(2022, 12, 31), filed=date(2023, 2, 1), taxonomy="srt")
     ]
 
     assert quarterly_panel(facts, taxonomy=None)[date(2022, 12, 31)]["Deposits"] == 999.0

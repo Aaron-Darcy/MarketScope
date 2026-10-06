@@ -6,6 +6,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Fixed
 
+- The record that Milestone 0 searched each filer's own extension namespace for average
+  deposit balances is withdrawn (decision 0029). The company facts endpoint publishes no
+  extension namespace: the warehouse holds six standard taxonomies and nothing else, and
+  the search read the same payloads. The averaging finding is narrowed to the taxonomies
+  the endpoint publishes, and comments and documents claiming extension concepts are
+  loaded are corrected. No figure changes.
 - An interest-bearing deposit base that does not reconcile to total deposits less
   non-interest-bearing deposits is passed over for the next route (decision 0027).
   Santander, Raymond James and Flagstar tag a single deposit line under the aggregate
@@ -107,6 +113,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `int_fact_revisions`, every change of value for a us-gaap period across the filings
+  that reported it, as specification 4 requires of the values restatement precedence
+  discards (decision 0028). A comparative repeating the published value is not a change,
+  so 48,206 revisions are recorded across 44,829 of 946,834 periods rather than every
+  repeat. Ordered by the precedence the panel applies, and tested to end each revised
+  period on exactly one current value. `marketscope.facts.revisions` replaces
+  `superseded`, which nothing called and which counted every comparative as superseded.
 - Derived fourth-quarter plausibility test from specification 7.2, at warn severity: a
   derived quarter is flagged if negative or more than one percentage point outside its
   neighbours' range (decision 0025). It flags 14 quarters, including newly found Q4

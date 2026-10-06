@@ -59,3 +59,41 @@ models:
           The deposit expense numerator, or any component of a reconstructed one, was
           derived as the fiscal year less the first nine months rather than reported.
         tests: [not_null]
+
+  - name: int_fact_revisions
+    description: >
+      Every change of value for a us-gaap period across the filings that reported it, one
+      row per change. A filing that repeats the value already published, as every
+      comparative column does, is not a revision. Ordered by the precedence the panel
+      applies, so the row marked current carries the value the metric uses and revision 1
+      carries the value as first published (decision 0028).
+    columns:
+      - name: cik
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: source('raw', 'universe')
+                field: cik
+      - name: tag
+        tests: [not_null]
+      - name: period_end
+        tests: [not_null]
+      - name: periodicity
+        tests:
+          - accepted_values:
+              arguments:
+                values: [instant, quarterly, semiannual, nine_month, annual, other]
+      - name: revision_number
+        tests: [not_null]
+      - name: previous_value
+        tests: [not_null]
+      - name: revised_value
+        tests: [not_null]
+      - name: previous_filed
+        tests: [not_null]
+      - name: revised_filed
+        tests: [not_null]
+      - name: is_current
+        description: The revised value is the one restatement precedence keeps for the period.
+        tests: [not_null]

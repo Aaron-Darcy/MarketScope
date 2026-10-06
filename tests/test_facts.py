@@ -12,7 +12,7 @@ from marketscope.facts import (
     derive_fourth_quarter,
     extract_facts,
     latest_filed,
-    superseded,
+    revisions,
 )
 
 
@@ -137,7 +137,7 @@ def test_latest_filed_keeps_the_most_recent_value_for_a_period() -> None:
     assert [fact.value for fact in current] == [110.0]
 
 
-def test_superseded_returns_the_replaced_value() -> None:
+def test_a_revision_records_the_replaced_and_replacing_values() -> None:
     payload = payload_with(
         {
             "USD": [
@@ -147,15 +147,79 @@ def test_superseded_returns_the_replaced_value() -> None:
         }
     )
 
-    replaced = superseded(extract_facts(payload))
+    [revision] = revisions(extract_facts(payload))
 
-    assert [fact.value for fact in replaced] == [100.0]
+    assert (revision.previous.value, revision.revised.value) == (100.0, 110.0)
+    assert revision.revised.accession == "b"
+    assert revision.change == 10.0
 
 
-def test_superseded_is_empty_when_nothing_was_restated() -> None:
-    payload = payload_with({"USD": [observation(val=100.0, end="2022-12-31")]})
+def test_a_comparative_repeating_the_value_is_not_a_revision() -> None:
+    """Every 10-Q and 10-K republishes prior periods as comparatives. Counting those would
+    make every period look restated."""
+    payload = payload_with(
+        {
+            "USD": [
+                observation(val=100.0, end="2022-12-31", filed="2023-02-01", accn="a"),
+                observation(val=100.0, end="2022-12-31", filed="2024-02-01", accn="b"),
+            ]
+        }
+    )
 
-    assert superseded(extract_facts(payload)) == []
+    assert revisions(extract_facts(payload)) == []
+
+
+def test_a_revision_is_dated_by_the_filings_that_first_published_each_value() -> None:
+    payload = payload_with(
+        {
+            "USD": [
+                observation(val=100.0, end="2022-12-31", filed="2023-02-01", accn="a"),
+                observation(val=100.0, end="2022-12-31", filed="2023-05-01", accn="b"),
+                observation(val=110.0, end="2022-12-31", filed="2023-08-01", accn="c"),
+                observation(val=110.0, end="2022-12-31", filed="2024-02-01", accn="d"),
+            ]
+        }
+    )
+
+    [revision] = revisions(extract_facts(payload))
+
+    assert (revision.previous.accession, revision.revised.accession) == ("a", "c")
+
+
+def test_a_value_restored_by_a_later_filing_is_a_second_revision() -> None:
+    payload = payload_with(
+        {
+            "USD": [
+                observation(val=100.0, end="2022-12-31", filed="2023-02-01", accn="a"),
+                observation(val=110.0, end="2022-12-31", filed="2023-08-01", accn="b"),
+                observation(val=100.0, end="2022-12-31", filed="2024-02-01", accn="c"),
+            ]
+        }
+    )
+
+    found = revisions(extract_facts(payload))
+
+    assert [(r.previous.value, r.revised.value) for r in found] == [(100.0, 110.0), (110.0, 100.0)]
+
+
+def test_the_last_revision_ends_on_the_value_precedence_keeps() -> None:
+    """Two filings on one date are ordered by accession in both, so the table of revisions
+    can never disagree with the value the panel uses."""
+    payload = payload_with(
+        {
+            "USD": [
+                observation(val=120.0, end="2022-12-31", filed="2023-08-01", accn="b"),
+                observation(val=100.0, end="2022-12-31", filed="2023-02-01", accn="a"),
+                observation(val=110.0, end="2022-12-31", filed="2023-08-01", accn="c"),
+            ]
+        }
+    )
+    facts = extract_facts(payload)
+
+    [current] = latest_filed(facts)
+    found = revisions(facts)
+
+    assert found[-1].revised.value == current.value == 110.0
 
 
 def duration(value: float, start: str, end: str) -> Fact:

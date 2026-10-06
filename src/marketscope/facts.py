@@ -50,6 +50,34 @@ class Fact:
         return (self.tag, self.unit, self.period_start, self.period_end)
 
 
+# The staging columns a fact is rebuilt from, in the order `facts_from_rows` reads them.
+FACT_FIELDS: tuple[str, ...] = (
+    "cik",
+    "taxonomy",
+    "tag",
+    "unit",
+    "value",
+    "period_start",
+    "period_end",
+    "filed",
+    "accession",
+    "form",
+    "fiscal_year",
+    "fiscal_period",
+    "frame",
+)
+
+
+def facts_from_rows(rows: Iterable[tuple[Any, ...]]) -> dict[int, list[Fact]]:
+    """Group staged fact rows, ordered as `FACT_FIELDS`, into facts by filer."""
+    by_cik: dict[int, list[Fact]] = defaultdict(list)
+    for row in rows:
+        record = dict(zip(FACT_FIELDS, row, strict=True))
+        cik = int(record.pop("cik"))
+        by_cik[cik].append(Fact(**record))
+    return dict(by_cik)
+
+
 def classify_period(start: date | None, end: date) -> Periodicity:
     if start is None:
         return Periodicity.INSTANT
@@ -75,8 +103,9 @@ def extract_facts(
 ) -> list[Fact]:
     """Flatten a company facts payload into rows.
 
-    Passing ``taxonomy=None`` reads every taxonomy present, including the filer's own
-    extension namespace, which is where concepts absent from us-gaap are published.
+    Passing ``taxonomy=None`` reads every taxonomy the payload carries. The company facts
+    endpoint publishes standard taxonomies only, so a filer's own extension concepts never
+    appear in it.
     """
     wanted_tags = set(tags) if tags is not None else None
     wanted_units = set(units)
@@ -122,36 +151,60 @@ def latest_filed(facts: Iterable[Fact]) -> list[Fact]:
     """Resolve restatements by keeping the most recently filed value for each period.
 
     The company facts endpoint returns every value a filer has published for a period,
-    including those later revised. Analysis uses the current value; the superseded ones
-    are the input to the filing-behaviour investigation and are kept separately.
+    including those later revised. Analysis uses the current value; the changes are the
+    input to the filing-behaviour investigation and are recorded by `revisions`.
     """
     winners: dict[tuple[str, str, date | None, date], Fact] = {}
 
     for fact in facts:
         incumbent = winners.get(fact.period_key)
-        if incumbent is None or _supersedes(fact, incumbent):
+        if incumbent is None or _precedence(fact) > _precedence(incumbent):
             winners[fact.period_key] = fact
 
     return sorted(winners.values(), key=lambda fact: (fact.tag, fact.period_end))
 
 
-def superseded(facts: Iterable[Fact]) -> list[Fact]:
-    """Return the values that a later filing replaced."""
-    materialised = list(facts)
-    current = {fact.period_key: fact for fact in latest_filed(materialised)}
+@dataclass(frozen=True)
+class Revision:
+    """A later filing publishing a different value for a period than the one in force."""
 
-    return [
-        fact
-        for fact in materialised
-        if fact.accession != current[fact.period_key].accession
-        or fact.value != current[fact.period_key].value
-    ]
+    previous: Fact
+    revised: Fact
+
+    @property
+    def change(self) -> float:
+        return self.revised.value - self.previous.value
 
 
-def _supersedes(candidate: Fact, incumbent: Fact) -> bool:
-    if candidate.filed != incumbent.filed:
-        return candidate.filed > incumbent.filed
-    return (candidate.accession or "") > (incumbent.accession or "")
+def revisions(facts: Iterable[Fact]) -> list[Revision]:
+    """Every change of value for a period, in the order precedence ranks the filings.
+
+    Most repeated values are comparative columns restating what was already published, and
+    are not revisions. A run of filings reporting the same value counts as one published
+    value, dated by the filing that first reported it, so `previous` is when the replaced
+    value first appeared and `revised` is when its replacement did. The last revision for a
+    period always ends on the value `latest_filed` keeps, because both order filings the
+    same way.
+    """
+    by_period: dict[tuple[str, str, date | None, date], list[Fact]] = defaultdict(list)
+    for fact in facts:
+        by_period[fact.period_key].append(fact)
+
+    found: list[Revision] = []
+    for group in by_period.values():
+        ordered = sorted(group, key=_precedence)
+        published = ordered[0]
+        for fact in ordered[1:]:
+            if fact.value != published.value:
+                found.append(Revision(previous=published, revised=fact))
+                published = fact
+
+    return found
+
+
+def _precedence(fact: Fact) -> tuple[date, str]:
+    """Rank of a filing among those reporting a period: later filed, then higher accession."""
+    return (fact.filed, fact.accession or "")
 
 
 def derive_fourth_quarter(facts: Iterable[Fact]) -> list[Fact]:

@@ -19,8 +19,8 @@ cross-bank ordering holds during the far faster 2022–2023 cycle.
 fifty deposit-taking US filers plus one pinned terminal filer loads into DuckDB behind dbt
 staging models. Cost of deposits is resolved for 3,066 bank-quarters, each with a
 comparability tier, and `fct_deposit_beta` carries a tiered beta for every member in both
-study cycles. The restatement table and entity events remain. See
-[docs/specification.md](docs/specification.md).
+study cycles. Every revision to a published value is recorded in its own table. Entity
+events remain. See [docs/specification.md](docs/specification.md).
 
 ---
 

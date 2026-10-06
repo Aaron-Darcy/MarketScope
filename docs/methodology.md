@@ -8,11 +8,11 @@ made. This document says how, in enough detail to reproduce every figure from a 
 checkout. Decisions are cited by number, for example (0021), and specification sections as
 "specification 3.1".
 
-**State at writing, 1 October 2026: Milestone 2 in progress.** Everything up to
-`fct_deposit_beta` is built and tested. The restatement table, the entity events table,
-the survivorship comparison and the regulatory validation are not. Each section says which
-parts are in force and which are still to be built. A planned control is never written up
-as a working one.
+**State at writing, 5 October 2026: Milestone 2 in progress.** Everything up to
+`fct_deposit_beta` is built and tested, and so is the table of revisions. The entity events
+table, the survivorship comparison and the regulatory validation are not. Each section says
+which parts are in force and which are still to be built. A planned control is never
+written up as a working one.
 
 ---
 
@@ -48,8 +48,10 @@ All of these are public and free to redistribute. Nothing licensed is used (spec
   hours.
 - **Units.** Only USD facts are loaded. Share counts, ratios and per-share figures are most
   of each payload and nothing downstream reads them.
-- **Taxonomies.** Facts are loaded from every taxonomy present, including each filer's own
-  extension namespace. Section 3.3 explains why the metric then reads `us-gaap` alone.
+- **Taxonomies.** Facts are loaded from every taxonomy the endpoint publishes: us-gaap,
+  dei, srt, invest, ecd and the filing-fee taxonomy ffd. The endpoint publishes no filer's
+  own extension namespace, so concepts a filer defines for itself never reach the warehouse
+  (0029). Section 3.3 explains why the metric then reads `us-gaap` alone.
 - **Full replace.** Every run replaces the raw tables inside one transaction rather than
   merging into them. The company facts endpoint republishes a filer's whole history when a
   value is revised, so an upsert would leave the superseded value in place looking current.
@@ -155,15 +157,15 @@ higher accession number wins. Precedence is applied concept by concept before th
 assembled, so a revised figure replaces the original instead of both reaching the panel.
 
 Staging deliberately keeps every value. The superseded ones are the input to the secondary
-question, so they are dropped in one place, inside the panel. Section 8.5 covers what is
-not yet built.
+question, so they are dropped in one place, inside the panel, and recorded as changes in
+`int_fact_revisions` (section 8.5).
 
 ### 3.3 Taxonomy pin
 
-The panel reads `us-gaap` only. A filer can declare a concept in its own extension
-namespace under a name the standard taxonomy also uses, and the two are not the same
-concept. Reading every namespace is only for profiling, and the Milestone 0 search for
-tagged average balances is the one place it was used (0011).
+The panel reads `us-gaap` only. One concept name in two taxonomies is two concepts, and
+eight names in the warehouse, `NetCapital` and `DerivativeNotionalAmount` among them, are
+tagged under both us-gaap and srt or invest. Reading every taxonomy is only for profiling,
+and the Milestone 0 search for tagged average balances is the one place it was used (0011).
 
 ### 3.4 Fourth-quarter derivation
 
@@ -293,10 +295,12 @@ Tier X by filer: Flagstar 32 quarters, M&T 31, First Horizon 3, E*TRADE 3, Zions
 
 ### 4.5 Averaging
 
-No filer tags an average deposit balance in any taxonomy, its own extension included
-(0011). Average balances appear only in untagged MD&A tables. Every denominator is
-therefore the mean of the opening and closing period-end balances, with
-`avg_method = 'endpoint'`.
+No filer tags an average deposit balance in any taxonomy the company facts endpoint
+publishes (0011). Average balances appear in the rate and volume tables of the MD&A. The
+endpoint publishes no extension namespace, so whether a filer tags them under its own
+concepts has not been tested (0029). Either way, no reported average reaches the pipeline.
+Every denominator is therefore the mean of the opening and closing period-end balances,
+with `avg_method = 'endpoint'`.
 
 - The opening balance is the previous quarter end resolved through the same base as the
   closing balance. Averaging an interest-bearing close against a total-deposit open would
@@ -546,13 +550,32 @@ cycle level.
 
 **Handled: precedence.** The most recent filing wins (section 3.2).
 
-**Not yet built.** The superseded values are not kept in any table. Specification 7.1
-plans a dbt snapshot on the raw fact table to record restatements over time, and it does
-not exist. Within one load, `marketscope.facts.superseded` can recover which values a later
-filing replaced, but nothing calls it. Restatement magnitude, the input to the secondary
-question, is therefore not yet measurable. Because the raw tables are fully replaced on
-each load (section 1.1), a value revised between two loads leaves no trace until the
-snapshot exists.
+**Handled: revisions.** `int_fact_revisions` records every change of value for a us-gaap
+period, one row per change, built by `marketscope.restatements` with the ordering the
+panel's precedence uses (0028). A filing that repeats the published value, as a comparative
+column does, is not a change: of 946,834 us-gaap periods, 506,522 are reported more than
+once and 44,829 change value. Each row carries the replaced value with the filing that
+first published it and the replacing value with the filing that first published that.
+Revision 1 of a period therefore starts from the value as originally published, and the
+row marked `is_current` ends on the value the panel uses; a dbt test requires exactly one
+such row per revised period.
+
+There are 48,206 revisions at all 51 filers. 2,883 periods are revised more than once, up
+to nine times, and 1,167 revisions fall on the metric's own concepts. Other taxonomies are
+left out: in the filing-fee taxonomy every note offered on a date reports its own amount
+against the same instant, so separate offerings read as revisions of one fact.
+
+**Not yet established.** What the revisions are. 27,400 are first carried by a 10-Q and
+17,870 by a 10-K, against 553 by a 10-K/A and 903 by a 10-Q/A. A change of published value
+can be an error correction, a reclassification, a recast after an acquisition or a change
+of segments, or the adoption of a new standard, and the table does not distinguish them.
+No restatement rate is stated until it does.
+
+**Not built: snapshot.** The raw tables are fully replaced on each load (section 1.1). The
+company facts endpoint keeps every filing's value, so this loses nothing EDGAR still
+publishes, but a value the endpoint itself withdraws between loads leaves no trace.
+Specification 7.1's snapshot on the raw fact table would catch that, and is deferred until
+a scheduled refresh shows it happening (0028).
 
 ---
 

@@ -97,9 +97,10 @@ def build_panel(
     fiscal year less nine months fails in ways a reported quarter cannot, and the failures
     are only testable if the derived rows can be found.
 
-    The taxonomy is pinned because a filer may declare a concept in its own extension
-    namespace under a name the standard taxonomy also uses, and the two are not the same
-    concept. Passing ``None`` reads every namespace and is only safe for profiling.
+    The taxonomy is pinned because one concept name in two taxonomies is two concepts:
+    `NetCapital` and `DerivativeNotionalAmount` are among the names filers tag under both
+    us-gaap and another standard taxonomy. Passing ``None`` reads every taxonomy and is only
+    safe for profiling.
     """
     by_tag: dict[str, list[Fact]] = defaultdict(list)
     for fact in facts:

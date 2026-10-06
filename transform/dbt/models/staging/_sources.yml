@@ -14,10 +14,10 @@ sources:
             tests: [unique, not_null]
       - name: sec_facts
         description: >
-          Every USD fact the company facts endpoint holds for a universe member, across all
-          taxonomies including each filer's own extension namespace. Carries superseded
-          values as well as current ones, so precedence is applied downstream rather than
-          on load.
+          Every USD fact the company facts endpoint holds for a universe member, across
+          every taxonomy it publishes. The endpoint publishes no filer's own extension
+          namespace. Carries superseded values as well as current ones, so precedence is
+          applied downstream rather than on load.
         columns:
           - name: cik
             tests: [not_null]
