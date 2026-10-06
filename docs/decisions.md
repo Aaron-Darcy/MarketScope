@@ -1165,3 +1165,53 @@ different reason than the one recorded: eight concept names in the warehouse, am
 `NetCapital` and `DerivativeNotionalAmount`, are tagged under both us-gaap and srt or
 invest, and one name in two taxonomies is two concepts. Tests that used a hypothetical
 filer namespace now use srt, which is a case the data contains.
+
+---
+
+## 0030 — Keep the most recently filed value: the precedence rule does not carry the result
+
+**Date** 2026-10-06
+**Status** Accepted. Confirms the precedence rule in specification 4.
+
+**Context.** Specification 4 resolves a period reported with different values by taking the
+most recently filed one. The revision audit shows the rule accepting more than corrections.
+Columbia Banking's filings since its 2023 reverse merger report Umpqua's history as its own,
+so the rule replaces Columbia's 2022 figures with Umpqua's, and because a 10-Q restates the
+comparative quarter's expense but not that quarter's balance sheet, a 2022 quarter can
+divide Umpqua's expense by Columbia's balances. A 2025 Raymond James 10-Q reports 2024Q1's
+deposit expense, $441m, against 2023Q1 as well, replacing the $206m that had stood since
+2023. A rule that accepts these could be shaping results, and that had not been measured.
+
+**Test.** `analysis/milestone2/precedence_sensitivity.py` resolves every bank-quarter twice,
+on the most recently filed value of each period and on the value as first published, and
+compares headline-tier betas within each cycle. The cross-cycle persistence result is not
+computed under either rule.
+
+| | Calibration | Test |
+|---|---|---|
+| Filers with a beta under both rules | 43 | 40 |
+| Spearman, latest against original | 1.000 | 0.999 |
+| Median beta, either rule | 0.319 | 0.575 |
+| Betas moving by more than 0.01 | 0 | 1 |
+
+51 of 2,814 headline bank-quarters differ by more than a basis point between the rules, and
+none resolves under one rule but not the other. The one beta that moves is Columbia's
+test-cycle beta: 0.459 on the latest figures, 0.476 on the originals.
+
+**Decision.** The most recently filed value continues to win. The rule does not carry the
+result, and it is the only one that admits a genuine correction.
+
+**Alternatives.** The value as first published, which is immune to a later filing's
+mistakes but discards every correction and recast with them, and measures the same ordering.
+A rule that refuses a revision whose replacing value the same filing also reports for
+another period, which is the signature of Raymond James's mis-dated quarter. Among
+substantive revisions to the metric's concepts it fires seventeen times, and most are small
+figures rounding to the same whole million in two periods, so it cannot tell a mis-dated
+context from a coincidence and would be built for one case.
+
+**Consequences.** Raymond James's 2023Q1 cost of deposits stays at 3.36 percent where the
+original figure gives 1.57, between neighbours of 1.35 and 2.34 percent. It is not a beta
+endpoint and is recorded rather than corrected. Columbia's test-cycle beta is unreliable
+under either rule, because the entity changed inside the cycle. That is an entity
+continuity problem and is handled as one, by the entity events table specification 4
+already requires, rather than by the precedence rule.

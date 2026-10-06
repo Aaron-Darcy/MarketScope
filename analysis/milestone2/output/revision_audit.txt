@@ -1,0 +1,53 @@
+Revisions to us-gaap values, by what changed
+
+Revisions: 48,206 across 51 filers
+
+kind              all   share  median change   panel  headline  headline, current
+precision       9,592   19.9%          0.002     368       107                107
+sign            4,669    9.7%          2.000       8         0                  0
+scale             108    0.2%        999.000       0         0                  0
+amendment       1,286    2.7%          0.024       0         0                  0
+substantive    32,551   67.5%          0.065     791       142                134
+
+Substantive revisions, first carried by:
+  10-Q      19,365
+  10-K      11,831
+  8-K        1,355
+
+Substantive revisions, size of the change relative to the replaced value:
+  25% quantile  0.010
+  50% quantile  0.065
+  75% quantile  0.375
+  90% quantile  1.120
+
+Substantive revisions to headline concepts that the panel now uses, by filer:
+filer                                    revisions  median change
+CIT GROUP INC                                   18          0.001
+CITIGROUP INC                                   16          0.028
+ALLY FINANCIAL INC.                             13          0.028
+COLUMBIA BANKING SYSTEM, INC.                   10          0.984
+SANTANDER HOLDINGS USA, INC.                    10          0.101
+MUFG AMERICAS HOLDINGS CORP                      9          0.082
+POPULAR, INC.                                    6          0.001
+HSBC USA INC /MD/                                6          0.125
+TRUIST FINANCIAL CORP                            5          0.011
+BANK OF NEW YORK MELLON CORP                     5          0.311
+E TRADE FINANCIAL CORP                           4          0.125
+WELLS FARGO & COMPANY/MN                         4          0.005
+BBVA USA BANCSHARES, INC.                        3          0.000
+DISCOVER FINANCIAL SERVICES                      3          0.001
+ZIONS BANCORPORATION, NATIONAL ASSOCIATI         2          0.000
+FIRST CITIZENS BANCSHARES INC /DE/               2          0.032
+FLAGSTAR BANK, NATIONAL ASSOCIATION              2          0.013
+COMERICA INC                                     2          0.000
+SYNCHRONY FINANCIAL                              2          0.002
+HUNTINGTON BANCSHARES INC /MD/                   2          0.003
+SUNTRUST BANKS INC                               2          0.000
+GOLDMAN SACHS GROUP INC                          1          0.002
+CAPITAL ONE FINANCIAL CORP                       1          0.000
+KEYCORP /NEW/                                    1          0.002
+RAYMOND JAMES FINANCIAL INC                      1          1.141
+REGIONS FINANCIAL CORP                           1          0.001
+STATE STREET CORP                                1          0.312
+SYNOVUS FINANCIAL CORP                           1          0.185
+US BANCORP \DE\                                  1          0.158

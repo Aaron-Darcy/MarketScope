@@ -3,11 +3,63 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Iterable
 from datetime import date
+from enum import StrEnum
 from typing import Any
 
 import pandas as pd
 
 from marketscope.facts import Fact, Revision, facts_from_rows, revisions
+
+
+class RevisionKind(StrEnum):
+    """What a revision changed, judged from the two values and the revising form alone."""
+
+    PRECISION = "precision"
+    SIGN = "sign"
+    SCALE = "scale"
+    AMENDMENT = "amendment"
+    SUBSTANTIVE = "substantive"
+
+
+# Filers round to thousands at the finest and to billions at the coarsest.
+_ROUNDING_UNITS: tuple[float, ...] = (1e9, 1e8, 1e7, 1e6, 1e5, 1e4, 1e3)
+
+
+def _rounding_unit(value: float) -> float:
+    """The coarsest power of ten from a thousand up that a value is a whole multiple of.
+
+    Zero is a multiple of every unit, so it says nothing about how a figure was rounded and
+    is given no rounding at all.
+    """
+    if value == 0:
+        return 1.0
+    return next((unit for unit in _ROUNDING_UNITS if value % unit == 0), 1.0)
+
+
+def classify_revision(previous: float, revised: float, revised_form: str | None) -> RevisionKind:
+    """Classify a change of published value by its mechanical signature.
+
+    A figure republished at a coarser rounding, $53,263,000 as $53,000,000, is the same
+    figure. A sign reversal of the same magnitude is a change of presentation convention,
+    and a factor of a thousand is a scale error in one of the two filings. An amendment is
+    named by its form. Whatever is left changed the number itself, by correction,
+    reclassification or recast, which the values alone cannot tell apart.
+    """
+    unit = max(_rounding_unit(previous), _rounding_unit(revised))
+    if unit > 1 and abs(revised - previous) <= unit / 2:
+        return RevisionKind.PRECISION
+    if revised == -previous:
+        return RevisionKind.SIGN
+    if (
+        previous != 0
+        and revised != 0
+        and 999 <= max(abs(revised / previous), abs(previous / revised)) <= 1001
+    ):
+        return RevisionKind.SCALE
+    if revised_form is not None and revised_form.endswith("/A"):
+        return RevisionKind.AMENDMENT
+    return RevisionKind.SUBSTANTIVE
+
 
 REVISION_COLUMNS: tuple[str, ...] = (
     "cik",
