@@ -3,8 +3,16 @@ from __future__ import annotations
 from datetime import date
 from typing import Any
 
+import pytest
+
 from marketscope.facts import FACT_FIELDS, Fact
-from marketscope.restatements import REVISION_COLUMNS, revision_frame, revision_rows
+from marketscope.restatements import (
+    REVISION_COLUMNS,
+    RevisionKind,
+    classify_revision,
+    revision_frame,
+    revision_rows,
+)
 
 END = date(2022, 12, 31)
 
@@ -85,3 +93,29 @@ def test_the_frame_covers_every_filer_in_the_staged_rows() -> None:
 
     assert list(frame.columns) == list(REVISION_COLUMNS)
     assert frame["cik"].tolist() == [1]
+
+
+@pytest.mark.parametrize(
+    ("previous", "revised", "form", "expected"),
+    [
+        (53_263_000.0, 53_000_000.0, "10-K", RevisionKind.PRECISION),
+        (8_592_000.0, 9_000_000.0, "10-Q", RevisionKind.PRECISION),
+        (-1_455_000.0, -1_000_000.0, "10-Q", RevisionKind.PRECISION),
+        (66_000.0, 0.0, "10-Q", RevisionKind.SUBSTANTIVE),
+        (0.0, 400_000_000.0, "10-Q", RevisionKind.SUBSTANTIVE),
+        (12_500_000.0, -12_500_000.0, "10-K", RevisionKind.SIGN),
+        (418_000_000_000.0, 418_000_000.0, "10-K", RevisionKind.SCALE),
+        (2_464_000.0, 4_015_000.0, "10-Q/A", RevisionKind.AMENDMENT),
+        (206_000_000.0, 441_000_000.0, "10-Q", RevisionKind.SUBSTANTIVE),
+    ],
+)
+def test_revisions_are_classified_by_what_changed(
+    previous: float, revised: float, form: str, expected: RevisionKind
+) -> None:
+    assert classify_revision(previous, revised, form) is expected
+
+
+def test_a_change_beyond_the_rounding_unit_is_not_precision() -> None:
+    """$53.3m republished as $54m moves by more than the half-million a rounding to millions
+    can account for."""
+    assert classify_revision(53_263_000.0, 54_000_000.0, "10-K") is RevisionKind.SUBSTANTIVE

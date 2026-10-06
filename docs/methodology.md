@@ -565,11 +565,48 @@ to nine times, and 1,167 revisions fall on the metric's own concepts. Other taxo
 left out: in the filing-fee taxonomy every note offered on a date reports its own amount
 against the same instant, so separate offerings read as revisions of one fact.
 
-**Not yet established.** What the revisions are. 27,400 are first carried by a 10-Q and
-17,870 by a 10-K, against 553 by a 10-K/A and 903 by a 10-Q/A. A change of published value
-can be an error correction, a reclassification, a recast after an acquisition or a change
-of segments, or the adoption of a new standard, and the table does not distinguish them.
-No restatement rate is stated until it does.
+**Partly established: what the revisions are.** `marketscope.restatements.classify_revision`
+separates changes with a mechanical signature from the rest, judging only the two values
+and the form of the revising filing (`analysis/milestone2/revision_audit.py`).
+
+| Kind | Rule, applied in this order | Revisions | Share |
+|---|---|---|---|
+| Precision | Within half the coarser rounding unit of the two values, from $1,000 up | 9,592 | 19.9% |
+| Sign | Same magnitude, opposite sign | 4,669 | 9.7% |
+| Scale | Off by a factor of a thousand | 108 | 0.2% |
+| Amendment | Any other change first carried by a 10-K/A or 10-Q/A | 1,286 | 2.7% |
+| Substantive | Any other change | 32,551 | 67.5% |
+
+A precision revision is the same figure republished at a coarser rounding, typically when
+a filer moves from thousands to millions: $53,263,000 republished as $53,000,000. Zero is
+treated as unrounded, because it is a multiple of every unit and says nothing about how a
+figure was rounded.
+
+Substantive revisions are not all corrections. 19,365 are first carried by a 10-Q, 11,831
+by a 10-K and 1,355 by an 8-K, which is where a recast after an acquisition or a change of
+segments is usually published. Their median moves the replaced value by 6.5 percent, and a
+quarter of them move it by more than 37.5 percent. The two values cannot separate a
+correction from a reclassification, so no restatement rate is stated.
+
+The four concepts a tier 1 or tier 2 cost is computed from directly — deposit interest
+expense, total, interest-bearing and non-interest-bearing deposits — carry 142 substantive
+revisions, and 134 of them supply the value the panel now uses. At most filers they are
+small. Three cases are not:
+
+- **Columbia Banking System.** Its 2023 merger with Umpqua was a reverse acquisition, with
+  Umpqua the accounting acquirer, so Columbia's later filings report Umpqua's history as
+  its own. Year-end 2022 deposits were first published at $16.7bn and are now $27.1bn;
+  deposit expense for 2022 went from $16.5m to $48.2m. A 10-Q restates the comparative
+  quarter's expense but carries only the prior year-end balance sheet, so a 2022 quarter
+  can pair Umpqua's expense with Columbia's own balances. That is an entity continuity
+  problem as much as a restatement (section 8.3).
+- **Raymond James.** A 2025 10-Q reports deposit expense of $441m against 2023Q1, the
+  figure it also reports, correctly, against 2024Q1. $206m had stood for 2023Q1 since
+  2023. The most recent filing wins, so the panel uses $441m for a quarter that is not a
+  beta endpoint.
+- **US Bancorp.** Its 2015 10-K restated the year-end 2014 interest-bearing base from
+  $177.5bn to $205.4bn, the change decision 0027 inferred from the balances: the earlier
+  figure left out large time deposits.
 
 **Not built: snapshot.** The raw tables are fully replaced on each load (section 1.1). The
 company facts endpoint keeps every filing's value, so this loses nothing EDGAR still
@@ -678,6 +715,7 @@ cd transform/dbt && dbt build --profiles-dir . && cd ../..
 python analysis/milestone2/tier_coverage.py        # tiers, provenance, cycle coverage
 python analysis/milestone2/construct_validity.py   # section 7.3
 python analysis/milestone2/cycle_sensitivity.py    # section 5
+python analysis/milestone2/revision_audit.py       # section 8.5
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 

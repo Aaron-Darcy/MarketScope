@@ -113,6 +113,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Revision audit, classifying each change of published value by its mechanical
+  signature: a coarser rounding of the same figure, a sign reversal, a factor of a
+  thousand, an amendment, or a substantive change. Two thirds of the 48,206 revisions are
+  substantive. On the concepts a headline cost is computed from, it finds Columbia
+  Banking's history replaced by Umpqua's after their reverse merger, and a Raymond James
+  2025 10-Q reporting 2024Q1's deposit expense against 2023Q1, which the precedence rule
+  accepts.
 - `int_fact_revisions`, every change of value for a us-gaap period across the filings
   that reported it, as specification 4 requires of the values restatement precedence
   discards (decision 0028). A comparative repeating the published value is not a change,
