@@ -113,6 +113,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Precedence sensitivity, resolving every bank-quarter on each period's first published
+  value as well as its most recently filed one. 51 of 2,814 headline bank-quarters move by
+  more than a basis point and the ordering of betas does not: Spearman 1.000 and 0.999 in
+  the two cycles. The most recently filed value continues to win (decision 0030).
+  `marketscope.facts.earliest_filed` keeps each period's original value for the
+  comparison.
 - Revision audit, classifying each change of published value by its mechanical
   signature: a coarser rounding of the same figure, a sign reversal, a factor of a
   thousand, an amendment, or a substantive change. Two thirds of the 48,206 revisions are

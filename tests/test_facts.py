@@ -10,6 +10,7 @@ from marketscope.facts import (
     Periodicity,
     classify_period,
     derive_fourth_quarter,
+    earliest_filed,
     extract_facts,
     latest_filed,
     revisions,
@@ -135,6 +136,35 @@ def test_latest_filed_keeps_the_most_recent_value_for_a_period() -> None:
     current = latest_filed(extract_facts(payload))
 
     assert [fact.value for fact in current] == [110.0]
+
+
+def test_earliest_filed_keeps_the_value_as_first_published() -> None:
+    payload = payload_with(
+        {
+            "USD": [
+                observation(val=110.0, end="2022-12-31", filed="2023-08-01", accn="b"),
+                observation(val=100.0, end="2022-12-31", filed="2023-02-01", accn="a"),
+            ]
+        }
+    )
+
+    original = earliest_filed(extract_facts(payload))
+
+    assert [fact.value for fact in original] == [100.0]
+
+
+def test_earliest_filed_breaks_a_same_day_tie_on_the_lower_accession() -> None:
+    payload = payload_with(
+        {
+            "USD": [
+                observation(val=110.0, end="2022-12-31", filed="2023-02-01", accn="b"),
+                observation(val=100.0, end="2022-12-31", filed="2023-02-01", accn="a"),
+            ]
+        }
+    )
+
+    assert [fact.value for fact in earliest_filed(extract_facts(payload))] == [100.0]
+    assert [fact.value for fact in latest_filed(extract_facts(payload))] == [110.0]
 
 
 def test_a_revision_records_the_replaced_and_replacing_values() -> None:

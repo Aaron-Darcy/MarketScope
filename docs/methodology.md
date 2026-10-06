@@ -160,6 +160,14 @@ Staging deliberately keeps every value. The superseded ones are the input to the
 question, so they are dropped in one place, inside the panel, and recorded as changes in
 `int_fact_revisions` (section 8.5).
 
+The rule does not carry the result (0030). Resolved on each period's value as first
+published instead, 51 of 2,814 headline-tier bank-quarters move by more than a basis point,
+and the cross-bank ordering of betas is unchanged: Spearman 1.000 in the calibration cycle
+and 0.999 in the test cycle. One beta moves by more than 0.01, Columbia Banking's in the
+test cycle, from 0.459 to 0.476 on the originals, and its problem is the reverse merger
+behind it rather than the rule (section 8.3). Reproduce with
+`python analysis/milestone2/precedence_sensitivity.py`.
+
 ### 3.3 Taxonomy pin
 
 The panel reads `us-gaap` only. One concept name in two taxonomies is two concepts, and
@@ -716,6 +724,7 @@ python analysis/milestone2/tier_coverage.py        # tiers, provenance, cycle co
 python analysis/milestone2/construct_validity.py   # section 7.3
 python analysis/milestone2/cycle_sensitivity.py    # section 5
 python analysis/milestone2/revision_audit.py       # section 8.5
+python analysis/milestone2/precedence_sensitivity.py  # section 3.2
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 

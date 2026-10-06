@@ -164,6 +164,22 @@ def latest_filed(facts: Iterable[Fact]) -> list[Fact]:
     return sorted(winners.values(), key=lambda fact: (fact.tag, fact.period_end))
 
 
+def earliest_filed(facts: Iterable[Fact]) -> list[Fact]:
+    """Keep each period's value as first published, the reverse of `latest_filed`.
+
+    The metric never uses it. It exists so the dependence of a result on the precedence
+    rule can be measured by running the same calculation on original figures.
+    """
+    firsts: dict[tuple[str, str, date | None, date], Fact] = {}
+
+    for fact in facts:
+        incumbent = firsts.get(fact.period_key)
+        if incumbent is None or _precedence(fact) < _precedence(incumbent):
+            firsts[fact.period_key] = fact
+
+    return sorted(firsts.values(), key=lambda fact: (fact.tag, fact.period_end))
+
+
 @dataclass(frozen=True)
 class Revision:
     """A later filing publishing a different value for a period than the one in force."""

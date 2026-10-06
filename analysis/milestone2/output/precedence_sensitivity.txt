@@ -1,0 +1,46 @@
+Precedence sensitivity: most recently filed against first published values
+
+Headline-tier bank-quarters under either rule: 2,814
+  resolved under both:                         2,814
+  differing by more than one basis point:      51
+  resolved under one rule only:                0
+
+Bank-quarters differing by more than one basis point, by filer:
+  CITIGROUP INC                              11
+  ALLY FINANCIAL INC.                         8
+  COLUMBIA BANKING SYSTEM, INC.               6
+  MUFG AMERICAS HOLDINGS CORP                 5
+  SANTANDER HOLDINGS USA, INC.                4
+  CIT GROUP INC                               4
+  TRUIST FINANCIAL CORP                       3
+  HSBC USA INC /MD/                           3
+  E TRADE FINANCIAL CORP                      3
+  RAYMOND JAMES FINANCIAL INC                 2
+  CAPITAL ONE FINANCIAL CORP                  1
+  STATE STREET CORP                           1
+
+Calibration cycle, 2015-12-31 to 2019-03-31
+  filers with a headline-tier beta under both rules: 43
+  median beta, latest 0.319, original 0.319
+  Spearman, all filers:            +1.000
+  Spearman, plausible under both:  +1.000 (43 filers)
+  filers whose beta moves by more than 0.01: 0
+  largest movers, latest against original:
+    JPMORGAN CHASE & CO                      0.299   0.296
+    ZIONS BANCORPORATION, NATIONAL ASSOCIA   0.252   0.250
+    DISCOVER FINANCIAL SERVICES              0.415   0.416
+    SYNCHRONY FINANCIAL                      0.345   0.346
+    HUNTINGTON BANCSHARES INC /MD/           0.239   0.239
+
+Test cycle, 2022-03-31 to 2023-12-31
+  filers with a headline-tier beta under both rules: 40
+  median beta, latest 0.575, original 0.575
+  Spearman, all filers:            +0.999
+  Spearman, plausible under both:  +0.999 (40 filers)
+  filers whose beta moves by more than 0.01: 1
+  largest movers, latest against original:
+    COLUMBIA BANKING SYSTEM, INC.            0.459   0.476
+    TRUIST FINANCIAL CORP                    0.510   0.503
+    JPMORGAN CHASE & CO                      0.527   0.528
+    WESTERN ALLIANCE BANCORPORATION          0.645   0.645
+    FIRST CITIZENS BANCSHARES INC /DE/       0.572   0.572
