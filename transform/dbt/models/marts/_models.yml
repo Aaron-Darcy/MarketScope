@@ -72,3 +72,26 @@ models:
         description: Null where either endpoint is unresolved or at tier X.
       - name: cycle_quarters
         tests: [not_null]
+      - name: material_event_in_cycle
+        description: >
+          A material acquisition or reverse acquisition by the filer completed in a quarter
+          from the cycle's start to its measured end, so the deposit base changed between
+          the two costs the beta compares.
+        tests: [not_null]
+
+  - name: bank_entity_events
+    description: >
+      Every entity event in the `entity_events` seed, with the quarter it falls in and the
+      step it produced in the member's total deposits, from the quarter end before to the
+      quarter end it completed in. An acquisition moving the base by a tenth or more is
+      material, and one whose step cannot be measured is treated as material (decision
+      0032).
+    columns:
+      - name: cik
+        tests: [not_null]
+      - name: event_quarter
+        tests: [not_null]
+      - name: event_type
+        tests: [not_null]
+      - name: material
+        description: Null for exits and failures, which end a series rather than change it.

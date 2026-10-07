@@ -97,3 +97,30 @@ models:
       - name: is_current
         description: The revised value is the one restatement precedence keeps for the period.
         tests: [not_null]
+
+  - name: int_deposit_balances
+    description: >
+      Total, interest-bearing and non-interest-bearing deposits at every calendar quarter
+      end a filer reports any of them, resolved by the library functions the cost of
+      deposits uses. Present for quarters where no cost resolves, which is what the deposit
+      step of an entity event needs.
+    columns:
+      - name: cik
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: source('raw', 'universe')
+                field: cik
+      - name: quarter_end
+        tests: [not_null]
+      - name: interest_bearing_provenance
+        tests:
+          - accepted_values:
+              arguments:
+                values: [reported, summed_components, derived_residual]
+      - name: noninterest_bearing_provenance
+        tests:
+          - accepted_values:
+              arguments:
+                values: [reported, summed_components]

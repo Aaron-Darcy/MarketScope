@@ -231,7 +231,9 @@ complete cycle rather than silently truncated into it.
 affected bank-quarters are flagged and banks with a material mid-cycle acquisition are
 shown separately in rankings. XBRL records none of these, so the events are curated by hand
 in the `entity_events` seed, each citing the filing that reports it, and every citation is
-checked against the filer's EDGAR history (decision 0031).
+checked against the filer's EDGAR history (decision 0031). An acquisition is material when it
+moves the member's total deposits by a tenth or more in the quarter it completes, measured
+from the filer's own balances (decision 0032).
 
 **Fourth-quarter derivation.** Most filers do not file a fourth 10-Q, so Q4 flow items are
 derived as fiscal year less the first three quarters. A fourth quarter that any filing
@@ -331,6 +333,7 @@ intermediate/
   int_bank_universe
   int_rate_cycles
   int_deposit_cost          (Python model)
+  int_deposit_balances      (Python model)
   int_fact_revisions        (Python model)
   int_filing_timeliness
 
@@ -473,6 +476,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-10-07 | Materiality of an entity event defined in section 4 as a deposit step of a tenth or more in the quarter it completes. `int_deposit_balances` added to the model layout in 7.1. See decision 0032. |
 | 2026-10-07 | Entity events in section 4 curated in the `entity_events` seed, each citing the filing that reports it, checked against EDGAR. See decision 0031. |
 | 2026-10-05 | Averaging finding in 3.1 narrowed to the taxonomies the company facts endpoint publishes. It publishes no filer extension namespace, so the statement that extension namespaces were searched was wrong. See decision 0029. |
 | 2026-10-05 | Revisions recorded as changes of value in `int_fact_revisions`, added to the model layout in 7.1. The snapshot on the raw fact table is deferred, since one load of the company facts endpoint already carries every filing's value. Section 4 names the table. See decision 0028. |

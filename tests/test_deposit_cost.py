@@ -5,7 +5,14 @@ from typing import Any
 
 import pytest
 
-from marketscope.deposit_cost import DEPOSIT_COST_COLUMNS, bank_quarter_rows, deposit_cost_frame
+from marketscope.deposit_cost import (
+    DEPOSIT_BALANCE_COLUMNS,
+    DEPOSIT_COST_COLUMNS,
+    bank_quarter_rows,
+    deposit_balance_frame,
+    deposit_balance_rows,
+    deposit_cost_frame,
+)
 from marketscope.facts import FACT_FIELDS, facts_from_rows
 from marketscope.panel import Panel
 
@@ -154,3 +161,45 @@ def test_no_facts_give_an_empty_frame_with_the_expected_columns() -> None:
 
     assert frame.empty
     assert list(frame.columns) == list(DEPOSIT_COST_COLUMNS)
+
+
+def test_balances_are_kept_for_quarters_where_no_cost_resolves() -> None:
+    """Schwab reports total deposits through 2020 with no cost resolving before 2021."""
+    rows = [
+        _row(1, "Deposits", 320.0, date(2020, 9, 30)),
+        _row(1, "Deposits", 358.0, date(2020, 12, 31)),
+    ]
+
+    assert deposit_cost_frame(rows).empty
+    balances = deposit_balance_frame(rows)
+    assert list(balances.columns) == list(DEPOSIT_BALANCE_COLUMNS)
+    assert balances["total_deposits"].tolist() == [320.0, 358.0]
+
+
+def test_balances_resolve_the_interest_bearing_base_through_the_metric() -> None:
+    """The base is the one the cost of deposits divides by, reconciliation included."""
+    panel = Panel(
+        values={
+            date(2023, 12, 31): {
+                "Deposits": 1_000.0,
+                "InterestBearingDepositLiabilities": 150.0,
+                "NoninterestBearingDepositLiabilities": 200.0,
+            }
+        },
+        derived={},
+    )
+
+    [row] = [
+        dict(zip(DEPOSIT_BALANCE_COLUMNS, r, strict=True)) for r in deposit_balance_rows(1, panel)
+    ]
+
+    assert row["interest_bearing_deposits"] == 800.0
+    assert row["interest_bearing_provenance"] == "derived_residual"
+    assert row["noninterest_bearing_provenance"] == "reported"
+
+
+def test_a_balance_dated_off_a_quarter_end_is_left_out() -> None:
+    """Capital One tags deposits at 18 May 2025, the date it acquired Discover."""
+    panel = Panel(values={date(2025, 5, 18): {"Deposits": 500.0}}, derived={})
+
+    assert deposit_balance_rows(1, panel) == []

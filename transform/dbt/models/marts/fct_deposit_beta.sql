@@ -39,6 +39,14 @@ costs as (
 
 ),
 
+material_events as (
+
+    select cik, event_quarter
+    from {{ ref('bank_entity_events') }}
+    where material
+
+),
+
 last_resolved as (
 
     select cik, max(quarter_end) as last_quarter
@@ -134,7 +142,17 @@ select
     end as deposit_beta,
     coverage.cycle_quarters,
     coverage.tier_1_quarters,
-    coverage.tier_1_or_2_quarters
+    coverage.tier_1_or_2_quarters,
+    -- A material acquisition completing in any quarter from the start to the measured end
+    -- changes the deposit base between the two costs a beta compares, including one in the
+    -- start quarter itself, whose average balance straddles the completion.
+    exists (
+        select 1
+        from material_events
+        where material_events.cik = endpoints.cik
+          and material_events.event_quarter
+              between endpoints.start_quarter and endpoints.measured_end_quarter
+    ) as material_event_in_cycle
 from endpoints
 join coverage
   on coverage.cik = endpoints.cik

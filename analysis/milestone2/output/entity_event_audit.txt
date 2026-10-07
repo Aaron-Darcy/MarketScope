@@ -1,14 +1,18 @@
 Entity events checked against the filings they cite
 
-Events: 44, supported: 44, unsupported: 0
+Events: 53, supported: 53, unsupported: 0
 
 date        type                 filer                            counterparty                   evidence
+2015-06-30  acquisition          WESTERN ALLIANCE BANCORPORATION  Bridge Capital Holdings        8-K 2.01    ok
+2015-08-03  acquisition          CIT GROUP INC                    IMB HoldCo (OneWest Bank)      8-K 2.01    ok
+2015-10-06  acquisition          PACWEST BANCORP                  Square 1 Financial             8-K 8.01    ok
 2015-11-01  acquisition          M&T BANK CORP                    Hudson City Bancorp            8-K 2.01    ok
 2016-04-01  acquisition          TRUIST FINANCIAL CORP            National Penn Bancshares       8-K 2.01    ok
 2016-08-01  acquisition          KEYCORP /NEW/                    First Niagara Financial Group  8-K 2.01    ok
 2016-08-16  acquisition          HUNTINGTON BANCSHARES INC /MD/   FirstMerit Corporation         8-K 2.01    ok
 2017-04-01  acquisition          PEOPLE'S UNITED FINANCIAL, INC.  Suffolk Bancorp                8-K 2.01    ok
 2017-10-20  acquisition          PACWEST BANCORP                  CU Bancorp                     8-K 8.01    ok
+2017-11-01  acquisition          COLUMBIA BANKING SYSTEM, INC.    Pacific Continental Corporatio 8-K 2.01    ok
 2017-11-30  acquisition          FIRST HORIZON CORP               Capital Bank Financial         8-K 2.01    ok
 2018-01-01  acquisition          VALLEY NATIONAL BANCORP          USAmeriBancorp                 8-K 2.01    ok
 2018-10-01  acquisition          BOK FINANCIAL CORP               CoBiz Financial                8-K 2.01    ok
@@ -47,3 +51,8 @@ date        type                 filer                            counterparty  
 2023-11-30  exit_merger          PACWEST BANCORP                  Banc of California             8-K 2.01    ok
 2025-05-18  acquisition          CAPITAL ONE FINANCIAL CORP       Discover Financial Services    8-K 2.01    ok
 2025-05-18  exit_merger          DISCOVER FINANCIAL SERVICES      Capital One Financial Corporat 8-K 2.01    ok
+2025-08-31  acquisition          COLUMBIA BANKING SYSTEM, INC.    Pacific Premier Bancorp        8-K 2.01    ok
+2026-01-01  exit_merger          SYNOVUS FINANCIAL CORP           Pinnacle Financial Partners    8-K 2.01    ok
+2026-02-01  exit_merger          COMERICA INC                     Fifth Third Bancorp            8-K 2.01    ok
+2026-02-01  acquisition          FIFTH THIRD BANCORP              Comerica Incorporated          8-K 2.01    ok
+2026-02-01  acquisition          HUNTINGTON BANCSHARES INC /MD/   Cadence Bank                   8-K 2.01    ok

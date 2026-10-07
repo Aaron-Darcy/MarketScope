@@ -1273,3 +1273,70 @@ never recorded a way to show up.
 MUFG Americas Holdings left EDGAR by deregistering in October 2021, after its 2021Q2 10-Q,
 and not when its bank was sold to U.S. Bancorp in December 2022. Its exit is recorded at the
 deregistration.
+
+---
+
+## 0032 — Measure each event by the deposit step it produced; a tenth is material
+
+**Date** 2026-10-07
+**Status** Accepted. Extends 0031.
+
+**Context.** Specification 4 requires a bank with a material acquisition inside a cycle to
+be shown separately, and 0031 recorded the events without measuring any of them. Deal
+announcements quote the target's assets, which are not in the warehouse, would be one more
+hand-entered figure, and are not the quantity that matters. What moves a beta is the share
+of the acquirer's deposit base the acquisition brought in.
+
+**Decision.** Each acquisition is measured by the step in the member's total deposits from
+the quarter end before it completed to the quarter end it completed in. Balances come from
+`int_deposit_balances`, a new Python model holding the deposit base at every quarter end a
+filer reports it, resolved by the same library functions as the cost of deposits. It exists
+because `int_deposit_cost` holds only quarters where a cost resolves: Schwab reports
+deposits throughout 2020, but no cost resolves before 2021, and its TD Ameritrade
+acquisition closed in that gap.
+
+An acquisition is material if the step is a tenth or more. A step that cannot be measured
+counts as material, because a size that cannot be read is not evidence of a small one.
+`fct_deposit_beta.material_event_in_cycle` flags a beta when a material acquisition
+completed in any quarter from the cycle's start to its measured end, the start quarter
+included because its average balance straddles the completion.
+
+**Evidence for the threshold.** Of 42 acquisitions, four moved the base by less than 9
+percent: First Republic at JPMorgan by 0.9 percent, Suffolk at People's United by 4.3,
+National Penn at BB&T by 5.8 and First Connecticut at People's United by 8.9. The other 38
+moved it by 11.4 percent or more. Any line between 9 and 11 percent selects the same events.
+The scale is right for the purpose: acquired deposits that are a tenth of the base and cost
+one percentage point more than the acquirer's move the end-point cost by a tenth of a point,
+about 0.02 of a test-cycle beta.
+
+**What the measurement exposed.** Every quarter since 2015 in which deposits stepped by more
+than 15 percent with no recorded event to explain it was checked for a completion filing.
+Nine events had one and were missing from the seed: CIT's acquisition of OneWest and Western
+Alliance's of Bridge Capital in 2015; PacWest's of Square 1, which closed in PacWest's
+calibration start quarter; Columbia Banking's of Pacific Continental in 2017 and of Pacific
+Premier in 2025; Fifth Third's of Comerica and Huntington's of Cadence Bank in February
+2026; and the exits of Comerica and Synovus, both universe members, on 1 February and 1
+January 2026. All nine were verified against the filing text and added. The seed holds 53
+events, and the audit supports all 53.
+
+Comerica and Synovus last filed a 10-Q for 2025Q3. The terminal-filer test of 0031 waited
+until a filer's last periodic report was a year older than the newest, so it would not have
+caught either until late 2026. It now waits six months, two missed quarterly reports, and
+eleven members are terminal.
+
+Large steps remain with no completion filing to explain them: the deposit surge of 2020 at
+many filers; Santander Holdings USA in 2015Q4 and 2016Q3; Goldman Sachs in 2016Q2, the
+quarter it bought GE Capital Bank's online deposits, which no Goldman filing reports;
+E*TRADE in 2017Q1; Ameriprise in 2022Q3; and BNY Mellon in 2026Q1. None is recorded as an
+event, because a recorded event has to cite its evidence.
+
+**Alternatives.** Size each acquisition from its announcement, rejected above. A lower line,
+such as 5 percent, which flags National Penn and Suffolk without any gap in the data to
+justify it. Flagging every acquisition inside a cycle regardless of size, which would set
+JPMorgan's test-cycle beta apart for an acquisition that moved its base by 0.9 percent.
+
+**Consequences.** 38 acquisitions are material. In the calibration cycle the flag falls on
+ten filers, nine of which have a beta; in the test cycle on nine, eight of which have one.
+Columbia Banking's test-cycle beta is flagged through Umpqua, the reverse acquisition behind
+the mixing recorded in 0030. The step includes any organic change in the same quarter, so it
+overstates an acquisition completing during a surge, which errs towards flagging.
