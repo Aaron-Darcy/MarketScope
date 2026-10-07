@@ -113,6 +113,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `entity_events`, a seed of the 44 acquisitions, mergers, exits and failures affecting a
+  universe member from 2015, curated by hand because XBRL records none of them (decision
+  0031). Each row cites the filing that reports the event, and an audit script checks every
+  citation against the filer's EDGAR history; all 44 pass. dbt tests require an exit or
+  failure event for every member that stopped filing periodic reports, which all nine do,
+  and refuse an exit dated before a filer's last periodic report.
 - Precedence sensitivity, resolving every bank-quarter on each period's first published
   value as well as its most recently filed one. 51 of 2,814 headline bank-quarters move by
   more than a basis point and the ordering of betas does not: Spearman 1.000 and 0.999 in

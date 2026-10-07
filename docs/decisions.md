@@ -1215,3 +1215,61 @@ endpoint and is recorded rather than corrected. Columbia's test-cycle beta is un
 under either rule, because the entity changed inside the cycle. That is an entity
 continuity problem and is handled as one, by the entity events table specification 4
 already requires, rather than by the precedence rule.
+
+---
+
+## 0031 — Curate entity events by hand and cite the filing behind each
+
+**Date** 2026-10-07
+**Status** Accepted
+
+**Context.** Specification 4 requires a table of mergers, acquisitions, CIK changes and
+failures, so that bank-quarters an event touches can be flagged and a bank with a material
+acquisition inside a cycle shown separately. XBRL records none of these. The revision audit
+has already shown what an unrecorded event does: Columbia Banking's filings since its 2023
+reverse merger report Umpqua's history as Columbia's own, and nothing in the warehouse said
+so.
+
+**Decision.** Events are curated by hand in a dbt seed, `entity_events`, and every row cites
+the filing that reports it. `analysis/milestone2/entity_event_audit.py` checks each citation
+against the filer's EDGAR history: the accession must belong to the filer, carry the form
+and 8-K item cited, and have been filed between two days before the event and six days
+after it, which covers the four business days an 8-K is due within.
+
+The scope is events from 2015 that change a member's deposit base or end its reporting:
+acquisitions of deposit-taking institutions or their deposits, including three purchased
+from the FDIC as receiver; one reverse acquisition; seven exits by merger; one
+deregistration; and one failure. Forty-four events, thirty-six evidenced by an 8-K Item 2.01
+completion report, four by an Item 8.01 press release announcing completion, two by a Form
+15, one by an Item 1.03 receivership report, and one, Citizens' acquisition of Investors
+Bancorp, by an 8-K announcing the expected closing date because no completion report was
+filed. That last is the weakest evidence in the table and is noted on the row.
+
+Out of scope: acquisitions that brought no deposits, such as Morgan Stanley's of Eaton
+Vance; branch purchases and sales; and changes of name or structure under an unchanged CIK,
+such as BB&T becoming Truist or Zions merging its holding company into its bank in 2018,
+where the filer and its reported history continue unbroken. No member changed CIK. Goldman
+Sachs' 2016 purchase of GE Capital Bank's online deposits was considered and left out,
+because no Goldman filing reporting it could be found.
+
+**Alternatives.** Infer events from steps in reported deposits. That detects that something
+happened but neither names nor dates it, and the deposit surge of 2020 produces steps no
+acquisition caused. Take the history of each institution from the FFIEC's National
+Information Center, which is the regulatory record of mergers. It is keyed on RSSD rather
+than CIK and, as 0016 found, the FFIEC's bulk data sits behind a CAPTCHA. It remains the
+natural check when regulatory data is ingested at Milestone 3.
+
+**Consequences.** A dbt test requires every member whose last 10-K or 10-Q is more than a
+year older than the newest in the load to carry an exit or failure event, so a filer leaving
+the data cannot pass for a coverage gap. Nine qualify and all nine have one. A second test
+refuses an exit dated before the period of the filer's last periodic report.
+
+The table is maintained by hand, so an event after the last edit is missing until someone
+adds it. The terminal-filer test catches an unrecorded exit at the next load; an unrecorded
+acquisition by a member that keeps filing is caught by nothing yet. The deposit step each
+event produced is measured in the next change, which also gives an acquisition that was
+never recorded a way to show up.
+
+MUFG Americas Holdings left EDGAR by deregistering in October 2021, after its 2021Q2 10-Q,
+and not when its bank was sold to U.S. Bancorp in December 2022. Its exit is recorded at the
+deregistration.

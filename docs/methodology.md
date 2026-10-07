@@ -505,18 +505,44 @@ is not yet tested anywhere.
 
 ### 8.3 Entity continuity
 
-**Not yet built.** The `bank_entity_events` table does not exist, and no bank-quarter is
-flagged for a merger. The twelve-bank sample records the relevant events as text: Truist
-formed from BB&T and SunTrust (2019), PNC acquiring BBVA USA (2021), M&T acquiring People's
-United (2022), U.S. Bancorp acquiring MUFG Union Bank (2022), JPMorgan acquiring First
-Republic (2023). None is applied to any result.
+**Built: the event record.** XBRL records no mergers, failures or deregistrations, so the
+`entity_events` seed is curated by hand (0031). It holds 44 events from 2015 that change a
+member's deposit base or end its reporting:
 
-**Consequence.** An acquisition within a cycle changes the deposit base between endpoints.
-If the acquired deposits cost more or less than the acquirer's, the beta moves for a reason
-that has nothing to do with repricing. Until the table exists, a beta for a filer that made
-a material acquisition inside a cycle cannot be told apart from behaviour. In the test
-cycle that includes JPMorgan and U.S. Bancorp at least. This is a Milestone 2 deliverable
-and it is still outstanding.
+| Type | Events | Members |
+|---|---|---|
+| `acquisition` of a deposit-taking institution or its deposits | 34 | 24 |
+| `reverse_acquisition`, the counterparty being the accounting acquirer | 1 | 1 |
+| `exit_merger` | 7 | 7 |
+| `exit_deregistration` | 1 | 1 |
+| `failure` | 1 | 1 |
+
+Every row cites the filing that reports the event: an 8-K Item 2.01 completion report for
+36, an Item 8.01 press release for 5, a Form 15 for 2 and an Item 1.03 receivership report
+for SVB. `python analysis/milestone2/entity_event_audit.py` checks each citation against the
+filer's EDGAR history — the accession belongs to the filer, carries the form and item cited,
+and was filed between two days before the event and six days after it — and all 44 pass.
+One of the 8.01 filings, for Citizens' acquisition of Investors Bancorp, announces the
+expected closing date rather than the closing, because Citizens filed no completion report.
+
+Two dbt tests guard the exits. Every member whose last 10-K or 10-Q is more than a year
+older than the newest in the load must carry an exit or failure event; nine do, which is
+every terminal filer in the universe. No exit may be dated before the period of the
+filer's last periodic report.
+
+Left out: acquisitions that brought no deposits, branch purchases and sales, changes of name
+or structure under an unchanged CIK, and Goldman Sachs' 2016 purchase of GE Capital Bank's
+online deposits, which no Goldman filing reports. No member changed CIK.
+
+The reverse acquisition matters most. Columbia Banking's 2023 merger with Umpqua made
+Umpqua the accounting acquirer, so Columbia's later filings report Umpqua's history as
+Columbia's own (section 8.5). The precedence rule then mixes the two entities: a 10-Q
+restates the comparative quarter's expense but not that quarter's balance sheet.
+
+**Not yet built.** No bank-quarter or beta is flagged yet, and nothing measures how material
+each event was. Until that exists, a beta for a filer that made a material acquisition
+inside a cycle cannot be told apart from behaviour. Twelve of the events fall inside the
+calibration cycle and sixteen inside the test cycle.
 
 ### 8.4 Fourth-quarter derivation
 
@@ -725,6 +751,7 @@ python analysis/milestone2/construct_validity.py   # section 7.3
 python analysis/milestone2/cycle_sensitivity.py    # section 5
 python analysis/milestone2/revision_audit.py       # section 8.5
 python analysis/milestone2/precedence_sensitivity.py  # section 3.2
+python analysis/milestone2/entity_event_audit.py   # section 8.3, needs the SEC
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 
