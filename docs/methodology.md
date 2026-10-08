@@ -477,12 +477,28 @@ below.
 Every member keeps a row in `fct_deposit_beta`, which a dbt test enforces.
 
 **Built: exits.** Eleven members stopped filing periodic reports, and each carries an
-exit or failure event in `entity_events`, which a dbt test enforces (section 8.3): SVB's
-failure, MUFG Americas' deregistration and nine exits by merger.
+exit or failure event in `entity_events`, which a dbt test enforces (section 8.3).
+`dim_bank` holds one row per member with its last filed period, the period of its last
+10-K or 10-Q, and the type, date and counterparty of its exit, as specification 4 requires.
+
+| Member | Last filed period | Exit | Date |
+|---|---|---|---|
+| SunTrust | 2019Q3 | merger into BB&T | 2019-12-06 |
+| E*TRADE | 2020Q2 | merger into Morgan Stanley | 2020-10-02 |
+| BBVA USA | 2021Q1 | merger into PNC | 2021-06-01 |
+| MUFG Americas | 2021Q2 | deregistration | 2021-10-19 |
+| CIT Group | 2021Q3 | merger into First Citizens | 2022-01-03 |
+| People's United | 2021Q4 | merger into M&T | 2022-04-01 |
+| SVB Financial | 2022Q4 | failure | 2023-03-10 |
+| PacWest | 2023Q3 | merger into Banc of California | 2023-11-30 |
+| Discover | 2025Q1 | merger into Capital One | 2025-05-18 |
+| Synovus | 2025Q3 | merger into Pinnacle | 2026-01-01 |
+| Comerica | 2025Q3 | merger into Fifth Third | 2026-02-01 |
+
+Eight of the eleven left before the end of the test cycle and three after it.
 
 **Not yet built.** The headline full-sample versus survivors-only comparison has not been
-computed, because there is no headline result yet. No table yet carries each member's last
-filed period and exit reason beside its other attributes.
+computed, because there is no headline result yet.
 
 **Unresolved and material.** First Republic and Signature, the two institutions where the
 effect under study was most acute, are not in EDGAR at all (section 2.3). Until they are

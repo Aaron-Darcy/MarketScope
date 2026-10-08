@@ -116,6 +116,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `dim_bank`, one row per universe member with its rank, pin, SIC as a descriptive
+  attribute, the span of its periodic reports, its exit type, date and counterparty where it
+  has one, and counts of its acquisitions. Carries the last filed period and exit reason
+  specification 4 requires of every terminal filer, for all eleven.
 - Materiality for entity events, measured as the step each acquisition produced in the
   member's total deposits, with a tenth or more counting as material (decision 0032). 38 of
   42 acquisitions qualify, and nothing falls between 9 and 11 percent.
