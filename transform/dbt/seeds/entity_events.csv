@@ -1,0 +1,54 @@
+cik,event_date,event_type,counterparty,evidence_accession,evidence_form,evidence_item,note
+18349,2019-01-01,acquisition,FCB Financial Holdings,0001140361-19-000010,8-K,2.01,
+18349,2026-01-01,exit_merger,Pinnacle Financial Partners,0001140361-26-000049,8-K,2.01,Synovus and Pinnacle merged into a new holding company that took Pinnacle's name
+19617,2023-05-01,acquisition,First Republic Bank,0000019617-23-000304,8-K,8.01,Purchased from the FDIC as receiver
+28412,2026-02-01,exit_merger,Fifth Third Bancorp,0001193125-26-032627,8-K,2.01,
+35527,2019-03-22,acquisition,MB Financial,0001193125-19-082657,8-K,8.01,
+35527,2026-02-01,acquisition,Comerica Incorporated,0001193125-26-032625,8-K,2.01,
+36104,2022-12-01,acquisition,MUFG Union Bank,0001193125-22-296642,8-K,2.01,Bank acquired from MUFG Americas Holdings
+36270,2015-11-01,acquisition,Hudson City Bancorp,0001193125-15-362613,8-K,2.01,
+36270,2022-04-01,acquisition,People's United Financial,0001193125-22-094296,8-K,2.01,
+36966,2017-11-30,acquisition,Capital Bank Financial,0000930413-17-003918,8-K,2.01,
+36966,2020-07-01,acquisition,IBERIABANK Corporation,0000930413-20-001742,8-K,2.01,
+49196,2016-08-16,acquisition,FirstMerit Corporation,0001193125-16-685218,8-K,2.01,
+49196,2021-06-09,acquisition,TCF Financial Corporation,0001140361-21-020258,8-K,2.01,
+49196,2026-02-01,acquisition,Cadence Bank,0001140361-26-003083,8-K,2.01,
+91576,2016-08-01,acquisition,First Niagara Financial Group,0001193125-16-665717,8-K,2.01,
+92230,2016-04-01,acquisition,National Penn Bancshares,0001193125-16-528609,8-K,2.01,
+92230,2019-12-06,acquisition,SunTrust Banks,0001193125-19-308844,8-K,2.01,BB&T renamed itself Truist Financial on completion
+316709,2020-10-06,acquisition,TD Ameritrade Holding Corporation,0000950103-20-019743,8-K,2.01,
+713676,2021-06-01,acquisition,BBVA USA Bancshares,0000713676-21-000071,8-K,2.01,
+714310,2018-01-01,acquisition,USAmeriBancorp,0000714310-18-000005,8-K,2.01,
+714310,2019-12-01,acquisition,Oritani Financial,0001214659-19-007519,8-K,2.01,
+714310,2022-04-01,acquisition,Bank Leumi Le-Israel Corporation,0001193125-22-092782,8-K,2.01,
+719739,2021-07-01,acquisition,Boston Private Financial Holdings,0000719739-21-000045,8-K,8.01,
+719739,2023-03-10,failure,Silicon Valley Bank,0001193125-23-067777,8-K,1.03,Silicon Valley Bank closed and the FDIC appointed receiver; the holding company filed for Chapter 11 on 2023-03-17
+720005,2022-06-01,acquisition,TriState Capital Holdings,0001193125-22-165207,8-K,2.01,
+750556,2019-12-06,exit_merger,BB&T Corporation,0001193125-19-308629,8-K,2.01,
+759944,2022-04-06,acquisition,Investors Bancorp,0000759944-22-000054,8-K,8.01,The evidencing 8-K announces the expected closing date; no completion 8-K was filed
+798941,2022-01-03,acquisition,CIT Group,0001140361-22-000357,8-K,2.01,
+798941,2023-03-27,acquisition,Silicon Valley Bridge Bank,0001193125-23-079743,8-K,2.01,Purchased from the FDIC as receiver
+801337,2022-01-31,acquisition,Sterling Bancorp,0001567619-22-002141,8-K,2.01,
+875357,2018-10-01,acquisition,CoBiz Financial,0000875357-18-000084,8-K,2.01,
+887343,2017-11-01,acquisition,Pacific Continental Corporation,0001193125-17-329571,8-K,2.01,
+887343,2023-03-01,reverse_acquisition,Umpqua Holdings Corporation,0001193125-23-056342,8-K,2.01,"Umpqua was the accounting acquirer, so later filings report Umpqua's history as the filer's own"
+887343,2025-08-31,acquisition,Pacific Premier Bancorp,0001193125-25-193405,8-K,2.01,
+895421,2020-10-02,acquisition,E*TRADE Financial Corporation,0000950103-20-019435,8-K,2.01,
+910073,2022-12-01,acquisition,Flagstar Bancorp,0001193125-22-295967,8-K,2.01,
+910073,2023-03-19,acquisition,Signature Bank,0001193125-23-074432,8-K,2.01,Deposits and certain loans purchased from the FDIC as receiver
+927628,2025-05-18,acquisition,Discover Financial Services,0001193125-25-122059,8-K,2.01,
+1011659,2021-10-19,exit_deregistration,,0001628280-21-020238,15-12G,,"Stopped reporting after its 2021Q2 10-Q; its bank was sold to U.S. Bancorp on 2022-12-01, after reporting stopped"
+1015780,2020-10-02,exit_merger,Morgan Stanley,0001193125-20-262038,8-K,2.01,
+1102112,2015-10-06,acquisition,Square 1 Financial,0001104659-15-069742,8-K,8.01,The completion 8-K reports the merger under Item 8.01 rather than 2.01
+1102112,2017-10-20,acquisition,CU Bancorp,0001104659-17-063195,8-K,8.01,
+1102112,2023-11-30,exit_merger,Banc of California,0001104659-23-122852,8-K,2.01,"PacWest was the accounting acquirer; its history continues in Banc of California's filings, outside the universe"
+1171825,2015-08-03,acquisition,IMB HoldCo (OneWest Bank),0000891092-15-006812,8-K,2.01,
+1171825,2020-01-01,acquisition,Mutual of Omaha Bank,0001193125-20-000169,8-K,2.01,
+1171825,2022-01-03,exit_merger,First Citizens BancShares,0001140361-22-000350,8-K,2.01,
+1212545,2015-06-30,acquisition,Bridge Capital Holdings,0001193125-15-243299,8-K,2.01,
+1378946,2017-04-01,acquisition,Suffolk Bancorp,0001193125-17-107557,8-K,2.01,
+1378946,2018-10-01,acquisition,First Connecticut Bancorp,0001193125-18-289522,8-K,2.01,
+1378946,2019-11-01,acquisition,United Financial Bancorp,0001193125-19-281297,8-K,2.01,
+1378946,2022-04-01,exit_merger,M&T Bank Corporation,0001193125-22-094315,8-K,2.01,
+1393612,2025-05-18,exit_merger,Capital One Financial Corporation,0001193125-25-122107,8-K,2.01,
+1409775,2021-06-01,exit_merger,The PNC Financial Services Group,0001409775-21-000031,15-12G,,

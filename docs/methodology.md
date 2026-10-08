@@ -476,10 +476,29 @@ below.
 19th on $212bn although it filed nothing after 2022Q4. PacWest is pinned (section 2.2).
 Every member keeps a row in `fct_deposit_beta`, which a dbt test enforces.
 
+**Built: exits.** Eleven members stopped filing periodic reports, and each carries an
+exit or failure event in `entity_events`, which a dbt test enforces (section 8.3).
+`dim_bank` holds one row per member with its last filed period, the period of its last
+10-K or 10-Q, and the type, date and counterparty of its exit, as specification 4 requires.
+
+| Member | Last filed period | Exit | Date |
+|---|---|---|---|
+| SunTrust | 2019Q3 | merger into BB&T | 2019-12-06 |
+| E*TRADE | 2020Q2 | merger into Morgan Stanley | 2020-10-02 |
+| BBVA USA | 2021Q1 | merger into PNC | 2021-06-01 |
+| MUFG Americas | 2021Q2 | deregistration | 2021-10-19 |
+| CIT Group | 2021Q3 | merger into First Citizens | 2022-01-03 |
+| People's United | 2021Q4 | merger into M&T | 2022-04-01 |
+| SVB Financial | 2022Q4 | failure | 2023-03-10 |
+| PacWest | 2023Q3 | merger into Banc of California | 2023-11-30 |
+| Discover | 2025Q1 | merger into Capital One | 2025-05-18 |
+| Synovus | 2025Q3 | merger into Pinnacle | 2026-01-01 |
+| Comerica | 2025Q3 | merger into Fifth Third | 2026-02-01 |
+
+Eight of the eleven left before the end of the test cycle and three after it.
+
 **Not yet built.** The headline full-sample versus survivors-only comparison has not been
-computed, because there is no headline result yet. `last_filed_period` and exit reason
-exist only on the twelve-bank Milestone 0 sample in `marketscope.banks`. The warehouse
-carries `pinned_reason` but has no exit-reason column for the universe.
+computed, because there is no headline result yet.
 
 **Unresolved and material.** First Republic and Signature, the two institutions where the
 effect under study was most acute, are not in EDGAR at all (section 2.3). Until they are
@@ -505,18 +524,79 @@ is not yet tested anywhere.
 
 ### 8.3 Entity continuity
 
-**Not yet built.** The `bank_entity_events` table does not exist, and no bank-quarter is
-flagged for a merger. The twelve-bank sample records the relevant events as text: Truist
-formed from BB&T and SunTrust (2019), PNC acquiring BBVA USA (2021), M&T acquiring People's
-United (2022), U.S. Bancorp acquiring MUFG Union Bank (2022), JPMorgan acquiring First
-Republic (2023). None is applied to any result.
+**Built: the event record.** XBRL records no mergers, failures or deregistrations, so the
+`entity_events` seed is curated by hand (0031). It holds 53 events from 2015 that change a
+member's deposit base or end its reporting:
 
-**Consequence.** An acquisition within a cycle changes the deposit base between endpoints.
-If the acquired deposits cost more or less than the acquirer's, the beta moves for a reason
-that has nothing to do with repricing. Until the table exists, a beta for a filer that made
-a material acquisition inside a cycle cannot be told apart from behaviour. In the test
-cycle that includes JPMorgan and U.S. Bancorp at least. This is a Milestone 2 deliverable
-and it is still outstanding.
+| Type | Events | Members |
+|---|---|---|
+| `acquisition` of a deposit-taking institution or its deposits | 41 | 26 |
+| `reverse_acquisition`, the counterparty being the accounting acquirer | 1 | 1 |
+| `exit_merger` | 9 | 9 |
+| `exit_deregistration` | 1 | 1 |
+| `failure` | 1 | 1 |
+
+Every row cites the filing that reports the event: an 8-K Item 2.01 completion report for
+44, an Item 8.01 press release or completion report for 6, a Form 15 for 2 and an Item 1.03
+receivership report for SVB. `python analysis/milestone2/entity_event_audit.py` checks each
+citation against the filer's EDGAR history — the accession belongs to the filer, carries the
+form and item cited, and was filed between two days before the event and six days after it
+— and all 53 pass. One of the 8.01 filings, for Citizens' acquisition of Investors Bancorp,
+announces the expected closing date rather than the closing, because Citizens filed no
+completion report.
+
+Two dbt tests guard the exits. Every member whose last 10-K or 10-Q is more than six months
+older than the newest in the load must carry an exit or failure event; eleven do, which is
+every terminal filer in the universe. No exit may be dated before the period of the filer's
+last periodic report. Comerica and Synovus, both members, merged out in early 2026 after
+their 2025Q3 10-Qs, and a one-year rule had let them through (0032).
+
+Left out: acquisitions that brought no deposits, branch purchases and sales, and changes of
+name or structure under an unchanged CIK. No member changed CIK.
+
+**Built: materiality.** `bank_entity_events` measures each acquisition by the step in the
+member's total deposits from the quarter end before it completed to the quarter end it
+completed in, read from `int_deposit_balances`, which holds the deposit base at every quarter
+end whether or not a cost resolves there (0032). An acquisition moving the base by a tenth or
+more is material; one whose step cannot be measured counts as material.
+
+| | Acquisitions | Smallest step |
+|---|---|---|
+| Material | 38 | 11.4%, MUFG Union Bank at U.S. Bancorp |
+| Not material | 4 | largest 8.9%, First Connecticut at People's United |
+
+Nothing falls between 9 and 11 percent. The four below are First Republic at JPMorgan (0.9
+percent), Suffolk and First Connecticut at People's United, and National Penn at BB&T. The
+step includes any organic change in the same quarter, so it errs towards flagging an
+acquisition that completed during a deposit surge.
+
+The measurement also tested the seed. Every quarter since 2015 with a deposit step above 15
+percent and no recorded event was checked for a completion filing, and nine missing events
+were found and added, among them PacWest's acquisition of Square 1 in its calibration start
+quarter. Large steps with no completion filing are left unrecorded: the 2020 deposit surge,
+Santander Holdings USA in 2015Q4 and 2016Q3, Goldman Sachs in 2016Q2, E*TRADE in 2017Q1,
+Ameriprise in 2022Q3 and BNY Mellon in 2026Q1.
+
+**Built: the flag on betas.** `fct_deposit_beta.material_event_in_cycle` is true where a
+material acquisition completed in any quarter from the cycle's start to its measured end.
+
+| Cycle | Filers flagged | of which with a beta |
+|---|---|---|
+| Calibration | 10 | 9 |
+| Test | 9 | 8 |
+
+Specification 4 requires these to be shown separately in rankings. The flag is carried on the
+row and the separation is applied in the analysis.
+
+**The reverse acquisition.** Columbia Banking's 2023 merger with Umpqua made Umpqua the
+accounting acquirer, so Columbia's later filings report Umpqua's history as Columbia's own
+(section 8.5), and the precedence rule then mixes the two entities: a 10-Q restates the
+comparative quarter's expense but not that quarter's balance sheet. Its test-cycle beta is
+flagged. Its calibration-cycle beta measures Columbia before the merger, so any comparison of
+Columbia across the two cycles compares two different banks.
+
+**Not yet built.** Individual bank-quarters are not flagged. The event quarter is on every
+row of `bank_entity_events`, but no bank-quarter table carries it.
 
 ### 8.4 Fourth-quarter derivation
 
@@ -725,6 +805,7 @@ python analysis/milestone2/construct_validity.py   # section 7.3
 python analysis/milestone2/cycle_sensitivity.py    # section 5
 python analysis/milestone2/revision_audit.py       # section 8.5
 python analysis/milestone2/precedence_sensitivity.py  # section 3.2
+python analysis/milestone2/entity_event_audit.py   # section 8.3, needs the SEC
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 

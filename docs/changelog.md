@@ -6,6 +6,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Fixed
 
+- The terminal-filer test now requires an exit event once a member's last periodic report
+  is six months older than the newest, rather than a year. Comerica and Synovus last filed a
+  10-Q for 2025Q3 and merged out in early 2026, and the one-year rule had not yet noticed.
 - The record that Milestone 0 searched each filer's own extension namespace for average
   deposit balances is withdrawn (decision 0029). The company facts endpoint publishes no
   extension namespace: the warehouse holds six standard taxonomies and nothing else, and
@@ -113,6 +116,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `dim_bank`, one row per universe member with its rank, pin, SIC as a descriptive
+  attribute, the span of its periodic reports, its exit type, date and counterparty where it
+  has one, and counts of its acquisitions. Carries the last filed period and exit reason
+  specification 4 requires of every terminal filer, for all eleven.
+- Materiality for entity events, measured as the step each acquisition produced in the
+  member's total deposits, with a tenth or more counting as material (decision 0032). 38 of
+  42 acquisitions qualify, and nothing falls between 9 and 11 percent.
+  `fct_deposit_beta.material_event_in_cycle` flags ten calibration-cycle and nine test-cycle
+  filers. `int_deposit_balances` holds the deposit base at every quarter end, including
+  quarters where no cost resolves.
+- Nine entity events the deposit steps exposed, each verified against its completion
+  filing, among them PacWest's acquisition of Square 1 in its calibration start quarter and
+  the 2026 exits of Comerica and Synovus. The seed holds 53 events.
+- `entity_events`, a seed of the 44 acquisitions, mergers, exits and failures affecting a
+  universe member from 2015, curated by hand because XBRL records none of them (decision
+  0031). Each row cites the filing that reports the event, and an audit script checks every
+  citation against the filer's EDGAR history; all 44 pass. dbt tests require an exit or
+  failure event for every member that stopped filing periodic reports, which all nine do,
+  and refuse an exit dated before a filer's last periodic report.
 - Precedence sensitivity, resolving every bank-quarter on each period's first published
   value as well as its most recently filed one. 51 of 2,814 headline bank-quarters move by
   more than a basis point and the ordering of betas does not: Spearman 1.000 and 0.999 in

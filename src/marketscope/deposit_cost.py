@@ -9,11 +9,14 @@ from marketscope.facts import facts_from_rows
 from marketscope.metrics import (
     EXPENSE_COMPONENT_TAGS,
     EXPENSE_REPORTED_TAG,
+    TOTAL_DEPOSITS_TAG,
     DepositCost,
     Provenance,
     resolve_deposit_cost,
+    resolve_interest_bearing_deposits,
+    resolve_noninterest_bearing_deposits,
 )
-from marketscope.panel import Panel, build_panel, previous_quarter_end
+from marketscope.panel import Panel, build_panel, previous_quarter_end, quarter_end
 
 DEPOSIT_COST_COLUMNS: tuple[str, ...] = (
     "cik",
@@ -25,6 +28,16 @@ DEPOSIT_COST_COLUMNS: tuple[str, ...] = (
     "avg_method",
     "component_coverage",
     "q4_derived",
+)
+
+DEPOSIT_BALANCE_COLUMNS: tuple[str, ...] = (
+    "cik",
+    "quarter_end",
+    "total_deposits",
+    "interest_bearing_deposits",
+    "interest_bearing_provenance",
+    "noninterest_bearing_deposits",
+    "noninterest_bearing_provenance",
 )
 
 
@@ -78,3 +91,43 @@ def deposit_cost_frame(rows: Iterable[tuple[Any, ...]]) -> pd.DataFrame:
     for cik, facts in sorted(facts_from_rows(rows).items()):
         resolved.extend(bank_quarter_rows(cik, build_panel(facts)))
     return pd.DataFrame(resolved, columns=list(DEPOSIT_COST_COLUMNS))
+
+
+def deposit_balance_rows(cik: int, panel: Panel) -> list[tuple[Any, ...]]:
+    """The deposit base at every calendar quarter end, in `DEPOSIT_BALANCE_COLUMNS` order.
+
+    Kept apart from the cost of deposits because a balance matters where no cost resolves:
+    Schwab reports total deposits throughout 2020 but no cost resolves before 2021, and the
+    step its TD Ameritrade acquisition produced falls in that gap. A quarter end with none
+    of the three figures produces no row.
+    """
+    rows: list[tuple[Any, ...]] = []
+    for day in sorted(panel.values):
+        if day != quarter_end(day):
+            continue
+        values = panel.values[day]
+        interest_bearing = resolve_interest_bearing_deposits(values)
+        noninterest_bearing = resolve_noninterest_bearing_deposits(values)
+        total = values.get(TOTAL_DEPOSITS_TAG)
+        if total is None and interest_bearing is None and noninterest_bearing is None:
+            continue
+        rows.append(
+            (
+                cik,
+                day,
+                total,
+                interest_bearing.value if interest_bearing else None,
+                interest_bearing.provenance.value if interest_bearing else None,
+                noninterest_bearing.value if noninterest_bearing else None,
+                noninterest_bearing.provenance.value if noninterest_bearing else None,
+            )
+        )
+    return rows
+
+
+def deposit_balance_frame(rows: Iterable[tuple[Any, ...]]) -> pd.DataFrame:
+    """The quarter-end deposit base for every filer in a set of fact rows."""
+    resolved: list[tuple[Any, ...]] = []
+    for cik, facts in sorted(facts_from_rows(rows).items()):
+        resolved.extend(deposit_balance_rows(cik, build_panel(facts)))
+    return pd.DataFrame(resolved, columns=list(DEPOSIT_BALANCE_COLUMNS))

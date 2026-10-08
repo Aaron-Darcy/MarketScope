@@ -1215,3 +1215,128 @@ endpoint and is recorded rather than corrected. Columbia's test-cycle beta is un
 under either rule, because the entity changed inside the cycle. That is an entity
 continuity problem and is handled as one, by the entity events table specification 4
 already requires, rather than by the precedence rule.
+
+---
+
+## 0031 — Curate entity events by hand and cite the filing behind each
+
+**Date** 2026-10-07
+**Status** Accepted
+
+**Context.** Specification 4 requires a table of mergers, acquisitions, CIK changes and
+failures, so that bank-quarters an event touches can be flagged and a bank with a material
+acquisition inside a cycle shown separately. XBRL records none of these. The revision audit
+has already shown what an unrecorded event does: Columbia Banking's filings since its 2023
+reverse merger report Umpqua's history as Columbia's own, and nothing in the warehouse said
+so.
+
+**Decision.** Events are curated by hand in a dbt seed, `entity_events`, and every row cites
+the filing that reports it. `analysis/milestone2/entity_event_audit.py` checks each citation
+against the filer's EDGAR history: the accession must belong to the filer, carry the form
+and 8-K item cited, and have been filed between two days before the event and six days
+after it, which covers the four business days an 8-K is due within.
+
+The scope is events from 2015 that change a member's deposit base or end its reporting:
+acquisitions of deposit-taking institutions or their deposits, including three purchased
+from the FDIC as receiver; one reverse acquisition; seven exits by merger; one
+deregistration; and one failure. Forty-four events, thirty-six evidenced by an 8-K Item 2.01
+completion report, four by an Item 8.01 press release announcing completion, two by a Form
+15, one by an Item 1.03 receivership report, and one, Citizens' acquisition of Investors
+Bancorp, by an 8-K announcing the expected closing date because no completion report was
+filed. That last is the weakest evidence in the table and is noted on the row.
+
+Out of scope: acquisitions that brought no deposits, such as Morgan Stanley's of Eaton
+Vance; branch purchases and sales; and changes of name or structure under an unchanged CIK,
+such as BB&T becoming Truist or Zions merging its holding company into its bank in 2018,
+where the filer and its reported history continue unbroken. No member changed CIK. Goldman
+Sachs' 2016 purchase of GE Capital Bank's online deposits was considered and left out,
+because no Goldman filing reporting it could be found.
+
+**Alternatives.** Infer events from steps in reported deposits. That detects that something
+happened but neither names nor dates it, and the deposit surge of 2020 produces steps no
+acquisition caused. Take the history of each institution from the FFIEC's National
+Information Center, which is the regulatory record of mergers. It is keyed on RSSD rather
+than CIK and, as 0016 found, the FFIEC's bulk data sits behind a CAPTCHA. It remains the
+natural check when regulatory data is ingested at Milestone 3.
+
+**Consequences.** A dbt test requires every member whose last 10-K or 10-Q is more than a
+year older than the newest in the load to carry an exit or failure event, so a filer leaving
+the data cannot pass for a coverage gap. Nine qualify and all nine have one. A second test
+refuses an exit dated before the period of the filer's last periodic report.
+
+The table is maintained by hand, so an event after the last edit is missing until someone
+adds it. The terminal-filer test catches an unrecorded exit at the next load; an unrecorded
+acquisition by a member that keeps filing is caught by nothing yet. The deposit step each
+event produced is measured in the next change, which also gives an acquisition that was
+never recorded a way to show up.
+
+MUFG Americas Holdings left EDGAR by deregistering in October 2021, after its 2021Q2 10-Q,
+and not when its bank was sold to U.S. Bancorp in December 2022. Its exit is recorded at the
+deregistration.
+
+---
+
+## 0032 — Measure each event by the deposit step it produced; a tenth is material
+
+**Date** 2026-10-07
+**Status** Accepted. Extends 0031.
+
+**Context.** Specification 4 requires a bank with a material acquisition inside a cycle to
+be shown separately, and 0031 recorded the events without measuring any of them. Deal
+announcements quote the target's assets, which are not in the warehouse, would be one more
+hand-entered figure, and are not the quantity that matters. What moves a beta is the share
+of the acquirer's deposit base the acquisition brought in.
+
+**Decision.** Each acquisition is measured by the step in the member's total deposits from
+the quarter end before it completed to the quarter end it completed in. Balances come from
+`int_deposit_balances`, a new Python model holding the deposit base at every quarter end a
+filer reports it, resolved by the same library functions as the cost of deposits. It exists
+because `int_deposit_cost` holds only quarters where a cost resolves: Schwab reports
+deposits throughout 2020, but no cost resolves before 2021, and its TD Ameritrade
+acquisition closed in that gap.
+
+An acquisition is material if the step is a tenth or more. A step that cannot be measured
+counts as material, because a size that cannot be read is not evidence of a small one.
+`fct_deposit_beta.material_event_in_cycle` flags a beta when a material acquisition
+completed in any quarter from the cycle's start to its measured end, the start quarter
+included because its average balance straddles the completion.
+
+**Evidence for the threshold.** Of 42 acquisitions, four moved the base by less than 9
+percent: First Republic at JPMorgan by 0.9 percent, Suffolk at People's United by 4.3,
+National Penn at BB&T by 5.8 and First Connecticut at People's United by 8.9. The other 38
+moved it by 11.4 percent or more. Any line between 9 and 11 percent selects the same events.
+The scale is right for the purpose: acquired deposits that are a tenth of the base and cost
+one percentage point more than the acquirer's move the end-point cost by a tenth of a point,
+about 0.02 of a test-cycle beta.
+
+**What the measurement exposed.** Every quarter since 2015 in which deposits stepped by more
+than 15 percent with no recorded event to explain it was checked for a completion filing.
+Nine events had one and were missing from the seed: CIT's acquisition of OneWest and Western
+Alliance's of Bridge Capital in 2015; PacWest's of Square 1, which closed in PacWest's
+calibration start quarter; Columbia Banking's of Pacific Continental in 2017 and of Pacific
+Premier in 2025; Fifth Third's of Comerica and Huntington's of Cadence Bank in February
+2026; and the exits of Comerica and Synovus, both universe members, on 1 February and 1
+January 2026. All nine were verified against the filing text and added. The seed holds 53
+events, and the audit supports all 53.
+
+Comerica and Synovus last filed a 10-Q for 2025Q3. The terminal-filer test of 0031 waited
+until a filer's last periodic report was a year older than the newest, so it would not have
+caught either until late 2026. It now waits six months, two missed quarterly reports, and
+eleven members are terminal.
+
+Large steps remain with no completion filing to explain them: the deposit surge of 2020 at
+many filers; Santander Holdings USA in 2015Q4 and 2016Q3; Goldman Sachs in 2016Q2, the
+quarter it bought GE Capital Bank's online deposits, which no Goldman filing reports;
+E*TRADE in 2017Q1; Ameriprise in 2022Q3; and BNY Mellon in 2026Q1. None is recorded as an
+event, because a recorded event has to cite its evidence.
+
+**Alternatives.** Size each acquisition from its announcement, rejected above. A lower line,
+such as 5 percent, which flags National Penn and Suffolk without any gap in the data to
+justify it. Flagging every acquisition inside a cycle regardless of size, which would set
+JPMorgan's test-cycle beta apart for an acquisition that moved its base by 0.9 percent.
+
+**Consequences.** 38 acquisitions are material. In the calibration cycle the flag falls on
+ten filers, nine of which have a beta; in the test cycle on nine, eight of which have one.
+Columbia Banking's test-cycle beta is flagged through Umpqua, the reverse acquisition behind
+the mixing recorded in 0030. The step includes any organic change in the same quarter, so it
+overstates an acquisition completing during a surge, which errs towards flagging.

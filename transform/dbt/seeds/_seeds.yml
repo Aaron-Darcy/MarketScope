@@ -1,0 +1,51 @@
+version: 2
+
+seeds:
+  - name: entity_events
+    description: >
+      Acquisitions, mergers, exits and failures affecting a universe member from 2015, curated
+      by hand because XBRL records none of them. Each row cites the filing that reports the
+      event, and analysis/milestone2/entity_event_audit.py checks every citation against the
+      filer's EDGAR history (decision 0031).
+    config:
+      column_types:
+        cik: bigint
+        event_date: date
+        event_type: varchar
+        counterparty: varchar
+        evidence_accession: varchar
+        evidence_form: varchar
+        evidence_item: varchar
+        note: varchar
+    columns:
+      - name: cik
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: source('raw', 'universe')
+                field: cik
+      - name: event_date
+        tests: [not_null]
+      - name: event_type
+        description: >
+          acquisition: the member took over a deposit-taking institution or its deposits.
+          reverse_acquisition: the member was the legal acquirer and the counterparty the
+          accounting acquirer, so the member's reported history becomes the counterparty's.
+          exit_merger: the member merged into the counterparty and stopped filing.
+          exit_deregistration: the member stopped reporting while continuing to exist.
+          failure: the member's bank was closed by its regulator.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - acquisition
+                  - reverse_acquisition
+                  - exit_merger
+                  - exit_deregistration
+                  - failure
+      - name: evidence_accession
+        tests: [unique, not_null]
+      - name: evidence_form
+        tests: [not_null]
