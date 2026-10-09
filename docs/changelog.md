@@ -40,6 +40,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Milestone 2 closed (decision 0033). Flagging individual bank-quarters for entity events
+  moves to Milestone 4 with `fct_bank_quarter`; betas are already flagged.
 - Milestone 2 analysis outputs rerun on the reconciled deposit base. Construct validity now
   covers 32 filers with no beta excluded as implausible, at -0.356, against -0.358 on the
   30 plausible betas and -0.409 on all 32 when the test was adopted. Every one-quarter

@@ -408,9 +408,9 @@ Built with Evidence.dev, deployed as a static site at no running cost.
 |---|---|---|
 | 0 | Feasibility profiling on the twelve-bank sample | Gate criteria in 9.1 all pass. **Passed** |
 | 1 | Hardened ingestion, DuckDB load, staging models | Full universe ingests reproducibly. **Passed:** 51 members, 1.81m facts, four staging models, 21 tests green |
-| 2 | Harmonisation, bank-quarter panel, restatement precedence, entity events, beta | `fct_deposit_beta` populated with tiers |
+| 2 | Harmonisation, bank-quarter panel, restatement precedence, entity events, beta | `fct_deposit_beta` populated with tiers. **Passed:** 102 rows for 51 members across both cycles, 89 betas, each carrying both endpoint tiers and a flag for material entity events; 3,066 bank-quarters resolved; 48,206 revisions and 53 verified entity events recorded; 100 dbt tests, 2 warning by design. Bank-quarter event flags move to `fct_bank_quarter` at Milestone 4 (decision 0033) |
 | 3 | Cycles, rank persistence, survivorship sensitivity, regulatory validation | Headline figure exists and is defensible |
-| 4 | Site: overview, bank explorer, comparison, primary case study | Deploys publicly |
+| 4 | Site: overview, bank explorer, comparison, primary case study; `fct_bank_quarter` with entity event flags | Deploys publicly |
 | 5 | Filing behaviour case study, data health page, dbt tests and docs | Tests green, coverage published |
 | 6 | Methodology, README, scheduled refresh | Unattended refresh runs green |
 
@@ -476,6 +476,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-10-09 | Milestone 2 closed: `fct_deposit_beta` populated with tiers and entity event flags, revisions and entity events recorded. Flagging individual bank-quarters moves with `fct_bank_quarter` to Milestone 4. See decision 0033. |
 | 2026-10-07 | Materiality of an entity event defined in section 4 as a deposit step of a tenth or more in the quarter it completes. `int_deposit_balances` added to the model layout in 7.1. See decision 0032. |
 | 2026-10-07 | Entity events in section 4 curated in the `entity_events` seed, each citing the filing that reports it, checked against EDGAR. See decision 0031. |
 | 2026-10-05 | Averaging finding in 3.1 narrowed to the taxonomies the company facts endpoint publishes. It publishes no filer extension namespace, so the statement that extension namespaces were searched was wrong. See decision 0029. |

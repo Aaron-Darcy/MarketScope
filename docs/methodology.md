@@ -8,9 +8,11 @@ made. This document says how, in enough detail to reproduce every figure from a 
 checkout. Decisions are cited by number, for example (0021), and specification sections as
 "specification 3.1".
 
-**State at writing, 5 October 2026: Milestone 2 in progress.** Everything up to
-`fct_deposit_beta` is built and tested, and so is the table of revisions. The entity events
-table, the survivorship comparison and the regulatory validation are not. Each section says
+**State at writing, 9 October 2026: Milestone 2 closed.** Everything up to
+`fct_deposit_beta` is built and tested, with the table of revisions, the entity events and
+their materiality, and the member dimension. The cross-cycle persistence result, the
+survivorship comparison and the regulatory validation belong to Milestone 3 and are not
+built; flags on individual bank-quarters move to Milestone 4 (0033). Each section says
 which parts are in force and which are still to be built. A planned control is never
 written up as a working one.
 
@@ -595,8 +597,9 @@ comparative quarter's expense but not that quarter's balance sheet. Its test-cyc
 flagged. Its calibration-cycle beta measures Columbia before the merger, so any comparison of
 Columbia across the two cycles compares two different banks.
 
-**Not yet built.** Individual bank-quarters are not flagged. The event quarter is on every
-row of `bank_entity_events`, but no bank-quarter table carries it.
+**Moved to Milestone 4.** Individual bank-quarters are not flagged. The event quarter is
+on every row of `bank_entity_events`, and the flag belongs on `fct_bank_quarter`, which the
+site's bank explorer reads and which is built with it (0033).
 
 ### 8.4 Fourth-quarter derivation
 
@@ -789,6 +792,19 @@ case so far has been one.
 Three betas have a `closing_only` endpoint: Santander and Discover in the calibration cycle
 (2015Q4) and Flagstar in the test cycle (2022Q1). Taking the closing balance alone errs
 where the balance moved within the quarter. Its size has not been measured for these three.
+
+**Carried without a test.** Two findings have no warn-severity test to catch them.
+
+- 167 bank-quarters rest on an interest-bearing base that cannot be reconciled to total
+  deposits, because the filer tags no total or no complete non-interest-bearing figure
+  (section 4.2). Five betas rest on one at an endpoint: Regions and SunTrust in the
+  calibration cycle, BNY Mellon, HSBC USA and Truist in the test cycle. Regions' and
+  SunTrust's tagged shares of 62 to 80 percent are plausible; BNY Mellon's and HSBC's bases
+  are summed domestic and foreign components, which have reconciled wherever they could be
+  checked except HSBC's in 2011 and 2012.
+- Raymond James's 2023Q1 deposit expense is a 2025 filing's figure for 2024Q1, reported
+  against the wrong quarter and accepted by the precedence rule (section 8.5, 0030). It is
+  not a beta endpoint.
 
 ---
 

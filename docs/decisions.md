@@ -1340,3 +1340,40 @@ ten filers, nine of which have a beta; in the test cycle on nine, eight of which
 Columbia Banking's test-cycle beta is flagged through Umpqua, the reverse acquisition behind
 the mixing recorded in 0030. The step includes any organic change in the same quarter, so it
 overstates an acquisition completing during a surge, which errs towards flagging.
+
+---
+
+## 0033 — Close Milestone 2 and move bank-quarter event flags to Milestone 4
+
+**Date** 2026-10-09
+**Status** Accepted
+
+**Context.** Milestone 2 exits when `fct_deposit_beta` is populated with tiers. It is: 102
+rows, one per member per study cycle, 89 with a beta, each carrying both endpoint tiers, the
+less precise as its own, and a flag where a material acquisition changed the deposit base
+inside the cycle. The milestone also lists restatement precedence and entity events, and
+both are built: 48,206 revisions recorded and their effect on betas measured (0028, 0030),
+and 53 entity events verified against the filings that report them and sized by the deposit
+step each produced (0031, 0032).
+
+One part of specification 4 is not built. It asks for affected bank-quarters to be flagged
+as well as betas, and no bank-quarter table carries the flag. The event quarter is on every
+row of `bank_entity_events`, so the flag is a join, but the table it belongs on is
+`fct_bank_quarter`, which the site's bank explorer reads and which does not exist yet.
+
+**Decision.** Milestone 2 is closed. Flagging individual bank-quarters moves to Milestone 4
+with `fct_bank_quarter`, where it will be read.
+
+**Alternatives.** Build `fct_bank_quarter` now. It would be designed without its only
+consumer and redesigned once the bank explorer exists. Add the flag to `int_deposit_cost`,
+which would put a hand-curated seed inside the Python model that resolves the metric and
+make the metric's one implementation depend on the event record.
+
+**Consequences.** Nothing at Milestone 3 needs a bank-quarter flag: the persistence test
+works on betas, and those are flagged. The open data quality findings carry forward
+unresolved and are listed in methodology section 10: BNY Mellon's derived 2025Q4, CIT's
+2014Q4 on an unreconcilable base, Citigroup's 2020Q4, the unconfirmed negative-rate
+explanation for the custody banks, Raymond James's mis-dated 2023Q1 and the 167
+bank-quarters whose interest-bearing base cannot be reconciled. Only the last reaches a
+beta: five rest on an unreconcilable base at one endpoint or both, Regions and SunTrust in
+the calibration cycle and BNY Mellon, HSBC USA and Truist in the test cycle.
