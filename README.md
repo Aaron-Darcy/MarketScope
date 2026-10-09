@@ -15,12 +15,14 @@ project measures deposit beta for US bank holding companies directly from XBRL f
 data, calibrates it over the 2015–2019 tightening cycle, and tests whether the resulting
 cross-bank ordering holds during the far faster 2022–2023 cycle.
 
-**Status: Milestone 2 in progress — harmonisation and beta.** The universe of the largest
-fifty deposit-taking US filers plus one pinned terminal filer loads into DuckDB behind dbt
-staging models. Cost of deposits is resolved for 3,066 bank-quarters, each with a
-comparability tier, and `fct_deposit_beta` carries a tiered beta for every member in both
-study cycles. Every revision to a published value is recorded in its own table. Entity
-events remain. See [docs/specification.md](docs/specification.md).
+**Status: Milestone 3 — cycles, persistence and validation.** Milestone 2 closed on 9
+October 2026. Cost of deposits is resolved for 3,066 bank-quarters across the largest fifty
+deposit-taking US filers and one pinned terminal filer, each at a stated comparability tier,
+and `fct_deposit_beta` carries a tiered beta for every member in both study cycles, with a
+flag where a material acquisition changed the deposit base inside the cycle. Every revision
+to a published value is recorded, and so is every merger, exit and failure, each citing the
+filing that reports it. The cross-cycle persistence result has not been computed yet. See
+[docs/specification.md](docs/specification.md).
 
 ---
 
@@ -56,6 +58,16 @@ work:
 - **Industry codes do not identify banks.** Screening EDGAR on bank SIC codes loses Goldman
   Sachs, Morgan Stanley and Charles Schwab, which carry broker-dealer codes. Membership is
   decided by what a filer reports instead.
+- **A tag does not guarantee its scope.** Santander, Raymond James and Flagstar tag a single
+  deposit line under the concept meant for the whole interest-bearing base, and BNY Mellon's
+  10-K uses the concept its 10-Qs use for total deposit expense for domestic offices alone.
+  Every implausible beta the first build produced traced to one of these. Bases are now
+  reconciled to total deposits, and a fourth quarter a filing reports is preferred to one
+  derived from the year.
+- **The most recent filing is not always the same bank.** After Columbia Banking's 2023
+  reverse merger, its filings report Umpqua's history as Columbia's own. Every change of
+  published value is kept, every merger is recorded from the filing that reports it, and a
+  beta whose cycle spans a material acquisition is shown separately.
 
 Derived figures are cross-checked against FFIEC and FDIC regulatory filings, which carry
 the same concepts in standardised form, so the accuracy of the tag mapping can be stated
