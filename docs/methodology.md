@@ -420,9 +420,10 @@ cycle.
 | Calibration | 51 | 45 | 0 | 44 |
 | Test | 51 | 44 | 2 | 41 |
 
-37 filers have headline-tier coverage in both cycles and can support the persistence test.
-The cross-cycle persistence correlation itself is Milestone 3 work and has not been
-computed.
+37 filers have headline-tier coverage in both cycles. The persistence test is narrower:
+its sample, statistic and robustness variants were fixed before computation in
+specification 6.1 (0034), and 22 filers meet the headline rules. The correlation itself is
+Milestone 3 work and has not been computed.
 
 ---
 

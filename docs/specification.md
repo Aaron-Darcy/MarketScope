@@ -295,6 +295,27 @@ Results are reported in this order of prominence:
 The project does not optimise for R². If persistence is weak, that is the finding and it
 is published as such.
 
+### 6.1 Pre-registered plan
+
+Fixed on 10 October 2026, before any cross-cycle result was computed (decision 0034).
+
+**Sample.** A filer enters the headline if it is in the ranked fifty, has a tier 1 beta in
+both cycles, has tier 1 cost of deposits in at least 80 percent of each cycle's quarters,
+measures neither cycle partially, and made no material acquisition inside either cycle.
+Twenty-two filers qualify. No filer is excluded for the value of its beta.
+
+**Headline.** Spearman correlation between calibration and test betas, judged by a
+one-sided permutation test of a positive correlation (100,000 permutations) with a 95
+percent percentile bootstrap interval (10,000 resamples), seed 20261010. Persistence is
+supported if the correlation is positive with p below 0.05. A result that does not clear
+the bar is reported as not shown rather than absent: at 22 filers the bar sits at about
+0.36.
+
+**Robustness.** R1 tiers 1 and 2; R2 including filers with a material acquisition inside a
+cycle; R3 excluding filers with a material acquisition between the cycles as well; R4
+adding terminal filers whose test beta ends early. Each is reported beside the headline and
+none replaces it.
+
 ---
 
 ## 7. Architecture
@@ -476,6 +497,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-10-10 | Section 6.1 added: the persistence analysis pre-registered before computation — sample rules, statistic, test, interval, interpretation and four robustness variants. See decision 0034. |
 | 2026-10-09 | Milestone 2 closed: `fct_deposit_beta` populated with tiers and entity event flags, revisions and entity events recorded. Flagging individual bank-quarters moves with `fct_bank_quarter` to Milestone 4. See decision 0033. |
 | 2026-10-07 | Materiality of an entity event defined in section 4 as a deposit step of a tenth or more in the quarter it completes. `int_deposit_balances` added to the model layout in 7.1. See decision 0032. |
 | 2026-10-07 | Entity events in section 4 curated in the `entity_events` seed, each citing the filing that reports it, checked against EDGAR. See decision 0031. |
