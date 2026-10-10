@@ -1377,3 +1377,87 @@ explanation for the custody banks, Raymond James's mis-dated 2023Q1 and the 167
 bank-quarters whose interest-bearing base cannot be reconciled. Only the last reaches a
 beta: five rest on an unreconcilable base at one endpoint or both, Regions and SunTrust in
 the calibration cycle and BNY Mellon, HSBC USA and Truist in the test cycle.
+
+---
+
+## 0034 — Pre-register the persistence analysis before computing it
+
+**Date** 2026-10-10
+**Status** Accepted. Fixes specification 6 before any cross-cycle result exists.
+
+**Context.** The headline result is the rank correlation between each bank's
+calibration-cycle and test-cycle betas, and it has never been computed. The cycle windows
+were adopted (0023) and the precedence rule confirmed (0030) by comparing orderings within
+a cycle only, so that no choice could be steered by its effect on the headline. The same
+discipline has to hold for the choices left: which filers enter, how the correlation is
+judged, and which variants are reported. Made after seeing the answer, each of them is a
+dial. Made now, each is a commitment.
+
+The sample sizes below depend only on tiers, coverage and entity events, none of which
+reveals how the two cycles' betas relate. They were counted before this entry was written;
+the correlation was not.
+
+**Decision.** The headline sample is every filer that meets all of:
+
+1. A member of the ranked fifty, since rankings are computed on it (0017).
+2. A beta in both cycles at tier 1, both endpoints included (specification 3.1).
+3. Tier 1 cost of deposits in at least 80 percent of each cycle's quarters (specification
+   7.2).
+4. No partial cycle (specification 4).
+5. No material acquisition inside either cycle (0032), since specification 4 shows those
+   banks separately: a deposit base that grew by a tenth or more by acquisition between a
+   beta's two endpoints measures the acquired franchise as well as the bank.
+
+Twenty-two filers qualify. No filer is excluded for the value of its beta. Every beta is
+currently between 0 and 1; if a later load produces one outside that range it is reported,
+and the headline is repeated without it as an extra line rather than replaced.
+
+The headline statistic is the Spearman correlation between calibration and test betas
+across that sample, ties sharing the mean of their ranks. It is judged by a one-sided
+permutation test of a positive correlation, 100,000 permutations of the test-cycle betas,
+and given a 95 percent percentile bootstrap interval from 10,000 resamples of filers. Both
+use the fixed seed 20261010 so the figures reproduce exactly. Persistence is supported if
+the correlation is positive and the permutation p-value is below 0.05. With 22 filers the
+smallest correlation that can clear that bar is about 0.36, so a weaker persistence would
+probably not be detected: a result that does not clear it is reported as not shown, not as
+absent.
+
+Then, in the order specification 6 sets:
+
+- Quartile transitions over the same sample, each filer placed in quartile ceil(4r/n) of
+  its own cycle by rank r, with the share remaining in the same quartile reported against
+  the quarter expected by chance.
+- Pearson correlation and the OLS fit of test beta on calibration beta, with R²,
+  explicitly secondary: absolute levels are not expected to transfer (0003).
+- Material deviators: filers two or more quartiles apart between the cycles. Each is given
+  a hypothesis in the write-up, and every such hypothesis is labelled as formed after the
+  result.
+
+Robustness variants, all reported beside the headline and none replacing it:
+
+| Variant | Change to the sample | Filers |
+|---|---|---|
+| R1 | Tiers 1 and 2, coverage at either tier | 24 |
+| R2 | Filers with a material acquisition inside a cycle included | 30 |
+| R3 | Filers with a material acquisition between the cycles also excluded | 20 |
+| R4 | Survivorship: terminal filers whose test beta ends early added, other rules applied over the quarters they filed | 23 |
+
+R4 adds one filer, SVB, measured to 2022Q4. PacWest, the other partial-cycle filer, is
+seated by pin rather than rank and made two material acquisitions in the calibration cycle,
+so it fails rule 5 in every variant but R2, where it fails rule 1. First Republic and
+Signature are added to R4 if they are recovered from regulatory data at Milestone 3, and
+their absence until then is stated beside the result.
+
+**Alternatives.** Include filers with a material acquisition in the headline, which gives
+thirty filers and more power but measures, for eight of them, a bank and an acquisition
+together; it is reported as R2. Tiers 1 and 2 in the headline, which specification 3.1
+rules out. A two-sided test, which would treat a negative correlation as support for
+something; the hypothesis is directional and was fixed as such in 0002. Fisher-transformed
+intervals, which lean on a normality that a sample of 22 ranks does not earn; the bootstrap
+does not. More robustness variants, such as shifted cycle windows: 0023 already shows the
+within-cycle ordering survives them, and each further variant is one more chance to find a
+favourable one.
+
+**Consequences.** The analysis is mechanical from here. The script implementing it reads
+these rules and nothing else, and any departure from them has to be recorded as a new entry
+before its result is reported.

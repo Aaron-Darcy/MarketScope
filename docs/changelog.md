@@ -118,6 +118,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Pre-registered plan for the cross-cycle persistence analysis (specification 6.1, decision
+  0034), fixed before the correlation was computed: a headline sample of 22 filers, a
+  one-sided permutation test and bootstrap interval with a fixed seed, an interpretation
+  rule, and four robustness variants.
 - `dim_bank`, one row per universe member with its rank, pin, SIC as a descriptive
   attribute, the span of its periodic reports, its exit type, date and counterparty where it
   has one, and counts of its acquisitions. Carries the last filed period and exit reason
