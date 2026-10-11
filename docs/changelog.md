@@ -118,6 +118,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Statistics for the pre-registered persistence analysis in `marketscope.ranking`:
+  quartiles by rank, the quartile transition matrix, Pearson correlation, an OLS fit, a
+  one-sided permutation test for a positive Spearman correlation and a percentile bootstrap
+  interval, both seeded so results reproduce exactly. Spearman is now the Pearson
+  correlation of average ranks, which changes no result. A bootstrap resample with no
+  defined correlation is counted and left out rather than scored as zero.
 - Pre-registered plan for the cross-cycle persistence analysis (specification 6.1, decision
   0034), fixed before the correlation was computed: a headline sample of 22 filers, a
   one-sided permutation test and bootstrap interval with a fixed seed, an interpretation
