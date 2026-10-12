@@ -118,6 +118,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- The pre-registered headline result (specification 6.1). Across 22 filers, the Spearman
+  correlation between calibration-cycle and test-cycle deposit betas is +0.590, one-sided
+  permutation p 0.002, 95 percent bootstrap interval +0.154 to +0.836; persistence is
+  supported by the rule fixed in advance. Half the filers keep their quartile, against a
+  quarter by chance. State Street, Zions and Wells Fargo move two quartiles or more, and the
+  hypotheses offered for them are labelled as formed after the result.
 - Statistics for the pre-registered persistence analysis in `marketscope.ranking`:
   quartiles by rank, the quartile transition matrix, Pearson correlation, an OLS fit, a
   one-sided permutation test for a positive Spearman correlation and a percentile bootstrap
