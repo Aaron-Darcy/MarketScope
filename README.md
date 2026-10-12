@@ -21,8 +21,17 @@ deposit-taking US filers and one pinned terminal filer, each at a stated compara
 and `fct_deposit_beta` carries a tiered beta for every member in both study cycles, with a
 flag where a material acquisition changed the deposit base inside the cycle. Every revision
 to a published value is recorded, and so is every merger, exit and failure, each citing the
-filing that reports it. The cross-cycle persistence result has not been computed yet. See
-[docs/specification.md](docs/specification.md).
+filing that reports it.
+
+**Headline result, pre-registered before it was computed:** across the 22 filers that meet
+the sample rules, the Spearman correlation between calibration-cycle and test-cycle deposit
+betas is **+0.59** (one-sided permutation p = 0.002; 95 percent bootstrap interval 0.15 to
+0.84). Banks that repriced deposits faster than their peers in 2015–2019 tended to do so
+again in 2022–2023, most clearly at the fast end, where five of the six fastest repricers
+stayed among the six fastest. All four pre-registered robustness variants agree, at 0.53 to
+0.63. Regulatory validation is still to come, and so are First Republic and Signature, the
+failed banks EDGAR does not hold. See [docs/methodology.md](docs/methodology.md) section
+6.1 and [docs/specification.md](docs/specification.md).
 
 ---
 

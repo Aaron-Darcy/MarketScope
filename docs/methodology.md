@@ -8,11 +8,12 @@ made. This document says how, in enough detail to reproduce every figure from a 
 checkout. Decisions are cited by number, for example (0021), and specification sections as
 "specification 3.1".
 
-**State at writing, 9 October 2026: Milestone 2 closed.** Everything up to
+**State at writing, 12 October 2026: Milestone 3 in progress.** Everything up to
 `fct_deposit_beta` is built and tested, with the table of revisions, the entity events and
-their materiality, and the member dimension. The cross-cycle persistence result, the
-survivorship comparison and the regulatory validation belong to Milestone 3 and are not
-built; flags on individual bank-quarters move to Milestone 4 (0033). Each section says
+their materiality, and the member dimension. The pre-registered headline persistence result
+is computed (section 6.1). Its robustness variants, the survivorship comparison and the
+regulatory validation are not; flags on individual bank-quarters move to Milestone 4
+(0033). Each section says
 which parts are in force and which are still to be built. A planned control is never
 written up as a working one.
 
@@ -422,8 +423,92 @@ cycle.
 
 37 filers have headline-tier coverage in both cycles. The persistence test is narrower:
 its sample, statistic and robustness variants were fixed before computation in
-specification 6.1 (0034), and 22 filers meet the headline rules. The correlation itself is
-Milestone 3 work and has not been computed.
+specification 6.1 (0034), and 22 filers meet the headline rules.
+
+### 6.1 Cross-cycle persistence
+
+The headline result follows the plan fixed in specification 6.1 before it was computed
+(0034). `python analysis/milestone3/persistence.py` implements that plan and nothing else.
+
+**Sample.** 22 filers: members of the ranked fifty with a tier 1 beta in both cycles, tier
+1 cost of deposits in at least 80 percent of each cycle's quarters, no partial cycle and no
+material acquisition inside either cycle.
+
+**Result.** The Spearman correlation between calibration-cycle and test-cycle betas is
+**+0.590**. The one-sided permutation p-value is 0.002 (100,000 permutations) and the 95
+percent bootstrap interval runs from +0.154 to +0.836 (10,000 resamples), both with seed
+20261010. By the rule fixed in advance, persistence is supported: a bank that passed more of
+the 2015–2019 tightening through to its depositors than its peers tended to pass more of the
+2022–2023 tightening through as well.
+
+| Calibration quartile | Test Q1 | Q2 | Q3 | Q4 |
+|---|---|---|---|---|
+| Q1, slowest | 2 | 1 | 2 | 0 |
+| Q2 | 2 | 3 | 1 | 0 |
+| Q3 | 1 | 2 | 1 | 1 |
+| Q4, fastest | 0 | 0 | 1 | 5 |
+
+Half the filers, 11 of 22, sit in the same quartile in both cycles, against a quarter by
+chance. The persistence is concentrated at the top. Five of the six fastest repricers of the
+calibration cycle — American Express, HSBC USA, East West, Ally and Discover — are among the
+six fastest of the test cycle, and three of the five, American Express, Ally and Discover,
+are direct banks with no branch network. The slow end of the ordering is less stable.
+
+Secondary, and not the result: Pearson +0.597, and an OLS fit of test beta on calibration
+beta with slope 0.723, intercept 0.348 and R² 0.357. The median beta rose from 0.323 to
+0.606, the level shift between a slow cycle and a fast one that 0003 expected and that is why
+levels are not compared.
+
+**Material deviators.** Three filers are two or more quartiles apart between the cycles.
+Every hypothesis below was formed after the result was seen, and none has been tested.
+
+- **State Street**, 0.190 to 0.660, quartile 1 to 3. A beta is measured against the federal
+  funds rate, and a custody bank holds a large share of its deposits in other currencies. In
+  2015–2019 euro policy rates stayed negative while the dollar rate rose, which would dilute
+  the measured beta; in 2022–2023 the euro rate rose by 4.5 points as well. Northern Trust,
+  quartile 2 to 3, fits the same pattern. Testable with the foreign deposit share.
+- **Zions**, 0.252 to 0.612, quartile 1 to 3. A commercially funded regional with a large
+  uninsured base, exposed to the 2023 regional bank deposit flight in a way it was not in
+  2015–2019.
+- **Wells Fargo**, 0.339 to 0.409, quartile 3 to 1. Under the Federal Reserve's asset cap
+  throughout the test cycle, it had no use for deposits it could not deploy and so little
+  reason to pay for them. The cap was imposed in February 2018, late in the calibration
+  cycle.
+
+**What the result does not show.** It is an association across 22 banks, not a forecast
+for any one of them (specification 1.2). Its interval is wide: the data are consistent with
+a correlation as modest as 0.15 or as strong as 0.84. It rests on the tag mapping, whose
+error against regulatory data has not been measured (section 9). Three of the 22 betas rest
+on an interest-bearing base that cannot be reconciled at one endpoint: Regions in the
+calibration cycle, Truist and HSBC USA in the test cycle (section 10).
+
+**Robustness.** The four variants pre-registered beside the headline all agree with it.
+
+| Variant | Change to the sample | Filers | Spearman | p | 95% interval |
+|---|---|---|---|---|---|
+| Headline | — | 22 | +0.590 | 0.0020 | +0.154 to +0.836 |
+| R1 | Tiers 1 and 2: adds Goldman Sachs and Morgan Stanley | 24 | +0.590 | 0.0015 | +0.178 to +0.839 |
+| R2 | Material acquisitions inside a cycle included: adds eight acquirers | 30 | +0.534 | 0.0013 | +0.194 to +0.765 |
+| R3 | Material acquisitions between the cycles excluded: drops PNC and Truist | 20 | +0.629 | 0.0019 | +0.194 to +0.859 |
+| R4 | Terminal filers with a shortened test cycle: adds SVB | 23 | +0.603 | 0.0017 | +0.194 to +0.839 |
+
+The lowest correlation is R2's, which adds the eight filers whose deposit base an
+acquisition changed inside a cycle: Citizens, Columbia Banking, Fifth Third, First Citizens,
+Raymond James, Synovus, U.S. Bancorp and Webster. That is the direction 0034 expected. A beta
+spanning an acquisition measures the acquired franchise as well as the bank, which adds
+noise to the ordering, and the headline excludes those filers for that reason.
+
+**Survivorship.** R4 is the comparison specification 4 requires: the headline sample is
+survivors by construction, since a filer that stopped reporting inside the test cycle has
+only a partial beta. Adding SVB, measured to its last quarter, 2022Q4, moves the correlation
+from +0.590 to +0.603. SVB ranks 18th of 23 in the calibration cycle and 13th in the test
+cycle on a beta that stops three quarters into an eight-quarter cycle, and deposit costs lag
+the policy rate, so its test-cycle rank understates where it would have finished. The
+comparison is weak in a way that matters: PacWest is excluded by its own acquisitions, and
+First Republic and Signature, the two banks where the effect was most acute, are not in
+EDGAR at all (section 8.1). The survivorship effect measured here is therefore close to
+nothing because the sample barely contains the banks it concerns, not because they would
+have made no difference.
 
 ---
 
@@ -823,6 +908,7 @@ python analysis/milestone2/cycle_sensitivity.py    # section 5
 python analysis/milestone2/revision_audit.py       # section 8.5
 python analysis/milestone2/precedence_sensitivity.py  # section 3.2
 python analysis/milestone2/entity_event_audit.py   # section 8.3, needs the SEC
+python analysis/milestone3/persistence.py          # section 6.1
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 
