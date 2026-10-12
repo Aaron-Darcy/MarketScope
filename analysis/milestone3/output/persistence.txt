@@ -49,3 +49,23 @@ Ally Financial Inc.                            0.449   0.696   4   4
 EAST WEST BANCORP INC                          0.462   0.668   4   4
 HSBC USA INC /MD/                              0.513   0.783   4   4
 AMERICAN EXPRESS CO                            0.528   0.737   4   4
+
+Robustness variants, pre-registered beside the headline and not replacing it
+
+    variant                                                  filers  Spearman       p   95% interval
+R1  tiers 1 and 2                                                24    +0.590  0.0015   +0.178 to +0.839
+R2  material acquisitions inside a cycle included                30    +0.534  0.0013   +0.194 to +0.765
+R3  material acquisitions between the cycles also excluded       20    +0.629  0.0019   +0.194 to +0.859
+R4  terminal filers with a test cycle cut short added            23    +0.603  0.0017   +0.194 to +0.839
+
+R1: adds GOLDMAN SACHS GROUP INC, MORGAN STANLEY
+    drops none
+R2: adds CITIZENS FINANCIAL GROUP INC/RI, COLUMBIA BANKING SYSTEM, INC., FIFTH THIRD BANCORP, FIRST CITIZENS BANCSHARES INC /DE/, RAYMOND JAMES FINANCIAL INC, SYNOVUS FINANCIAL CORP, US BANCORP \DE\, WEBSTER FINANCIAL CORP
+    drops none
+R3: adds none
+    drops PNC FINANCIAL SERVICES GROUP, INC., TRUIST FINANCIAL CORP
+R4: adds SVB FINANCIAL GROUP
+    drops none
+
+Terminal filers in R4, ranked among its 23 filers, 1 the slowest:
+  SVB FINANCIAL GROUP                    calibration 0.403 (rank 18), test to its last quarter 0.627 (rank 13)

@@ -57,8 +57,21 @@ class CycleBeta:
     beta: float | None
     tier: str | None
     partial: bool
-    tier_1_coverage: float
+    tier_1_quarters: int
+    tier_1_or_2_quarters: int
+    cycle_quarters: int
+    measured_quarters: int
     material_event: bool
+
+    def coverage(self, tiers: frozenset[str]) -> float:
+        """Share of the quarters measured that resolve at the given tiers.
+
+        For a partial cycle the quarters measured run to the filer's last resolved quarter,
+        so coverage is judged over the quarters it filed.
+        """
+        covered = self.tier_1_or_2_quarters if "2" in tiers else self.tier_1_quarters
+        quarters = self.measured_quarters if self.partial else self.cycle_quarters
+        return covered / quarters
 
 
 @dataclass(frozen=True)
@@ -66,6 +79,8 @@ class Filer:
     cik: int
     registrant_name: str
     rank: int | None
+    terminal: bool
+    material_between_cycles: bool
     cycles: dict[str, CycleBeta]
 
     def beta(self, cycle: str) -> float:
@@ -78,15 +93,32 @@ class Filer:
 def read_filers(connection: duckdb.DuckDBPyConnection) -> list[Filer]:
     rows = connection.execute(
         """
+        with between_cycles as (
+
+            select distinct events.cik
+            from bank_entity_events as events
+            where events.material
+              and events.event_quarter > (
+                  select end_quarter from dim_rate_cycle where cycle_name = 'calibration')
+              and events.event_quarter < (
+                  select start_quarter from dim_rate_cycle where cycle_name = 'test')
+
+        )
+
         select
             betas.cik,
             members.registrant_name,
             members.rank,
+            members.is_terminal,
+            betas.cik in (select cik from between_cycles),
             betas.cycle_name,
             betas.deposit_beta,
             betas.metric_tier,
             betas.partial_cycle,
-            betas.tier_1_quarters::double / betas.cycle_quarters,
+            betas.tier_1_quarters,
+            betas.tier_1_or_2_quarters,
+            betas.cycle_quarters,
+            date_diff('quarter', betas.start_quarter, betas.measured_end_quarter) + 1,
             betas.material_event_in_cycle
         from fct_deposit_beta as betas
         join dim_bank as members using (cik)
@@ -95,28 +127,69 @@ def read_filers(connection: duckdb.DuckDBPyConnection) -> list[Filer]:
     ).fetchall()
 
     by_cik: dict[int, dict[str, CycleBeta]] = {}
-    names: dict[int, tuple[str, int | None]] = {}
-    for cik, name, rank, cycle, beta, tier, partial, coverage, material in rows:
-        by_cik.setdefault(cik, {})[cycle] = CycleBeta(beta, tier, partial, coverage, material)
-        names[cik] = (name, rank)
+    members: dict[int, tuple[str, int | None, bool, bool]] = {}
+    for cik, name, rank, terminal, between, cycle, *measured in rows:
+        by_cik.setdefault(cik, {})[cycle] = CycleBeta(*measured)
+        members[cik] = (name, rank, terminal, between)
 
     return [
-        Filer(cik=cik, registrant_name=names[cik][0], rank=names[cik][1], cycles=cycles)
+        Filer(
+            cik=cik,
+            registrant_name=members[cik][0],
+            rank=members[cik][1],
+            terminal=members[cik][2],
+            material_between_cycles=members[cik][3],
+            cycles=cycles,
+        )
         for cik, cycles in by_cik.items()
     ]
 
 
-def in_headline(filer: Filer) -> bool:
-    """The five rules of specification 6.1."""
+@dataclass(frozen=True)
+class Rules:
+    """The sample rules of specification 6.1, with the switches its variants turn."""
+
+    tiers: frozenset[str] = frozenset({"1"})
+    exclude_material_in_cycle: bool = True
+    exclude_material_between_cycles: bool = False
+    admit_terminal_partial_test: bool = False
+
+
+HEADLINE = Rules()
+
+VARIANTS: dict[str, tuple[str, Rules]] = {
+    "R1": ("tiers 1 and 2", Rules(tiers=frozenset({"1", "2"}))),
+    "R2": (
+        "material acquisitions inside a cycle included",
+        Rules(exclude_material_in_cycle=False),
+    ),
+    "R3": (
+        "material acquisitions between the cycles also excluded",
+        Rules(exclude_material_between_cycles=True),
+    ),
+    "R4": (
+        "terminal filers with a test cycle cut short added",
+        Rules(admit_terminal_partial_test=True),
+    ),
+}
+
+
+def eligible(filer: Filer, rules: Rules) -> bool:
     if filer.rank is None:
+        return False
+    if rules.exclude_material_between_cycles and filer.material_between_cycles:
         return False
     for cycle in STUDY_CYCLES:
         measured = filer.cycles[cycle]
-        if measured.beta is None or measured.tier != "1":
+        if measured.beta is None or measured.tier not in rules.tiers:
             return False
-        if measured.tier_1_coverage < COVERAGE_FLOOR:
+        if measured.partial and not (
+            rules.admit_terminal_partial_test and filer.terminal and cycle == TEST
+        ):
             return False
-        if measured.partial or measured.material_event:
+        if measured.coverage(rules.tiers) < COVERAGE_FLOOR:
+            return False
+        if rules.exclude_material_in_cycle and measured.material_event:
             return False
     return True
 
@@ -222,6 +295,46 @@ def summarise(result: Result, table: pd.DataFrame) -> str:
     return "\n".join(lines)
 
 
+def summarise_variants(headline: list[Filer], variants: dict[str, list[Filer]]) -> str:
+    """Each pre-registered variant beside the headline, with the filers it adds or drops."""
+    base = {filer.cik for filer in headline}
+    lines = [
+        "Robustness variants, pre-registered beside the headline and not replacing it",
+        "",
+        f"{'':<4}{'variant':<56}{'filers':>7}{'Spearman':>10}{'p':>8}   95% interval",
+    ]
+    details: list[str] = []
+    for name, sample in variants.items():
+        result = assess(sample)
+        lines.append(
+            f"{name:<4}{VARIANTS[name][0]:<56}{result.filers:>7}{result.spearman:>+10.3f}"
+            f"{result.p_value:>8.4f}   {result.interval.low:+.3f} to {result.interval.high:+.3f}"
+        )
+        cohort = {filer.cik: filer for filer in sample}
+        added = sorted(cohort[cik].registrant_name for cik in cohort.keys() - base)
+        dropped = sorted(filer.registrant_name for filer in headline if filer.cik not in cohort)
+        details.append(f"{name}: adds {', '.join(added) or 'none'}")
+        details.append(f"    drops {', '.join(dropped) or 'none'}")
+
+    lines += ["", *details]
+
+    survivors = variants["R4"]
+    calibration = average_ranks([filer.beta(CALIBRATION) for filer in survivors])
+    test = average_ranks([filer.beta(TEST) for filer in survivors])
+    lines += [
+        "",
+        f"Terminal filers in R4, ranked among its {len(survivors)} filers, 1 the slowest:",
+    ]
+    for filer, calibration_rank, test_rank in zip(survivors, calibration, test, strict=True):
+        if filer.terminal and filer.cycles[TEST].partial:
+            lines.append(
+                f"  {filer.registrant_name[:38]:<38} calibration {filer.beta(CALIBRATION):.3f} "
+                f"(rank {calibration_rank:g}), test to its last quarter "
+                f"{filer.beta(TEST):.3f} (rank {test_rank:g})"
+            )
+    return "\n".join(lines)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--database", type=Path, default=DATABASE_PATH)
@@ -236,13 +349,18 @@ def main(argv: list[str] | None = None) -> int:
     finally:
         connection.close()
 
-    sample = [filer for filer in filers if in_headline(filer)]
+    sample = [filer for filer in filers if eligible(filer, HEADLINE)]
     result = assess(sample)
     table = filer_table(sample)
 
+    variants = {
+        name: [filer for filer in filers if eligible(filer, rules)]
+        for name, (_, rules) in VARIANTS.items()
+    }
+
     args.output_dir.mkdir(parents=True, exist_ok=True)
     table.to_csv(args.output_dir / "persistence.csv", index=False)
-    report = summarise(result, table)
+    report = summarise(result, table) + "\n\n" + summarise_variants(sample, variants)
     print(report)
     (args.output_dir / "persistence.txt").write_text(report, encoding="utf-8")
     return 0

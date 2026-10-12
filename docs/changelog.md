@@ -118,6 +118,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- The four robustness variants pre-registered beside the headline. All agree with it:
+  Spearman +0.590 with tiers 1 and 2 (24 filers), +0.534 with in-cycle acquirers included
+  (30), +0.629 with between-cycle acquirers excluded (20), and +0.603 with SVB's shortened
+  test cycle added (23), every p at or below 0.002. The survivorship comparison adds only
+  SVB, because PacWest fails the acquisition rule and First Republic and Signature are not
+  in EDGAR, and the methodology says so.
 - The pre-registered headline result (specification 6.1). Across 22 filers, the Spearman
   correlation between calibration-cycle and test-cycle deposit betas is +0.590, one-sided
   permutation p 0.002, 95 percent bootstrap interval +0.154 to +0.836; persistence is

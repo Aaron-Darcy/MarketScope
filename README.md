@@ -28,9 +28,10 @@ the sample rules, the Spearman correlation between calibration-cycle and test-cy
 betas is **+0.59** (one-sided permutation p = 0.002; 95 percent bootstrap interval 0.15 to
 0.84). Banks that repriced deposits faster than their peers in 2015–2019 tended to do so
 again in 2022–2023, most clearly at the fast end, where five of the six fastest repricers
-stayed among the six fastest. Regulatory validation and the robustness variants are still
-to come. See [docs/methodology.md](docs/methodology.md) section 6.1 and
-[docs/specification.md](docs/specification.md).
+stayed among the six fastest. All four pre-registered robustness variants agree, at 0.53 to
+0.63. Regulatory validation is still to come, and so are First Republic and Signature, the
+failed banks EDGAR does not hold. See [docs/methodology.md](docs/methodology.md) section
+6.1 and [docs/specification.md](docs/specification.md).
 
 ---
 

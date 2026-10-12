@@ -480,9 +480,35 @@ for any one of them (specification 1.2). Its interval is wide: the data are cons
 a correlation as modest as 0.15 or as strong as 0.84. It rests on the tag mapping, whose
 error against regulatory data has not been measured (section 9). Three of the 22 betas rest
 on an interest-bearing base that cannot be reconciled at one endpoint: Regions in the
-calibration cycle, Truist and HSBC USA in the test cycle (section 10). The robustness
-variants and the survivorship comparison pre-registered beside the headline have not been
-computed yet.
+calibration cycle, Truist and HSBC USA in the test cycle (section 10).
+
+**Robustness.** The four variants pre-registered beside the headline all agree with it.
+
+| Variant | Change to the sample | Filers | Spearman | p | 95% interval |
+|---|---|---|---|---|---|
+| Headline | — | 22 | +0.590 | 0.0020 | +0.154 to +0.836 |
+| R1 | Tiers 1 and 2: adds Goldman Sachs and Morgan Stanley | 24 | +0.590 | 0.0015 | +0.178 to +0.839 |
+| R2 | Material acquisitions inside a cycle included: adds eight acquirers | 30 | +0.534 | 0.0013 | +0.194 to +0.765 |
+| R3 | Material acquisitions between the cycles excluded: drops PNC and Truist | 20 | +0.629 | 0.0019 | +0.194 to +0.859 |
+| R4 | Terminal filers with a shortened test cycle: adds SVB | 23 | +0.603 | 0.0017 | +0.194 to +0.839 |
+
+The lowest correlation is R2's, which adds the eight filers whose deposit base an
+acquisition changed inside a cycle: Citizens, Columbia Banking, Fifth Third, First Citizens,
+Raymond James, Synovus, U.S. Bancorp and Webster. That is the direction 0034 expected. A beta
+spanning an acquisition measures the acquired franchise as well as the bank, which adds
+noise to the ordering, and the headline excludes those filers for that reason.
+
+**Survivorship.** R4 is the comparison specification 4 requires: the headline sample is
+survivors by construction, since a filer that stopped reporting inside the test cycle has
+only a partial beta. Adding SVB, measured to its last quarter, 2022Q4, moves the correlation
+from +0.590 to +0.603. SVB ranks 18th of 23 in the calibration cycle and 13th in the test
+cycle on a beta that stops three quarters into an eight-quarter cycle, and deposit costs lag
+the policy rate, so its test-cycle rank understates where it would have finished. The
+comparison is weak in a way that matters: PacWest is excluded by its own acquisitions, and
+First Republic and Signature, the two banks where the effect was most acute, are not in
+EDGAR at all (section 8.1). The survivorship effect measured here is therefore close to
+nothing because the sample barely contains the banks it concerns, not because they would
+have made no difference.
 
 ---
 
