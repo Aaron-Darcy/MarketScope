@@ -8,10 +8,12 @@ import pytest
 from marketscope.deposit_cost import (
     DEPOSIT_BALANCE_COLUMNS,
     DEPOSIT_COST_COLUMNS,
+    REGULATORY_COST_COLUMNS,
     bank_quarter_rows,
     deposit_balance_frame,
     deposit_balance_rows,
     deposit_cost_frame,
+    regulatory_cost_frame,
 )
 from marketscope.facts import FACT_FIELDS, facts_from_rows
 from marketscope.panel import Panel
@@ -203,3 +205,34 @@ def test_a_balance_dated_off_a_quarter_end_is_left_out() -> None:
     panel = Panel(values={date(2025, 5, 18): {"Deposits": 500.0}}, derived={})
 
     assert deposit_balance_rows(1, panel) == []
+
+
+def test_regulatory_cost_uses_the_metric_arithmetic() -> None:
+    """Quarterly expense times four over the two-point average of interest-bearing deposits,
+    exactly as the XBRL metric computes it."""
+    frame = regulatory_cost_frame(
+        [
+            ("HC:1", 19617, date(2023, 9, 30), 2, 1_500.0, 1_000.0, 9.0),
+            ("HC:1", 19617, date(2023, 12, 31), 2, 1_600.0, 1_200.0, 11.0),
+        ]
+    )
+
+    assert list(frame.columns) == list(REGULATORY_COST_COLUMNS)
+    second = frame[frame["quarter_end"] == date(2023, 12, 31)].iloc[0]
+    assert second["cost_of_deposits"] == pytest.approx(11.0 * 4 / 1_100.0)
+    assert second["avg_method"] == "endpoint"
+    first = frame[frame["quarter_end"] == date(2023, 9, 30)].iloc[0]
+    assert first["avg_method"] == "closing_only"
+
+
+def test_a_group_without_a_registrant_is_kept() -> None:
+    """First Republic has no CIK, and is the reason the regulatory figures are loaded at all."""
+    frame = regulatory_cost_frame([("BANK:59017", None, date(2022, 12, 31), 1, 1.0, 1.0, 0.01)])
+
+    assert frame["group_key"].tolist() == ["BANK:59017"]
+
+
+def test_a_group_quarter_with_no_interest_bearing_base_produces_no_row() -> None:
+    frame = regulatory_cost_frame([("HC:1", 1, date(2023, 12, 31), 1, 5.0, 0.0, 1.0)])
+
+    assert frame.empty

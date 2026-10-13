@@ -42,6 +42,7 @@ def test_connect_creates_the_raw_tables(connection: duckdb.DuckDBPyConnection) -
         "sec_filings",
         "sec_registrants",
         "fred_observations",
+        "fdic_financials",
         "ingest_log",
     }
 
@@ -184,3 +185,21 @@ def test_appender_counts_rows_across_several_batches(
 
     assert appender.rows == 3
     assert store.table_counts(connection)["sec_facts"] == 3
+
+
+def test_fdic_rows_carry_the_group_and_parse_the_reporting_date(
+    connection: duckdb.DuckDBPyConnection,
+) -> None:
+    records = [
+        {"CERT": 628, "REPDTE": "20231231", "RSSDHCR": "1039502", "DEPI": 1827867000},
+        {"CERT": 2270, "REPDTE": "20231231", "RSSDHCR": "", "DEPI": 50052682},
+    ]
+
+    rows = store.fdic_rows("HC:1039502", 19617, records)
+    store.replace(connection, "fdic_financials", store.FDIC_COLUMNS, rows)
+
+    loaded = connection.execute(
+        "select cert, report_date, rssd_hcr, depi, edepdomq from raw.fdic_financials order by cert"
+    ).fetchall()
+    assert loaded[0] == (628, date(2023, 12, 31), "1039502", 1827867000.0, None)
+    assert loaded[1][2] is None

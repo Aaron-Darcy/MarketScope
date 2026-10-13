@@ -127,7 +127,8 @@ Set `MARKETSCOPE_SEC_USER_AGENT` in `.env` to a string containing real contact d
 The SEC rejects requests without one and limits callers to ten requests per second; both
 constraints are enforced in `marketscope.ingestion.http`.
 
-Load the committed universe, its filings and the rate series into DuckDB:
+Load the committed universe, its filings, the rate series and the Call Report deposit
+figures used for validation into DuckDB:
 
 ```
 python -m marketscope.pipeline

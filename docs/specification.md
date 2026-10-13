@@ -349,6 +349,7 @@ staging/
   stg_sec__submissions
   stg_sec__tickers
   stg_fred__series
+  stg_fdic__financials
 
 intermediate/
   int_bank_universe
@@ -356,6 +357,7 @@ intermediate/
   int_deposit_cost          (Python model)
   int_deposit_balances      (Python model)
   int_fact_revisions        (Python model)
+  int_regulatory_deposit_cost (Python model)
   int_filing_timeliness
 
 marts/
@@ -497,6 +499,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-10-13 | Regulatory cost of deposits built from FDIC Call Report figures with the XBRL metric's own arithmetic; `stg_fdic__financials` and `int_regulatory_deposit_cost` added to 7.1. The endpoint-averaging error is not measurable from this source. See decision 0035. |
 | 2026-10-10 | Section 6.1 added: the persistence analysis pre-registered before computation — sample rules, statistic, test, interval, interpretation and four robustness variants. See decision 0034. |
 | 2026-10-09 | Milestone 2 closed: `fct_deposit_beta` populated with tiers and entity event flags, revisions and entity events recorded. Flagging individual bank-quarters moves with `fct_bank_quarter` to Milestone 4. See decision 0033. |
 | 2026-10-07 | Materiality of an entity event defined in section 4 as a deposit step of a tenth or more in the quarter it completes. `int_deposit_balances` added to the model layout in 7.1. See decision 0032. |

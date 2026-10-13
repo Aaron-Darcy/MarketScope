@@ -28,7 +28,8 @@ written up as a working one.
 | SEC EDGAR | XBRL frames, `data.sec.gov/api/xbrl/frames` | Universe ranking only |
 | FRED | `FEDFUNDS`, monthly effective federal funds rate | Cycle windows and the policy move in every beta |
 | FRED | `DGS2`, `DGS10` | Context on bank pages; not used in any result |
-| FDIC BankFind | Institution financials at 2022-12-31 | Sizing the EDGAR coverage gap only (0016) |
+| FDIC BankFind | Institution financials at 2022-12-31 | Sizing the EDGAR coverage gap (0016) |
+| FDIC BankFind | Call Report deposit figures per institution, quarterly from 2009 | Validating the XBRL metric (specification 5) |
 
 All of these are public and free to redistribute. Nothing licensed is used (specification
 1.2).
@@ -63,6 +64,14 @@ All of these are public and free to redistribute. Nothing licensed is used (spec
   always describe the same set of filers.
 - **FRED missing values.** FRED marks a missing observation with `.`. The client turns it
   into a null and staging drops it, so it cannot reach an average as a zero.
+- **Call Reports.** `raw.fdic_financials` holds total, interest-bearing and
+  non-interest-bearing deposits and quarterly deposit interest expense in domestic and
+  foreign offices, per insured institution, for the 43 groups of the pinned regulatory table
+  that are not foreign banking organisations: the 40 EDGAR reaches and First Republic,
+  Signature and USAA. A group is every institution reporting its regulatory high holder in
+  the quarter, or the institution alone where it has none. Figures stay in thousands, as
+  published. The current load holds 6,778 institution-quarters across 186 institutions,
+  from 2009Q1 to 2026Q2. `--skip-sec`, `--skip-fred` and `--skip-fdic` load a source alone.
 
 **Filer identity.** The registrant name comes from the submissions endpoint and never from
 `entityName` on the company facts payload. That field names whichever entity published a
@@ -796,8 +805,23 @@ a scheduled refresh shows it happening (0028).
 ## 9. Validation not yet done
 
 The specification's accuracy claim rests on a comparison with FFIEC Call Report and FDIC
-data (specification 5). None of that has started. Until it has, the following are
-unknown:
+data (specification 5).
+
+**Built: the regulatory figure.** `int_regulatory_deposit_cost` computes a cost of deposits
+per regulatory group and quarter from Call Report figures, summing a group's insured
+institutions first and then applying the library arithmetic the XBRL metric uses (0035):
+quarterly deposit interest expense, domestic plus foreign, times four, over the two-point
+average of quarter-end interest-bearing deposits. It holds 2,863 group-quarters across 43
+groups, 1,266 of them a single institution. The FDIC publishes figures in thousands and its
+quarterly expense is its own differencing of the year-to-date Call Report, so nothing is
+derived here. An institution with no foreign offices has a null foreign expense, which adds
+nothing.
+
+**Not measurable from this source: averaging error.** BankFind does not publish the Call
+Report's quarterly average balances, so the error of endpoint averaging (4.5) cannot be
+measured against it. It needs the FFIEC's bulk Call Report files.
+
+Until the comparison has been run, the following are unknown:
 
 - the error rate of the tag mapping for any individual bank;
 - the size of the endpoint-averaging error, especially in 2023;
