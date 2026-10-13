@@ -118,6 +118,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- FDIC BankFind client in `marketscope.ingestion.fdic`, paging collections through the
+  shared rate limiter, cache and retries. The pinned table mapping FDIC groups to SEC
+  registrants moves from the reference audit to `marketscope.regulatory` unchanged, with a
+  filter selecting a group by regulatory high holder or, for a bank with no holding
+  company, by certificate. The reference audit uses both and reproduces its output exactly.
 - The four robustness variants pre-registered beside the headline. All agree with it:
   Spearman +0.590 with tiers 1 and 2 (24 filers), +0.534 with in-cycle acquirers included
   (30), +0.629 with between-cycle acquirers excluded (20), and +0.603 with SVB's shortened
