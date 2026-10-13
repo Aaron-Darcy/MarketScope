@@ -1,8 +1,9 @@
-"""Load the committed universe, its SEC filings and the FRED rate series into DuckDB.
+"""Load the committed universe, its SEC filings, the FRED rate series and the Call Report
+deposit figures for the regulatory comparison into DuckDB.
 
 Usage:
     python -m marketscope.pipeline
-    python -m marketscope.pipeline --skip-fred
+    python -m marketscope.pipeline --skip-sec --skip-fred
 """
 
 from __future__ import annotations
@@ -18,8 +19,10 @@ import duckdb
 
 from marketscope import store
 from marketscope.facts import extract_facts
+from marketscope.ingestion.fdic import FdicClient
 from marketscope.ingestion.fred import FredClient
 from marketscope.ingestion.sec import SecClient
+from marketscope.regulatory import group_filter, regulatory_groups
 from marketscope.store import DATABASE_PATH
 from marketscope.universe import SEED_PATH, SeedRow, read_seed
 
@@ -33,6 +36,10 @@ FRED_SERIES: tuple[str, ...] = ("FEDFUNDS", "DGS2", "DGS10")
 # per-share amounts — are not loaded, because nothing downstream reads them and they are
 # most of the payload.
 FACT_UNITS: tuple[str, ...] = ("USD",)
+
+# Call Reports from the year the first members began filing XBRL, so every bank-quarter the
+# metric can resolve has a regulatory counterpart.
+FDIC_FIRST_REPORT = "20090101"
 
 
 @dataclass
@@ -137,11 +144,38 @@ def load_fred(connection: duckdb.DuckDBPyConnection, report: LoadReport) -> None
     )
 
 
+def load_fdic(connection: duckdb.DuckDBPyConnection, report: LoadReport) -> None:
+    """Load Call Report deposit figures for every pinned regulatory group.
+
+    A group that fails to load is recorded and the run fails at the end, as for the SEC: a
+    comparison run on the groups that happened to load would describe a sample nobody chose.
+    """
+    rows: list[tuple[Any, ...]] = []
+    with FdicClient() as client:
+        for key, mapping in regulatory_groups():
+            logger.info("Fetching Call Report deposits for %s", mapping.name)
+            try:
+                records = client.financials(
+                    f"{group_filter(key)} AND REPDTE:[{FDIC_FIRST_REPORT} TO *]"
+                )
+            except Exception as error:
+                report.failures.append(f"FDIC group {key} ({mapping.name}): {error}")
+                logger.error("Failed for %s: %s", key, error)
+                continue
+            rows.extend(store.fdic_rows(key, mapping.cik, records))
+
+    report.counts["fdic_financials"] = store.replace(
+        connection, "fdic_financials", store.FDIC_COLUMNS, rows
+    )
+
+
 def run(
     database: Path = DATABASE_PATH,
     seed: Path = SEED_PATH,
     *,
+    skip_sec: bool = False,
     skip_fred: bool = False,
+    skip_fdic: bool = False,
 ) -> LoadReport:
     members = read_seed(seed)
     logger.info("Loading %d universe members from %s", len(members), seed)
@@ -152,11 +186,18 @@ def run(
         report.counts["universe"] = store.replace(
             connection, "universe", store.UNIVERSE_COLUMNS, store.universe_rows(members)
         )
-        load_sec(connection, members, report)
+        if skip_sec:
+            logger.info("Skipping SEC")
+        else:
+            load_sec(connection, members, report)
         if skip_fred:
             logger.info("Skipping FRED")
         else:
             load_fred(connection, report)
+        if skip_fdic:
+            logger.info("Skipping FDIC")
+        else:
+            load_fdic(connection, report)
     finally:
         connection.close()
 
@@ -167,7 +208,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--database", type=Path, default=DATABASE_PATH)
     parser.add_argument("--seed", type=Path, default=SEED_PATH)
+    parser.add_argument("--skip-sec", action="store_true")
     parser.add_argument("--skip-fred", action="store_true")
+    parser.add_argument("--skip-fdic", action="store_true")
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
@@ -175,7 +218,13 @@ def main(argv: list[str] | None = None) -> int:
     # A scheduled run would otherwise print it into a build log.
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
-    report = run(args.database, args.seed, skip_fred=args.skip_fred)
+    report = run(
+        args.database,
+        args.seed,
+        skip_sec=args.skip_sec,
+        skip_fred=args.skip_fred,
+        skip_fdic=args.skip_fdic,
+    )
 
     print(f"\nLoaded into {args.database}")
     for table, rows in report.counts.items():

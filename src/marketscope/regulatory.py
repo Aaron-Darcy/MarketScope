@@ -175,6 +175,21 @@ def group_filter(key: str) -> str:
     raise ValueError(f"Unrecognised FDIC group key {key!r}")
 
 
+def regulatory_groups() -> list[tuple[str, Mapping]]:
+    """Every group whose Call Reports are loaded, keyed as the pinned table keys them.
+
+    The groups EDGAR reaches, against which the XBRL metric is validated, and the US
+    institutions it cannot reach for want of registered securities, which are recovered
+    from regulatory data. US operations of foreign banking organisations are outside the
+    scope and are not loaded.
+    """
+    return [
+        (key, mapping)
+        for key, mapping in REFERENCE_MAP.items()
+        if mapping.reachability is not Reachability.ABSENT_FOREIGN_PARENT
+    ]
+
+
 def mapped_registrants() -> dict[str, int]:
     """FDIC group key to SEC CIK, for every group the pinned table reaches through EDGAR."""
     return {key: mapping.cik for key, mapping in REFERENCE_MAP.items() if mapping.cik is not None}

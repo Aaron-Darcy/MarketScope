@@ -32,5 +32,18 @@ sources:
             tests: [unique, not_null]
       - name: fred_observations
         description: Policy and Treasury rate series, with FRED's missing marker resolved to null.
+      - name: fdic_financials
+        description: >
+          Call Report deposit figures per insured institution and quarter from 2009, in
+          thousands of dollars as the FDIC publishes them, for every group in the pinned
+          regulatory table except US operations of foreign banking organisations. The group
+          key and CIK record which group a row was fetched for.
+        columns:
+          - name: group_key
+            tests: [not_null]
+          - name: cert
+            tests: [not_null]
+          - name: report_date
+            tests: [not_null]
       - name: ingest_log
         description: Row count and load time per raw table, for run-on-run change detection.

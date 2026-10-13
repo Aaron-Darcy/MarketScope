@@ -75,6 +75,21 @@ DDL: tuple[str, ...] = (
         observation_date DATE NOT NULL,
         value DOUBLE
     )""",
+    # Call Report deposit figures per insured institution and quarter, in thousands of
+    # dollars as the FDIC publishes them. The group key and CIK record which pinned group
+    # the row was fetched for, which the endpoint itself does not return.
+    f"""CREATE TABLE IF NOT EXISTS {RAW_SCHEMA}.fdic_financials (
+        group_key VARCHAR NOT NULL,
+        cik BIGINT,
+        cert BIGINT NOT NULL,
+        report_date DATE NOT NULL,
+        rssd_hcr VARCHAR,
+        dep DOUBLE,
+        depi DOUBLE,
+        depni DOUBLE,
+        edepdomq DOUBLE,
+        edepforq DOUBLE
+    )""",
     f"""CREATE TABLE IF NOT EXISTS {RAW_SCHEMA}.ingest_log (
         source VARCHAR NOT NULL,
         loaded_at TIMESTAMPTZ NOT NULL,
@@ -251,6 +266,18 @@ REGISTRANT_COLUMNS = (
     "exchanges",
 )
 FRED_COLUMNS = ("series_id", "observation_date", "value")
+FDIC_COLUMNS = (
+    "group_key",
+    "cik",
+    "cert",
+    "report_date",
+    "rssd_hcr",
+    "dep",
+    "depi",
+    "depni",
+    "edepdomq",
+    "edepforq",
+)
 
 
 def universe_rows(seed: Iterable[SeedRow]) -> list[tuple[Any, ...]]:
@@ -319,6 +346,34 @@ def fred_rows(series_id: str, observations: Iterable[Observation]) -> list[tuple
     return [
         (series_id, observation.observation_date, observation.value) for observation in observations
     ]
+
+
+def fdic_rows(
+    group_key: str, cik: int | None, records: Iterable[Mapping[str, Any]]
+) -> list[tuple[Any, ...]]:
+    """Call Report records for one group, with the reporting date as a date.
+
+    A figure the FDIC leaves out of a record stays null rather than becoming zero, which a
+    sum across a group's institutions would otherwise read as a reported nothing.
+    """
+    rows: list[tuple[Any, ...]] = []
+    for record in records:
+        day = str(record["REPDTE"])
+        rows.append(
+            (
+                group_key,
+                cik,
+                int(record["CERT"]),
+                f"{day[:4]}-{day[4:6]}-{day[6:]}",
+                None if record.get("RSSDHCR") in (None, "") else str(record["RSSDHCR"]),
+                record.get("DEP"),
+                record.get("DEPI"),
+                record.get("DEPNI"),
+                record.get("EDEPDOMQ"),
+                record.get("EDEPFORQ"),
+            )
+        )
+    return rows
 
 
 def table_counts(connection: duckdb.DuckDBPyConnection) -> dict[str, int]:

@@ -118,6 +118,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Call Report deposit figures in `raw.fdic_financials`, loaded by the pipeline for the 43
+  groups of the pinned regulatory table that are not foreign banking organisations: total,
+  interest-bearing and non-interest-bearing deposits and quarterly deposit interest expense
+  per insured institution from 2009. 6,778 institution-quarters across 186 institutions.
+  `--skip-sec` and `--skip-fdic` join `--skip-fred`, so one source can be reloaded without
+  refetching the others.
 - FDIC BankFind client in `marketscope.ingestion.fdic`, paging collections through the
   shared rate limiter, cache and retries. The pinned table mapping FDIC groups to SEC
   registrants moves from the reference audit to `marketscope.regulatory` unchanged, with a

@@ -28,7 +28,8 @@ written up as a working one.
 | SEC EDGAR | XBRL frames, `data.sec.gov/api/xbrl/frames` | Universe ranking only |
 | FRED | `FEDFUNDS`, monthly effective federal funds rate | Cycle windows and the policy move in every beta |
 | FRED | `DGS2`, `DGS10` | Context on bank pages; not used in any result |
-| FDIC BankFind | Institution financials at 2022-12-31 | Sizing the EDGAR coverage gap only (0016) |
+| FDIC BankFind | Institution financials at 2022-12-31 | Sizing the EDGAR coverage gap (0016) |
+| FDIC BankFind | Call Report deposit figures per institution, quarterly from 2009 | Validating the XBRL metric (specification 5) |
 
 All of these are public and free to redistribute. Nothing licensed is used (specification
 1.2).
@@ -63,6 +64,14 @@ All of these are public and free to redistribute. Nothing licensed is used (spec
   always describe the same set of filers.
 - **FRED missing values.** FRED marks a missing observation with `.`. The client turns it
   into a null and staging drops it, so it cannot reach an average as a zero.
+- **Call Reports.** `raw.fdic_financials` holds total, interest-bearing and
+  non-interest-bearing deposits and quarterly deposit interest expense in domestic and
+  foreign offices, per insured institution, for the 43 groups of the pinned regulatory table
+  that are not foreign banking organisations: the 40 EDGAR reaches and First Republic,
+  Signature and USAA. A group is every institution reporting its regulatory high holder in
+  the quarter, or the institution alone where it has none. Figures stay in thousands, as
+  published. The current load holds 6,778 institution-quarters across 186 institutions,
+  from 2009Q1 to 2026Q2. `--skip-sec`, `--skip-fred` and `--skip-fdic` load a source alone.
 
 **Filer identity.** The registrant name comes from the submissions endpoint and never from
 `entityName` on the company facts payload. That field names whichever entity published a
