@@ -1461,3 +1461,41 @@ favourable one.
 **Consequences.** The analysis is mechanical from here. The script implementing it reads
 these rules and nothing else, and any departure from them has to be recorded as a new entry
 before its result is reported.
+
+---
+
+## 0035 — Validate against Call Reports with the metric's own arithmetic
+
+**Date** 2026-10-13
+**Status** Accepted. Narrows specification 5 for this source.
+
+**Context.** Specification 5 compares the XBRL cost of deposits with the regulatory figure,
+to state the tag mapping's accuracy as a measured error, and 0011 promises the same data
+will measure the error of endpoint averaging, because regulatory filings report true
+quarterly averages. The FDIC BankFind API is the regulatory source the project can reach
+without a CAPTCHA (0016). It publishes each insured institution's quarter-end deposit
+balances and quarterly deposit interest expense, domestic and foreign, but not the Call
+Report's schedule of quarterly average balances. Its only averages are multi-point averages
+of year-to-date positions, which are not a quarter's average balance.
+
+**Decision.** The regulatory cost of deposits is built with the arithmetic of the XBRL
+metric — quarterly expense times four over the two-point average of quarter-end
+interest-bearing deposits — by the same library functions, from each group's insured
+institutions summed per quarter. A difference between the two measures is then a difference
+in the figures, which is what the tag mapping's error is. The endpoint-averaging error is
+not measured from this source, and the claim in 0011 that it would be stays open.
+
+**Alternatives.** Fetch the Call Report average-balance schedule from the FFIEC's Central
+Data Repository, whose bulk files carry it. That would measure the averaging error but
+requires parsing a different distribution, and the like-for-like comparison does not need
+it. Compare on the FDIC's multi-point averages, which mixes an averaging difference into
+every comparison and makes the tag mapping's error unreadable.
+
+**Consequences.** `int_regulatory_deposit_cost` holds 2,863 group-quarters across the 43
+groups, 1,266 of them a single insured institution. Comparing a holding company's filing
+with the sum of its banks' Call Reports still differs by consolidation scope: deposits at a
+non-US banking subsidiary appear in the holding company's figures but in no Call Report,
+and deposits one subsidiary holds at another are eliminated in consolidation. The measured
+error is therefore an upper bound on the tag mapping's own, and is reported separately for
+groups of a single institution, as specification 5 provides. Averaging error stays an open
+item for the FFIEC data.

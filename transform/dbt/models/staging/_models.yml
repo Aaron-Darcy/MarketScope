@@ -62,3 +62,19 @@ models:
         tests: [not_null]
       - name: rate_percent
         tests: [not_null]
+
+  - name: stg_fdic__financials
+    description: >
+      Call Report deposit figures per insured institution and quarter, in dollars, with
+      quarterly deposit interest expense summed across domestic and foreign offices.
+    columns:
+      - name: group_key
+        tests: [not_null]
+      - name: cert
+        tests: [not_null]
+      - name: quarter_end
+        tests: [not_null]
+      - name: interest_bearing_deposits
+        tests: [not_null]
+      - name: deposit_expense
+        tests: [not_null]

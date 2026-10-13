@@ -118,6 +118,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `int_regulatory_deposit_cost`, the cost of deposits per regulatory group and quarter from
+  Call Reports, by the library arithmetic the XBRL metric uses so the two differ only where
+  their figures do (decision 0035). 2,863 group-quarters across 43 groups, First Republic,
+  Signature and USAA among them. `stg_fdic__financials` converts the FDIC's thousands to
+  dollars and sums domestic and foreign deposit expense.
 - Call Report deposit figures in `raw.fdic_financials`, loaded by the pipeline for the 43
   groups of the pinned regulatory table that are not foreign banking organisations: total,
   interest-bearing and non-interest-bearing deposits and quarterly deposit interest expense

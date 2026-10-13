@@ -805,8 +805,23 @@ a scheduled refresh shows it happening (0028).
 ## 9. Validation not yet done
 
 The specification's accuracy claim rests on a comparison with FFIEC Call Report and FDIC
-data (specification 5). None of that has started. Until it has, the following are
-unknown:
+data (specification 5).
+
+**Built: the regulatory figure.** `int_regulatory_deposit_cost` computes a cost of deposits
+per regulatory group and quarter from Call Report figures, summing a group's insured
+institutions first and then applying the library arithmetic the XBRL metric uses (0035):
+quarterly deposit interest expense, domestic plus foreign, times four, over the two-point
+average of quarter-end interest-bearing deposits. It holds 2,863 group-quarters across 43
+groups, 1,266 of them a single institution. The FDIC publishes figures in thousands and its
+quarterly expense is its own differencing of the year-to-date Call Report, so nothing is
+derived here. An institution with no foreign offices has a null foreign expense, which adds
+nothing.
+
+**Not measurable from this source: averaging error.** BankFind does not publish the Call
+Report's quarterly average balances, so the error of endpoint averaging (4.5) cannot be
+measured against it. It needs the FFIEC's bulk Call Report files.
+
+Until the comparison has been run, the following are unknown:
 
 - the error rate of the tag mapping for any individual bank;
 - the size of the endpoint-averaging error, especially in 2023;

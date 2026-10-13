@@ -12,6 +12,8 @@ from marketscope.metrics import (
     TOTAL_DEPOSITS_TAG,
     DepositCost,
     Provenance,
+    average_balance,
+    cost_of_deposits,
     resolve_deposit_cost,
     resolve_interest_bearing_deposits,
     resolve_noninterest_bearing_deposits,
@@ -28,6 +30,18 @@ DEPOSIT_COST_COLUMNS: tuple[str, ...] = (
     "avg_method",
     "component_coverage",
     "q4_derived",
+)
+
+REGULATORY_COST_COLUMNS: tuple[str, ...] = (
+    "group_key",
+    "cik",
+    "quarter_end",
+    "institutions",
+    "total_deposits",
+    "interest_bearing_deposits",
+    "deposit_expense",
+    "cost_of_deposits",
+    "avg_method",
 )
 
 DEPOSIT_BALANCE_COLUMNS: tuple[str, ...] = (
@@ -131,3 +145,48 @@ def deposit_balance_frame(rows: Iterable[tuple[Any, ...]]) -> pd.DataFrame:
     for cik, facts in sorted(facts_from_rows(rows).items()):
         resolved.extend(deposit_balance_rows(cik, build_panel(facts)))
     return pd.DataFrame(resolved, columns=list(DEPOSIT_BALANCE_COLUMNS))
+
+
+def regulatory_cost_frame(rows: Iterable[tuple[Any, ...]]) -> pd.DataFrame:
+    """Cost of deposits per regulatory group and quarter, by the arithmetic of the XBRL metric.
+
+    Each row is a group's quarter summed across its insured institutions: group key, CIK,
+    quarter end, institution count, total deposits, interest-bearing deposits and quarterly
+    deposit interest expense. The cost annualises the expense by simple multiplication over
+    the two-point average of interest-bearing deposits, as `cost_of_deposits` does for a
+    filer, so the two measures differ only where their figures do.
+    """
+    groups: dict[str, tuple[Any, dict[Any, tuple[Any, ...]]]] = {}
+    for group_key, cik, quarter, institutions, total, interest_bearing, expense in rows:
+        groups.setdefault(group_key, (cik, {}))[1][quarter] = (
+            institutions,
+            total,
+            interest_bearing,
+            expense,
+        )
+
+    resolved: list[tuple[Any, ...]] = []
+    for group_key in sorted(groups):
+        cik, quarters = groups[group_key]
+        for quarter in sorted(quarters):
+            institutions, total, interest_bearing, expense = quarters[quarter]
+            previous = quarters.get(previous_quarter_end(quarter))
+            opening = previous[2] if previous is not None else None
+            rate = cost_of_deposits(expense, opening, interest_bearing)
+            if rate is None:
+                continue
+            _, avg_method = average_balance(opening, interest_bearing)
+            resolved.append(
+                (
+                    group_key,
+                    cik,
+                    quarter,
+                    institutions,
+                    total,
+                    interest_bearing,
+                    expense,
+                    rate,
+                    avg_method,
+                )
+            )
+    return pd.DataFrame(resolved, columns=list(REGULATORY_COST_COLUMNS))
