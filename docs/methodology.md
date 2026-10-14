@@ -8,14 +8,14 @@ made. This document says how, in enough detail to reproduce every figure from a 
 checkout. Decisions are cited by number, for example (0021), and specification sections as
 "specification 3.1".
 
-**State at writing, 12 October 2026: Milestone 3 in progress.** Everything up to
+**State at writing, 14 October 2026: Milestone 3 in progress.** Everything up to
 `fct_deposit_beta` is built and tested, with the table of revisions, the entity events and
-their materiality, and the member dimension. The pre-registered headline persistence result
-is computed (section 6.1). Its robustness variants, the survivorship comparison and the
-regulatory validation are not; flags on individual bank-quarters move to Milestone 4
-(0033). Each section says
-which parts are in force and which are still to be built. A planned control is never
-written up as a working one.
+their materiality, and the member dimension. The pre-registered persistence result, its
+robustness variants and the survivorship comparison are computed (section 6.1), and the
+metric is validated against Call Reports (sections 7.4 and 7.5). The error of endpoint
+averaging is not measured, and flags on individual bank-quarters move to Milestone 4 (0033).
+Each section says which parts are in force and which are still to be built. A planned
+control is never written up as a working one.
 
 ---
 
@@ -1018,7 +1018,7 @@ From `marketscope/`, with the virtual environment active and `MARKETSCOPE_SEC_US
 set:
 
 ```
-python -m marketscope.pipeline                     # load the seeded universe and FRED
+python -m marketscope.pipeline                     # universe, SEC, FRED, Call Reports
 cd transform/dbt && dbt build --profiles-dir . && cd ../..
 python analysis/milestone2/tier_coverage.py        # tiers, provenance, cycle coverage
 python analysis/milestone2/construct_validity.py   # section 7.3
@@ -1035,5 +1035,7 @@ python analysis/universe/reference_audit.py        # section 2.3
 `dbt build` currently reports two warnings, from the cost and derived-quarter tests in
 section 10. The beta range test is also warn-severity and currently passes.
 Outputs are written to each script's `output/` directory. Every figure in this document was
-read from those outputs or from the warehouse after the build above, on 4 October 2026.
+read from those outputs or from the warehouse after the build above, between 4 and 14
+October 2026. The SEC filings and the rate series were loaded on 9 September 2026 and the
+Call Report figures in October 2026.
 Because EDGAR data is live, a later load can differ wherever a filer has restated.
