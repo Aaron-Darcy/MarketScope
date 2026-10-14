@@ -40,6 +40,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- The pre-registered sample rules, constants and assessment move from the persistence script
+  to `marketscope.persistence`, so the headline, its variants and the regulatory check share
+  one definition of the sample, and the rules have unit tests. The persistence output is
+  unchanged.
 - Milestone 2 closed (decision 0033). Flagging individual bank-quarters for entity events
   moves to Milestone 4 with `fct_bank_quarter`; betas are already flagged.
 - Milestone 2 analysis outputs rerun on the reconciled deposit base. Construct validity now
@@ -118,6 +122,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- First Republic and Signature in the survivorship variant of the persistence result, with
+  betas recovered from their Call Reports as decision 0034 provided. With SVB as well, the
+  correlation across 25 filers is +0.640, p 0.0005, against +0.590 for survivors alone:
+  leaving the failed banks out slightly understates the persistence. Signature was the
+  fastest repricer of the test cycle and among the fastest of the calibration cycle.
+- Error attribution (specification 6): every beta recomputed from Call Report figures over
+  the same window. XBRL and regulatory betas order banks at Spearman 0.936 in the
+  calibration cycle and 0.978 in the test cycle, and the pre-registered cross-cycle
+  correlation on regulatory betas is +0.601 against +0.590, so the persistence is not an
+  artefact of tagging. Reported as a check on the source, not a second headline.
+- Regulatory validation of the XBRL cost of deposits (specification 5). At tier 1 it agrees
+  with the Call Report figure to a median of 1.1 basis points and within 10 in 87 percent
+  of 1,948 bank-quarters; 93 percent where the group is a single insured institution.
+  Tier X quarters miss by a median of 36 basis points, which confirms the completeness check
+  separates understated numerators from sound ones. Citigroup, Capital One, American
+  Express and Morgan Stanley disagree by more than 10 basis points at the median.
 - `int_regulatory_deposit_cost`, the cost of deposits per regulatory group and quarter from
   Call Reports, by the library arithmetic the XBRL metric uses so the two differ only where
   their figures do (decision 0035). 2,863 group-quarters across 43 groups, First Republic,

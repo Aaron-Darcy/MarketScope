@@ -29,9 +29,18 @@ betas is **+0.59** (one-sided permutation p = 0.002; 95 percent bootstrap interv
 0.84). Banks that repriced deposits faster than their peers in 2015–2019 tended to do so
 again in 2022–2023, most clearly at the fast end, where five of the six fastest repricers
 stayed among the six fastest. All four pre-registered robustness variants agree, at 0.53 to
-0.63. Regulatory validation is still to come, and so are First Republic and Signature, the
-failed banks EDGAR does not hold. See [docs/methodology.md](docs/methodology.md) section
-6.1 and [docs/specification.md](docs/specification.md).
+0.63.
+
+**Validated against regulatory filings.** At tier 1 the XBRL cost of deposits agrees with
+the figure computed from the same banks' Call Reports to a median of 1.1 basis points, and
+within 10 in 87 percent of 1,948 bank-quarters. Recomputed entirely on Call Report figures,
+the headline correlation is +0.60, so the persistence belongs to the banks rather than to
+how their filings are tagged. Adding SVB, and First Republic and Signature recovered from
+their Call Reports, raises it to +0.64 across 25 filers: leaving out the failed banks, as an
+EDGAR-only sample must, slightly understates it. The error of endpoint averaging is not yet
+measured, because the regulatory source the project reaches does not publish quarterly
+average balances. See [docs/methodology.md](docs/methodology.md) sections 6.1 and 7 and
+[docs/specification.md](docs/specification.md).
 
 ---
 

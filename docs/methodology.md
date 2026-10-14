@@ -8,14 +8,14 @@ made. This document says how, in enough detail to reproduce every figure from a 
 checkout. Decisions are cited by number, for example (0021), and specification sections as
 "specification 3.1".
 
-**State at writing, 12 October 2026: Milestone 3 in progress.** Everything up to
+**State at writing, 14 October 2026: Milestone 3 in progress.** Everything up to
 `fct_deposit_beta` is built and tested, with the table of revisions, the entity events and
-their materiality, and the member dimension. The pre-registered headline persistence result
-is computed (section 6.1). Its robustness variants, the survivorship comparison and the
-regulatory validation are not; flags on individual bank-quarters move to Milestone 4
-(0033). Each section says
-which parts are in force and which are still to be built. A planned control is never
-written up as a working one.
+their materiality, and the member dimension. The pre-registered persistence result, its
+robustness variants and the survivorship comparison are computed (section 6.1), and the
+metric is validated against Call Reports (sections 7.4 and 7.5). The error of endpoint
+averaging is not measured, and flags on individual bank-quarters move to Milestone 4 (0033).
+Each section says which parts are in force and which are still to be built. A planned
+control is never written up as a working one.
 
 ---
 
@@ -512,12 +512,38 @@ survivors by construction, since a filer that stopped reporting inside the test 
 only a partial beta. Adding SVB, measured to its last quarter, 2022Q4, moves the correlation
 from +0.590 to +0.603. SVB ranks 18th of 23 in the calibration cycle and 13th in the test
 cycle on a beta that stops three quarters into an eight-quarter cycle, and deposit costs lag
-the policy rate, so its test-cycle rank understates where it would have finished. The
-comparison is weak in a way that matters: PacWest is excluded by its own acquisitions, and
-First Republic and Signature, the two banks where the effect was most acute, are not in
-EDGAR at all (section 8.1). The survivorship effect measured here is therefore close to
-nothing because the sample barely contains the banks it concerns, not because they would
-have made no difference.
+the policy rate, so its test-cycle rank understates where it would have finished.
+
+**First Republic and Signature.** 0034 adds the two failed banks EDGAR does not hold to R4
+once recovered from regulatory data. Their betas come from their own Call Reports by the
+metric's arithmetic (sections 7.5, 9), under the same rules applied over the quarters they
+reported: a complete calibration cycle, a test cycle measured to the last quarter each
+reported, and coverage of at least 80 percent. Both qualify. The entity event seed covers
+universe members only, so the acquisition rule could not be applied to them; neither is
+known to have made a bank acquisition in either cycle, but that has not been checked
+against filings.
+
+| | Filers | Spearman | p | 95% interval |
+|---|---|---|---|---|
+| Headline, survivors only | 22 | +0.590 | 0.0020 | +0.154 to +0.836 |
+| R4, adding SVB | 23 | +0.603 | 0.0017 | +0.194 to +0.839 |
+| R4, adding SVB, First Republic and Signature | 25 | +0.640 | 0.0005 | +0.265 to +0.852 |
+
+| Bank | Calibration beta | Rank of 25 | Test beta | Measured to | Rank of 25 |
+|---|---|---|---|---|---|
+| Signature | 0.486 | 23 | 0.796 | 2022Q4 | 25 |
+| First Republic | 0.282 | 7 | 0.525 | 2023Q1 | 7 |
+
+Signature was among the fastest repricers of the calibration cycle and was the fastest of
+the test cycle on a beta that stops three quarters before the cycle's peak. First Republic
+sat in the same place in both cycles, among the slower third. Adding the failed banks
+strengthens the correlation rather than weakening it: leaving them out, as an EDGAR-only
+sample must, slightly understates the persistence. That is the direction specification 4
+warned survivorship bias would run.
+
+The comparison mixes sources: two of the 25 betas come from Call Reports and the rest from
+XBRL. Section 7.5 shows the two sources order banks at Spearman 0.94 and 0.98 within each
+cycle, which is why the mixture is acceptable, and it is stated beside the figure.
 
 ---
 
@@ -560,6 +586,76 @@ This is the weaker half of validation. It shows the metric orders banks in an ec
 sensible direction. It does not show that any individual bank's figure is accurate. That
 is the regulatory comparison in section 9.
 
+### 7.4 Agreement with Call Reports
+
+Every bank-quarter the XBRL metric resolves is paired with the cost of deposits computed
+from the Call Reports of the same group's insured institutions by the same arithmetic
+(section 9, 0035). Reproduce with `python analysis/milestone3/regulatory_validation.py`.
+Agreement is judged at 10 basis points, the cost error that moves a test-cycle beta by 0.02,
+the scale 0032 already treats as material; it was fixed by that effect, not read off the
+distribution.
+
+| | Pairs | Filers | Median gap | 90th percentile | Within 10bp |
+|---|---|---|---|---|---|
+| Tier 1 | 1,948 | 35 | 1.1bp | 12.6bp | 87.1% |
+| Tier 1, one insured institution | 820 | 19 | 0.7bp | 7.9bp | 93.0% |
+| Tier 1, more than one | 1,128 | 27 | 1.8bp | 15.1bp | 82.8% |
+| Tier 2 | 293 | 10 | 9.9bp | 40.5bp | 51.2% |
+| Tier 3 | 173 | 4 | 1.4bp | 17.7bp | 79.8% |
+| Tier X | 68 | 4 | 36.3bp | 126.6bp | 16.2% |
+
+**The tag mapping's error.** At tier 1 the XBRL cost of deposits agrees with the regulatory
+figure to a median of 1.1 basis points, and to within 10 in 87 percent of bank-quarters.
+Where the group is a single insured institution, so that both measures cover the same bank,
+the median is 0.7 basis points and 93 percent agree. The interest-bearing base agrees to a
+median of 2.5 percent. This is the measured error specification 5 asked for, and it is an
+upper bound on the tag mapping's own, since consolidation scope is still in it.
+
+**Tier 2 is not comparable, as designed.** Its denominator is total deposits and the
+regulatory figure's is interest-bearing deposits, so a gap of 10 basis points at the median
+is the non-interest-bearing share at work (0012), not an error.
+
+**The completeness check works.** Tier X marks a reconstructed numerator that covers less
+than 80 percent of implied deposit expense (0013). Those quarters miss the regulatory figure
+by a median of 36 basis points, against 1.4 for tier 3 reconstructions that passed. The
+check was calibrated on one filer's numbers, and the regulatory data confirms it separates
+understated numerators from sound ones.
+
+**Where it disagrees.** Four tier 1 filers have a median gap above 10 basis points:
+Citigroup, 14.6 across 66 quarters; Capital One, 13.3 across 68; American Express, 12.5
+across 66; and Morgan Stanley, 39.8 across 6. Citigroup holds deposits at non-US banking
+subsidiaries that file no Call Report, and Capital One's and American Express's bases differ
+from their banks' by about 10 percent, so scope rather than tagging is the likely cause for
+three of the four. None has been diagnosed. Citigroup, Capital One and American Express are
+in the headline sample.
+
+### 7.5 Error attribution
+
+Specification 6 asks how much of the cross-bank dispersion in betas is reporting difference
+rather than behaviour. Every beta is recomputed from the Call Report cost of deposits of the
+same group, over the same window and against the same policy move, so only the source of the
+figures changes (`python analysis/milestone3/error_attribution.py`).
+
+| Cycle | Filers | Spearman, XBRL against Call Report beta | Median gap |
+|---|---|---|---|
+| Calibration | 35 | 0.936 | 0.012 |
+| Test | 39 | 0.978 | 0.010 |
+| Calibration, headline sample | 21 | 0.936 | 0.014 |
+| Test, headline sample | 21 | 0.986 | 0.010 |
+
+The two sources order banks almost identically within each cycle, and individual betas
+differ by about a hundredth at the median. The largest gaps are at American Express and
+Capital One in the calibration cycle, 0.23 and 0.15, the two filers whose interest-bearing
+base differs most from their banks' (section 7.4), and at Goldman Sachs, a tier 2 filer.
+
+**The headline on Call Report figures.** The pre-registered cross-cycle correlation,
+computed again on regulatory betas for the 21 headline filers the regulatory map reaches,
+with the same test and seed, is +0.601 (one-sided p 0.0024; 95 percent interval +0.204 to
++0.833), against +0.590 on XBRL. Cullen/Frost, the twenty-second, is outside the pinned
+regulatory table. This is a check on the source of the figures and does not replace the
+headline, which specification 6.1 fixes. It shows the persistence is a property of the banks'
+reported deposit costs and not of how their filings are tagged.
+
 ---
 
 ## 8. Data problems
@@ -597,10 +693,10 @@ Eight of the eleven left before the end of the test cycle and three after it.
 **Not yet built.** The headline full-sample versus survivors-only comparison has not been
 computed, because there is no headline result yet.
 
-**Unresolved and material.** First Republic and Signature, the two institutions where the
-effect under study was most acute, are not in EDGAR at all (section 2.3). Until they are
-recovered from regulatory data at Milestone 3, any survivorship comparison covers SVB and
-PacWest only, and it will understate the effect.
+**Recovered from regulatory data.** First Republic and Signature, the two institutions
+where the effect under study was most acute, are not in EDGAR at all (section 2.3). Their
+betas are recovered from Call Reports and they enter the survivorship comparison of the
+persistence result (section 6.1).
 
 ### 8.2 Partial-cycle coverage
 
@@ -821,12 +917,10 @@ nothing.
 Report's quarterly average balances, so the error of endpoint averaging (4.5) cannot be
 measured against it. It needs the FFIEC's bulk Call Report files.
 
-Until the comparison has been run, the following are unknown:
+**Measured: the tag mapping's error**, in section 7.4, and **how much of the dispersion
+across banks is reporting difference**, in section 7.5.
 
-- the error rate of the tag mapping for any individual bank;
-- the size of the endpoint-averaging error, especially in 2023;
-- how much of the dispersion across banks reflects reporting differences rather than
-  behaviour.
+Still unknown: the size of the endpoint-averaging error, especially in 2023.
 
 The entity mismatch is already known: FDIC data is per insured bank and SEC data is per
 holding company. Validation will be restricted to single-bank holding companies, or CERTs
@@ -924,7 +1018,7 @@ From `marketscope/`, with the virtual environment active and `MARKETSCOPE_SEC_US
 set:
 
 ```
-python -m marketscope.pipeline                     # load the seeded universe and FRED
+python -m marketscope.pipeline                     # universe, SEC, FRED, Call Reports
 cd transform/dbt && dbt build --profiles-dir . && cd ../..
 python analysis/milestone2/tier_coverage.py        # tiers, provenance, cycle coverage
 python analysis/milestone2/construct_validity.py   # section 7.3
@@ -933,11 +1027,15 @@ python analysis/milestone2/revision_audit.py       # section 8.5
 python analysis/milestone2/precedence_sensitivity.py  # section 3.2
 python analysis/milestone2/entity_event_audit.py   # section 8.3, needs the SEC
 python analysis/milestone3/persistence.py          # section 6.1
+python analysis/milestone3/regulatory_validation.py  # section 7.4
+python analysis/milestone3/error_attribution.py    # section 7.5
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 
 `dbt build` currently reports two warnings, from the cost and derived-quarter tests in
 section 10. The beta range test is also warn-severity and currently passes.
 Outputs are written to each script's `output/` directory. Every figure in this document was
-read from those outputs or from the warehouse after the build above, on 4 October 2026.
+read from those outputs or from the warehouse after the build above, between 4 and 14
+October 2026. The SEC filings and the rate series were loaded on 9 September 2026 and the
+Call Report figures in October 2026.
 Because EDGAR data is live, a later load can differ wherever a filer has restated.
