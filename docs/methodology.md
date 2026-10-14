@@ -603,6 +603,33 @@ from their banks' by about 10 percent, so scope rather than tagging is the likel
 three of the four. None has been diagnosed. Citigroup, Capital One and American Express are
 in the headline sample.
 
+### 7.5 Error attribution
+
+Specification 6 asks how much of the cross-bank dispersion in betas is reporting difference
+rather than behaviour. Every beta is recomputed from the Call Report cost of deposits of the
+same group, over the same window and against the same policy move, so only the source of the
+figures changes (`python analysis/milestone3/error_attribution.py`).
+
+| Cycle | Filers | Spearman, XBRL against Call Report beta | Median gap |
+|---|---|---|---|
+| Calibration | 35 | 0.936 | 0.012 |
+| Test | 39 | 0.978 | 0.010 |
+| Calibration, headline sample | 21 | 0.936 | 0.014 |
+| Test, headline sample | 21 | 0.986 | 0.010 |
+
+The two sources order banks almost identically within each cycle, and individual betas
+differ by about a hundredth at the median. The largest gaps are at American Express and
+Capital One in the calibration cycle, 0.23 and 0.15, the two filers whose interest-bearing
+base differs most from their banks' (section 7.4), and at Goldman Sachs, a tier 2 filer.
+
+**The headline on Call Report figures.** The pre-registered cross-cycle correlation,
+computed again on regulatory betas for the 21 headline filers the regulatory map reaches,
+with the same test and seed, is +0.601 (one-sided p 0.0024; 95 percent interval +0.204 to
++0.833), against +0.590 on XBRL. Cullen/Frost, the twenty-second, is outside the pinned
+regulatory table. This is a check on the source of the figures and does not replace the
+headline, which specification 6.1 fixes. It shows the persistence is a property of the banks'
+reported deposit costs and not of how their filings are tagged.
+
 ---
 
 ## 8. Data problems
@@ -864,13 +891,10 @@ nothing.
 Report's quarterly average balances, so the error of endpoint averaging (4.5) cannot be
 measured against it. It needs the FFIEC's bulk Call Report files.
 
-**Measured: the tag mapping's error**, in section 7.4.
+**Measured: the tag mapping's error**, in section 7.4, and **how much of the dispersion
+across banks is reporting difference**, in section 7.5.
 
-Still unknown:
-
-- the size of the endpoint-averaging error, especially in 2023;
-- how much of the dispersion across banks reflects reporting differences rather than
-  behaviour.
+Still unknown: the size of the endpoint-averaging error, especially in 2023.
 
 The entity mismatch is already known: FDIC data is per insured bank and SEC data is per
 holding company. Validation will be restricted to single-bank holding companies, or CERTs
@@ -978,6 +1002,7 @@ python analysis/milestone2/precedence_sensitivity.py  # section 3.2
 python analysis/milestone2/entity_event_audit.py   # section 8.3, needs the SEC
 python analysis/milestone3/persistence.py          # section 6.1
 python analysis/milestone3/regulatory_validation.py  # section 7.4
+python analysis/milestone3/error_attribution.py    # section 7.5
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 

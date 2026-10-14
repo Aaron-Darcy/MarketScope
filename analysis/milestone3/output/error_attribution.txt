@@ -1,0 +1,21 @@
+Deposit betas on XBRL figures against betas on Call Report figures
+
+Within each cycle, filers with both betas:
+                       filers  Spearman  median gap
+calibration, all           35    +0.936       0.012
+calibration, headline      21    +0.936       0.014
+test, all                  39    +0.978       0.010
+test, headline             21    +0.986       0.010
+
+Cross-cycle correlation on Call Report betas, headline sample, same test and seed:
+  filers with both regulatory betas: 21 of 22
+  Spearman +0.601, one-sided p 0.0024, 95% interval +0.204 to +0.833
+  A check on the source of the figures, not a second headline.
+
+Largest gaps between the two betas:
+  AMERICAN EXPRESS CO                    calibration  XBRL 0.528, Call Report 0.762
+  CAPITAL ONE FINANCIAL CORP             calibration  XBRL 0.378, Call Report 0.523
+  GOLDMAN SACHS GROUP INC                test         XBRL 0.857, Call Report 0.742
+  HUNTINGTON BANCSHARES INC /MD/         test         XBRL 0.408, Call Report 0.519
+  KEYCORP /NEW/                          test         XBRL 0.392, Call Report 0.486
+  GOLDMAN SACHS GROUP INC                calibration  XBRL 0.723, Call Report 0.817
