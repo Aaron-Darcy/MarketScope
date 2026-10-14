@@ -1,0 +1,20 @@
+XBRL cost of deposits against the Call Report figure, by the same arithmetic
+
+                                   pairs  filers median bp  p75 bp  p90 bp within 10bp
+tier 1                             1,948      35       1.1     4.8    12.6      87.1%
+tier 2                               293      10       9.9    19.9    40.5      51.2%
+tier 3                               173       4       1.4     8.1    17.7      79.8%
+tier X                                68       4      36.3    66.1   126.6      16.2%
+
+Tier 1, by how many insured institutions the group holds:
+                                   pairs  filers median bp  p75 bp  p90 bp within 10bp
+one institution                      820      19       0.7     3.4     7.9      93.0%
+more than one                      1,128      27       1.8     6.2    15.1      82.8%
+
+Tier 1, interest-bearing base against the Call Report's, median absolute gap: 2.5%
+
+Tier 1 filers whose median disagreement exceeds 10 basis points:
+  MORGAN STANLEY                            6 quarters, median 39.8bp, up to 3 institutions, base gap 1.1%
+  CITIGROUP INC                            66 quarters, median 14.6bp, up to 7 institutions, base gap 3.3%
+  CAPITAL ONE FINANCIAL CORP               68 quarters, median 13.3bp, up to 3 institutions, base gap 10.3%
+  AMERICAN EXPRESS CO                      66 quarters, median 12.5bp, up to 2 institutions, base gap 10.5%

@@ -560,6 +560,49 @@ This is the weaker half of validation. It shows the metric orders banks in an ec
 sensible direction. It does not show that any individual bank's figure is accurate. That
 is the regulatory comparison in section 9.
 
+### 7.4 Agreement with Call Reports
+
+Every bank-quarter the XBRL metric resolves is paired with the cost of deposits computed
+from the Call Reports of the same group's insured institutions by the same arithmetic
+(section 9, 0035). Reproduce with `python analysis/milestone3/regulatory_validation.py`.
+Agreement is judged at 10 basis points, the cost error that moves a test-cycle beta by 0.02,
+the scale 0032 already treats as material; it was fixed by that effect, not read off the
+distribution.
+
+| | Pairs | Filers | Median gap | 90th percentile | Within 10bp |
+|---|---|---|---|---|---|
+| Tier 1 | 1,948 | 35 | 1.1bp | 12.6bp | 87.1% |
+| Tier 1, one insured institution | 820 | 19 | 0.7bp | 7.9bp | 93.0% |
+| Tier 1, more than one | 1,128 | 27 | 1.8bp | 15.1bp | 82.8% |
+| Tier 2 | 293 | 10 | 9.9bp | 40.5bp | 51.2% |
+| Tier 3 | 173 | 4 | 1.4bp | 17.7bp | 79.8% |
+| Tier X | 68 | 4 | 36.3bp | 126.6bp | 16.2% |
+
+**The tag mapping's error.** At tier 1 the XBRL cost of deposits agrees with the regulatory
+figure to a median of 1.1 basis points, and to within 10 in 87 percent of bank-quarters.
+Where the group is a single insured institution, so that both measures cover the same bank,
+the median is 0.7 basis points and 93 percent agree. The interest-bearing base agrees to a
+median of 2.5 percent. This is the measured error specification 5 asked for, and it is an
+upper bound on the tag mapping's own, since consolidation scope is still in it.
+
+**Tier 2 is not comparable, as designed.** Its denominator is total deposits and the
+regulatory figure's is interest-bearing deposits, so a gap of 10 basis points at the median
+is the non-interest-bearing share at work (0012), not an error.
+
+**The completeness check works.** Tier X marks a reconstructed numerator that covers less
+than 80 percent of implied deposit expense (0013). Those quarters miss the regulatory figure
+by a median of 36 basis points, against 1.4 for tier 3 reconstructions that passed. The
+check was calibrated on one filer's numbers, and the regulatory data confirms it separates
+understated numerators from sound ones.
+
+**Where it disagrees.** Four tier 1 filers have a median gap above 10 basis points:
+Citigroup, 14.6 across 66 quarters; Capital One, 13.3 across 68; American Express, 12.5
+across 66; and Morgan Stanley, 39.8 across 6. Citigroup holds deposits at non-US banking
+subsidiaries that file no Call Report, and Capital One's and American Express's bases differ
+from their banks' by about 10 percent, so scope rather than tagging is the likely cause for
+three of the four. None has been diagnosed. Citigroup, Capital One and American Express are
+in the headline sample.
+
 ---
 
 ## 8. Data problems
@@ -821,9 +864,10 @@ nothing.
 Report's quarterly average balances, so the error of endpoint averaging (4.5) cannot be
 measured against it. It needs the FFIEC's bulk Call Report files.
 
-Until the comparison has been run, the following are unknown:
+**Measured: the tag mapping's error**, in section 7.4.
 
-- the error rate of the tag mapping for any individual bank;
+Still unknown:
+
 - the size of the endpoint-averaging error, especially in 2023;
 - how much of the dispersion across banks reflects reporting differences rather than
   behaviour.
@@ -933,6 +977,7 @@ python analysis/milestone2/revision_audit.py       # section 8.5
 python analysis/milestone2/precedence_sensitivity.py  # section 3.2
 python analysis/milestone2/entity_event_audit.py   # section 8.3, needs the SEC
 python analysis/milestone3/persistence.py          # section 6.1
+python analysis/milestone3/regulatory_validation.py  # section 7.4
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 

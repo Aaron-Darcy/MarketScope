@@ -118,6 +118,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Regulatory validation of the XBRL cost of deposits (specification 5). At tier 1 it agrees
+  with the Call Report figure to a median of 1.1 basis points and within 10 in 87 percent
+  of 1,948 bank-quarters; 93 percent where the group is a single insured institution.
+  Tier X quarters miss by a median of 36 basis points, which confirms the completeness check
+  separates understated numerators from sound ones. Citigroup, Capital One, American
+  Express and Morgan Stanley disagree by more than 10 basis points at the median.
 - `int_regulatory_deposit_cost`, the cost of deposits per regulatory group and quarter from
   Call Reports, by the library arithmetic the XBRL metric uses so the two differ only where
   their figures do (decision 0035). 2,863 group-quarters across 43 groups, First Republic,
