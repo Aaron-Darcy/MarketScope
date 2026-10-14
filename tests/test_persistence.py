@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from datetime import date
 
+import pytest
+
+from marketscope.cycles import RateCycle
 from marketscope.persistence import (
     CALIBRATION,
     HEADLINE,
@@ -10,6 +14,7 @@ from marketscope.persistence import (
     CycleBeta,
     Filer,
     eligible,
+    recovered_beta,
 )
 
 
@@ -98,3 +103,61 @@ def test_a_partial_calibration_cycle_is_never_admitted() -> None:
 
 def test_a_missing_beta_is_left_out() -> None:
     assert not eligible(_filer(test=_cycle(beta=None)), HEADLINE)
+
+
+CYCLES = {
+    CALIBRATION: RateCycle(CALIBRATION, date(2015, 12, 31), date(2016, 6, 30), 0.001, 0.011),
+    TEST: RateCycle(TEST, date(2022, 3, 31), date(2022, 12, 31), 0.002, 0.042),
+}
+POLICY = {
+    date(2015, 12, 31): 0.001,
+    date(2016, 6, 30): 0.011,
+    date(2022, 3, 31): 0.002,
+    date(2022, 9, 30): 0.032,
+    date(2022, 12, 31): 0.042,
+}
+
+
+def _costs(*quarters: tuple[date, float]) -> dict[date, float]:
+    return dict(quarters)
+
+
+def test_a_recovered_bank_is_measured_to_its_last_reported_test_quarter() -> None:
+    """Signature filed its last Call Report for 2022Q3 in this example, inside the cycle."""
+    costs = _costs(
+        (date(2015, 12, 31), 0.005),
+        (date(2016, 3, 31), 0.006),
+        (date(2016, 6, 30), 0.007),
+        (date(2022, 3, 31), 0.002),
+        (date(2022, 6, 30), 0.006),
+        (date(2022, 9, 30), 0.017),
+    )
+
+    beta = recovered_beta(costs, POLICY, CYCLES)
+
+    assert beta is not None
+    assert beta.calibration == pytest.approx(0.2)
+    assert beta.test == pytest.approx(0.5)
+    assert beta.test_end == date(2022, 9, 30)
+
+
+def test_a_recovered_bank_needs_a_complete_calibration_cycle() -> None:
+    costs = _costs(
+        (date(2015, 12, 31), 0.005),
+        (date(2016, 3, 31), 0.006),
+        (date(2022, 3, 31), 0.002),
+        (date(2022, 12, 31), 0.022),
+    )
+
+    assert recovered_beta(costs, POLICY, CYCLES) is None
+
+
+def test_a_recovered_bank_below_the_coverage_floor_is_refused() -> None:
+    costs = _costs(
+        (date(2015, 12, 31), 0.005),
+        (date(2016, 6, 30), 0.007),
+        (date(2022, 3, 31), 0.002),
+        (date(2022, 12, 31), 0.022),
+    )
+
+    assert recovered_beta(costs, POLICY, CYCLES) is None

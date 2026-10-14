@@ -17,9 +17,11 @@ import logging
 import sys
 from pathlib import Path
 
+import duckdb
 import pandas as pd
 
 from marketscope import store
+from marketscope.cycles import read_policy_rate, read_study_cycles
 from marketscope.persistence import (
     CALIBRATION,
     HEADLINE,
@@ -30,10 +32,13 @@ from marketscope.persistence import (
     TEST,
     VARIANTS,
     Filer,
+    RecoveredBeta,
     Result,
     assess,
+    assess_pairs,
     eligible,
     read_filers,
+    recovered_beta,
 )
 from marketscope.ranking import (
     average_ranks,
@@ -42,6 +47,7 @@ from marketscope.ranking import (
     quartiles,
     transition_matrix,
 )
+from marketscope.regulatory import REFERENCE_MAP
 from marketscope.store import DATABASE_PATH
 
 logger = logging.getLogger(__name__)
@@ -50,6 +56,11 @@ OUTPUT_DIR = Path(__file__).parent / "output"
 
 # Filers two or more quartiles apart between the cycles are material deviators.
 DEVIATION = 2
+
+# Decision 0034 adds these two to R4 once recovered from regulatory data. Neither filed with
+# the SEC, so their betas come from Call Reports, which section 7.5 of the methodology shows
+# order banks as the XBRL figures do.
+RECOVERED: tuple[str, ...] = ("BANK:59017", "BANK:57053")
 
 
 def filer_table(sample: list[Filer]) -> pd.DataFrame:
@@ -174,6 +185,49 @@ def summarise_variants(headline: list[Filer], variants: dict[str, list[Filer]]) 
     return "\n".join(lines)
 
 
+def summarise_recovered(survivors: list[Filer], recovered: dict[str, RecoveredBeta]) -> str:
+    """R4 with the banks EDGAR does not hold, as decision 0034 provides once recovered."""
+    names = [filer.registrant_name for filer in survivors] + list(recovered)
+    calibration = [filer.beta(CALIBRATION) for filer in survivors] + [
+        beta.calibration for beta in recovered.values()
+    ]
+    test = [filer.beta(TEST) for filer in survivors] + [beta.test for beta in recovered.values()]
+    result = assess_pairs(calibration, test)
+    calibration_ranks, test_ranks = average_ranks(calibration), average_ranks(test)
+
+    lines = [
+        "R4 with First Republic and Signature, recovered from Call Reports",
+        f"  filers {result.filers}, Spearman {result.spearman:+.3f}, one-sided p "
+        f"{result.p_value:.4f}, 95% interval {result.interval.low:+.3f} to "
+        f"{result.interval.high:+.3f}",
+        f"  ranked among {result.filers}, 1 the slowest:",
+    ]
+    for name, beta in recovered.items():
+        index = names.index(name)
+        lines.append(
+            f"  {name:<38} calibration {beta.calibration:.3f} (rank {calibration_ranks[index]:g}), "
+            f"test to {beta.test_end} {beta.test:.3f} (rank {test_ranks[index]:g})"
+        )
+    return "\n".join(lines)
+
+
+def read_recovered(connection: duckdb.DuckDBPyConnection) -> dict[str, RecoveredBeta]:
+    cycles = read_study_cycles(connection)
+    policy = read_policy_rate(connection)
+    recovered: dict[str, RecoveredBeta] = {}
+    for key in RECOVERED:
+        rows = connection.execute(
+            "select quarter_end, cost_of_deposits from int_regulatory_deposit_cost "
+            "where group_key = ?",
+            [key],
+        ).fetchall()
+        beta = recovered_beta(dict(rows), policy, cycles)
+        if beta is None:
+            raise ValueError(f"{REFERENCE_MAP[key].name} does not qualify for R4")
+        recovered[REFERENCE_MAP[key].name] = beta
+    return recovered
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--database", type=Path, default=DATABASE_PATH)
@@ -185,6 +239,7 @@ def main(argv: list[str] | None = None) -> int:
     connection = store.connect(args.database, read_only=True)
     try:
         filers = read_filers(connection)
+        recovered = read_recovered(connection)
     finally:
         connection.close()
 
@@ -199,7 +254,13 @@ def main(argv: list[str] | None = None) -> int:
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     table.to_csv(args.output_dir / "persistence.csv", index=False)
-    report = summarise(result, table) + "\n\n" + summarise_variants(sample, variants)
+    report = "\n\n".join(
+        (
+            summarise(result, table),
+            summarise_variants(sample, variants),
+            summarise_recovered(variants["R4"], recovered),
+        )
+    )
     print(report)
     (args.output_dir / "persistence.txt").write_text(report, encoding="utf-8")
     return 0

@@ -8,10 +8,12 @@ run against another source use one definition of the sample.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 
 import duckdb
 
-from marketscope.cycles import STUDY_CYCLES
+from marketscope.cycles import STUDY_CYCLES, RateCycle
+from marketscope.metrics import cumulative_beta
 from marketscope.ranking import Interval, bootstrap_interval, permutation_p_value, spearman
 
 SEED = 20261010
@@ -173,12 +175,57 @@ class Result:
     interval: Interval
 
 
-def assess(sample: list[Filer]) -> Result:
-    calibration = [filer.beta(CALIBRATION) for filer in sample]
-    test = [filer.beta(TEST) for filer in sample]
+def assess_pairs(calibration: list[float], test: list[float]) -> Result:
+    """The pre-registered statistic, test and interval for paired cycle betas."""
     return Result(
-        filers=len(sample),
+        filers=len(calibration),
         spearman=spearman(calibration, test),
         p_value=permutation_p_value(calibration, test, permutations=PERMUTATIONS, seed=SEED),
         interval=bootstrap_interval(calibration, test, resamples=RESAMPLES, seed=SEED),
     )
+
+
+def assess(sample: list[Filer]) -> Result:
+    return assess_pairs(
+        [filer.beta(CALIBRATION) for filer in sample], [filer.beta(TEST) for filer in sample]
+    )
+
+
+@dataclass(frozen=True)
+class RecoveredBeta:
+    calibration: float
+    test: float
+    test_end: date
+
+
+def recovered_beta(
+    costs: dict[date, float], policy: dict[date, float], cycles: dict[str, RateCycle]
+) -> RecoveredBeta | None:
+    """Cycle betas for a bank EDGAR does not hold, from its regulatory cost of deposits.
+
+    The sample rules applied over the quarters the bank reported, as R4 applies them to a
+    terminal filer: the calibration cycle complete, the test cycle measured to its last
+    reported quarter where the bank failed inside it, and each covering at least 80 percent
+    of the quarters measured. None where the bank does not qualify.
+    """
+    betas: dict[str, float] = {}
+    test_end: date | None = None
+    for name, cycle in cycles.items():
+        reported = [quarter for quarter in cycle.quarters() if quarter in costs]
+        if cycle.start not in costs or not reported:
+            return None
+        end = cycle.end if cycle.end in costs else max(reported)
+        if end != cycle.end and name != TEST:
+            return None
+        measured = [quarter for quarter in cycle.quarters() if quarter <= end]
+        if len([q for q in reported if q <= end]) / len(measured) < COVERAGE_FLOOR:
+            return None
+        beta = cumulative_beta(costs[cycle.start], costs[end], policy[cycle.start], policy[end])
+        if beta is None:
+            return None
+        betas[name] = beta
+        if name == TEST:
+            test_end = end
+    if test_end is None:
+        return None
+    return RecoveredBeta(calibration=betas[CALIBRATION], test=betas[TEST], test_end=test_end)

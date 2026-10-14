@@ -122,6 +122,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- First Republic and Signature in the survivorship variant of the persistence result, with
+  betas recovered from their Call Reports as decision 0034 provided. With SVB as well, the
+  correlation across 25 filers is +0.640, p 0.0005, against +0.590 for survivors alone:
+  leaving the failed banks out slightly understates the persistence. Signature was the
+  fastest repricer of the test cycle and among the fastest of the calibration cycle.
 - Error attribution (specification 6): every beta recomputed from Call Report figures over
   the same window. XBRL and regulatory betas order banks at Spearman 0.936 in the
   calibration cycle and 0.978 in the test cycle, and the pre-registered cross-cycle

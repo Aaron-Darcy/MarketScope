@@ -512,12 +512,38 @@ survivors by construction, since a filer that stopped reporting inside the test 
 only a partial beta. Adding SVB, measured to its last quarter, 2022Q4, moves the correlation
 from +0.590 to +0.603. SVB ranks 18th of 23 in the calibration cycle and 13th in the test
 cycle on a beta that stops three quarters into an eight-quarter cycle, and deposit costs lag
-the policy rate, so its test-cycle rank understates where it would have finished. The
-comparison is weak in a way that matters: PacWest is excluded by its own acquisitions, and
-First Republic and Signature, the two banks where the effect was most acute, are not in
-EDGAR at all (section 8.1). The survivorship effect measured here is therefore close to
-nothing because the sample barely contains the banks it concerns, not because they would
-have made no difference.
+the policy rate, so its test-cycle rank understates where it would have finished.
+
+**First Republic and Signature.** 0034 adds the two failed banks EDGAR does not hold to R4
+once recovered from regulatory data. Their betas come from their own Call Reports by the
+metric's arithmetic (sections 7.5, 9), under the same rules applied over the quarters they
+reported: a complete calibration cycle, a test cycle measured to the last quarter each
+reported, and coverage of at least 80 percent. Both qualify. The entity event seed covers
+universe members only, so the acquisition rule could not be applied to them; neither is
+known to have made a bank acquisition in either cycle, but that has not been checked
+against filings.
+
+| | Filers | Spearman | p | 95% interval |
+|---|---|---|---|---|
+| Headline, survivors only | 22 | +0.590 | 0.0020 | +0.154 to +0.836 |
+| R4, adding SVB | 23 | +0.603 | 0.0017 | +0.194 to +0.839 |
+| R4, adding SVB, First Republic and Signature | 25 | +0.640 | 0.0005 | +0.265 to +0.852 |
+
+| Bank | Calibration beta | Rank of 25 | Test beta | Measured to | Rank of 25 |
+|---|---|---|---|---|---|
+| Signature | 0.486 | 23 | 0.796 | 2022Q4 | 25 |
+| First Republic | 0.282 | 7 | 0.525 | 2023Q1 | 7 |
+
+Signature was among the fastest repricers of the calibration cycle and was the fastest of
+the test cycle on a beta that stops three quarters before the cycle's peak. First Republic
+sat in the same place in both cycles, among the slower third. Adding the failed banks
+strengthens the correlation rather than weakening it: leaving them out, as an EDGAR-only
+sample must, slightly understates the persistence. That is the direction specification 4
+warned survivorship bias would run.
+
+The comparison mixes sources: two of the 25 betas come from Call Reports and the rest from
+XBRL. Section 7.5 shows the two sources order banks at Spearman 0.94 and 0.98 within each
+cycle, which is why the mixture is acceptable, and it is stated beside the figure.
 
 ---
 
@@ -667,10 +693,10 @@ Eight of the eleven left before the end of the test cycle and three after it.
 **Not yet built.** The headline full-sample versus survivors-only comparison has not been
 computed, because there is no headline result yet.
 
-**Unresolved and material.** First Republic and Signature, the two institutions where the
-effect under study was most acute, are not in EDGAR at all (section 2.3). Until they are
-recovered from regulatory data at Milestone 3, any survivorship comparison covers SVB and
-PacWest only, and it will understate the effect.
+**Recovered from regulatory data.** First Republic and Signature, the two institutions
+where the effect under study was most acute, are not in EDGAR at all (section 2.3). Their
+betas are recovered from Call Reports and they enter the survivorship comparison of the
+persistence result (section 6.1).
 
 ### 8.2 Partial-cycle coverage
 
