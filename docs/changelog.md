@@ -40,6 +40,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- CI runs `actions/checkout` and `actions/setup-python` at v7, which target Node 24 in
+  place of the deprecated Node 20, on a pinned `ubuntu-24.04` image rather than
+  `ubuntu-latest`.
 - The pre-registered sample rules, constants and assessment move from the persistence script
   to `marketscope.persistence`, so the headline, its variants and the regulatory check share
   one definition of the sample, and the rules have unit tests. The persistence output is
