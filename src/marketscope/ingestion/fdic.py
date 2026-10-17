@@ -16,7 +16,8 @@ THOUSANDS = 1_000.0
 # Deposit concepts per insured institution and quarter. The quarterly expense fields are the
 # FDIC's own differencing of the year-to-date Call Report figures, so no fourth quarter has
 # to be derived on this side. DEPI is interest-bearing deposits in domestic and foreign
-# offices together, the base the XBRL metric divides by.
+# offices together, the base the XBRL metric divides by. DEPIDOM and DEPIFOR split it by
+# office, matching the split of the expense, so a cost can be read for each office alone.
 DEPOSIT_FIELDS: tuple[str, ...] = (
     "CERT",
     "REPDTE",
@@ -24,6 +25,8 @@ DEPOSIT_FIELDS: tuple[str, ...] = (
     "DEP",
     "DEPI",
     "DEPNI",
+    "DEPIDOM",
+    "DEPIFOR",
     "EDEPDOMQ",
     "EDEPFORQ",
 )

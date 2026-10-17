@@ -88,8 +88,14 @@ DDL: tuple[str, ...] = (
         depi DOUBLE,
         depni DOUBLE,
         edepdomq DOUBLE,
-        edepforq DOUBLE
+        edepforq DOUBLE,
+        depidom DOUBLE,
+        depifor DOUBLE
     )""",
+    # The office split arrived after the table was first created, and a warehouse built
+    # before it would otherwise keep the old shape and refuse the load.
+    f"ALTER TABLE {RAW_SCHEMA}.fdic_financials ADD COLUMN IF NOT EXISTS depidom DOUBLE",
+    f"ALTER TABLE {RAW_SCHEMA}.fdic_financials ADD COLUMN IF NOT EXISTS depifor DOUBLE",
     f"""CREATE TABLE IF NOT EXISTS {RAW_SCHEMA}.ingest_log (
         source VARCHAR NOT NULL,
         loaded_at TIMESTAMPTZ NOT NULL,
@@ -277,6 +283,8 @@ FDIC_COLUMNS = (
     "depni",
     "edepdomq",
     "edepforq",
+    "depidom",
+    "depifor",
 )
 
 
@@ -371,6 +379,8 @@ def fdic_rows(
                 record.get("DEPNI"),
                 record.get("EDEPDOMQ"),
                 record.get("EDEPFORQ"),
+                record.get("DEPIDOM"),
+                record.get("DEPIFOR"),
             )
         )
     return rows
