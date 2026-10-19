@@ -125,6 +125,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Interest-bearing deposits split by domestic and foreign office in
+  `raw.fdic_financials`, matching the office split of the deposit expense already loaded,
+  so a Call Report cost of deposits can be read for each office alone. The two parts sum
+  to the interest-bearing total on every one of the 6,778 rows. An existing warehouse
+  gains the columns when it is next opened for writing. `stg_fdic__financials` carries
+  balance and expense by office, null where an institution has no foreign offices, and a
+  test requires the offices to sum to the total.
 - First Republic and Signature in the survivorship variant of the persistence result, with
   betas recovered from their Call Reports as decision 0034 provided. With SVB as well, the
   correlation across 25 filers is +0.640, p 0.0005, against +0.590 for survivors alone:

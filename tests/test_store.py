@@ -203,3 +203,40 @@ def test_fdic_rows_carry_the_group_and_parse_the_reporting_date(
     ).fetchall()
     assert loaded[0] == (628, date(2023, 12, 31), "1039502", 1827867000.0, None)
     assert loaded[1][2] is None
+
+
+def test_fdic_rows_keep_the_office_split_and_an_absent_foreign_figure_null(
+    connection: duckdb.DuckDBPyConnection,
+) -> None:
+    """A bank filing the domestic-only Call Report has no foreign offices, and the FDIC
+    leaves the figure out rather than reporting zero."""
+    records = [
+        {"CERT": 7213, "REPDTE": "20181231", "DEPIDOM": 398161000, "DEPIFOR": 457734000},
+        {"CERT": 2270, "REPDTE": "20181231", "DEPIDOM": 39000000},
+    ]
+
+    store.replace(
+        connection, "fdic_financials", store.FDIC_COLUMNS, store.fdic_rows("HC:1", 1, records)
+    )
+
+    assert connection.execute(
+        "select cert, depidom, depifor from raw.fdic_financials order by cert"
+    ).fetchall() == [(2270, 39000000.0, None), (7213, 398161000.0, 457734000.0)]
+
+
+def test_connect_adds_the_office_split_to_a_warehouse_created_before_it(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "old.duckdb"
+    with duckdb.connect(str(path)) as handle:
+        handle.execute("CREATE SCHEMA raw")
+        handle.execute(
+            "CREATE TABLE raw.fdic_financials (group_key VARCHAR NOT NULL, cik BIGINT, "
+            "cert BIGINT NOT NULL, report_date DATE NOT NULL, rssd_hcr VARCHAR, dep DOUBLE, "
+            "depi DOUBLE, depni DOUBLE, edepdomq DOUBLE, edepforq DOUBLE)"
+        )
+
+    with store.connect(path) as handle:
+        columns = [row[0] for row in handle.execute("DESCRIBE raw.fdic_financials").fetchall()]
+
+    assert columns[-2:] == ["depidom", "depifor"]
