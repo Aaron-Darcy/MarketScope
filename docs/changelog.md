@@ -125,6 +125,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- A diagnosis of the four tier 1 filers that disagree with their Call Reports (decision
+  0036, methodology 7.4). Capital One, American Express and Morgan Stanley are consolidation
+  scope: against Capital One's lead bank alone the median gap falls from 21.1 to 3.3 basis
+  points. Citigroup's deposit interest expense included FDIC and foreign deposit insurance
+  assessments until 2021, and removing the disclosed amounts brings every quarter from 2015
+  to 2021 within 10 basis points. Its calibration beta without them is 0.360 against 0.330,
+  and the headline computed with it +0.599 against +0.590, reported as a diagnostic; the
+  headline and both measures are unchanged.
 - Interest-bearing deposits split by domestic and foreign office in
   `raw.fdic_financials`, matching the office split of the deposit expense already loaded,
   so a Call Report cost of deposits can be read for each office alone. The two parts sum

@@ -623,11 +623,57 @@ understated numerators from sound ones.
 
 **Where it disagrees.** Four tier 1 filers have a median gap above 10 basis points:
 Citigroup, 14.6 across 66 quarters; Capital One, 13.3 across 68; American Express, 12.5
-across 66; and Morgan Stanley, 39.8 across 6. Citigroup holds deposits at non-US banking
-subsidiaries that file no Call Report, and Capital One's and American Express's bases differ
-from their banks' by about 10 percent, so scope rather than tagging is the likely cause for
-three of the four. None has been diagnosed. Citigroup, Capital One and American Express are
-in the headline sample.
+across 66; and Morgan Stanley, 39.8 across 6. Each is diagnosed by
+`python analysis/milestone3/disagreement_diagnosis.py` (0036). Three are consolidation
+scope; the fourth, Citigroup, is a charge inside the numerator that is not interest.
+
+The test is directional. A consolidated filing eliminates deposits one group entity holds at
+another, and the interest on them, while a sum of Call Reports keeps both. Elimination can
+leave a holding company reporting fewer deposits or less expense than its insured banks; it
+cannot leave it reporting more.
+
+- **Capital One.** Until October 2022 the group held two insured banks, and the card bank,
+  Capital One Bank (USA), held 22 percent of their combined deposits at the median. The
+  holding company's total deposits are 0.83 of the two banks' together and 1.07 of the lead
+  bank's alone: the card bank's deposits were almost all held within the group and are
+  eliminated. Measured against the lead bank alone, the gap falls from a median of 21.1 to
+  3.3 basis points over those 50 quarters, and the share within 10 rises from 40 to 78
+  percent. The card bank's deposits cost 2.7 to 3.5 percent in 2018 and 2019, against 0.9
+  to 1.5 at the lead bank, so including them raised the regulatory cost.
+- **American Express.** Since 2018Q2 the group has had one insured bank, and in all 33
+  quarters it reports fewer total deposits than that bank, by $3.9bn to $19.1bn and $11.1bn
+  at the median. A group can report fewer deposits than its only bank by eliminating
+  deposits other group entities hold there, or by presenting some of the bank's deposits
+  under another caption. The filings have not been read to tell which; both are scope, not
+  tagging.
+- **Morgan Stanley.** Balances agree to about 1 percent, but until 2015Q2 the banks reported
+  a median $91m a quarter more deposit expense than the group, across 23 quarters. From
+  2015Q3 the difference is $1m. Deposit expense the banks report and the group does not is
+  presumably paid within the group; the arrangement, and what ended it in 2015Q3, has not
+  been read from the filings. Every tier 1 quarter, the last 2015Q1, falls before the break
+  and before the calibration cycle starts, so no beta is affected.
+- **Citigroup.** The group reports more deposit expense than its banks pay, by $1.0 to
+  $1.1bn a year from 2015 to 2018, which elimination cannot produce. Its 10-Ks state that
+  interest expense on deposits included FDIC and similar foreign deposit insurance
+  assessments, of $1,118m to $1,249m a year over the same years, until the fourth quarter of
+  2021, when they were moved to operating expenses and 2019 to 2021 restated. Removing the
+  disclosed assessments from the figures that carry them takes Citigroup's median gap for
+  2015 to 2021 from 15.7 to 2.8 basis points, with every quarter within 10. The tag mapping
+  is right; the concept the filer tagged held something else as well.
+
+Citigroup's assessments reach a beta. Both calibration endpoints, 2015Q4 and 2019Q1, were
+filed before the reclassification and carry them, at about $280m and $195m a quarter on the
+annual figures spread evenly. Removed at both ends, Citigroup's calibration beta moves from
+0.330 to 0.360 and its rank among the 22 headline filers from 12 to 14; the headline
+correlation computed with that beta, as a diagnostic and not a variant, is +0.599 (p 0.0017,
+95 percent interval +0.169 to +0.839) against +0.590. The even spread is an approximation:
+2020's published quarterly assessments vary by 19 percent about their mean. The test cycle
+starts after the reclassification and carries none. The headline stands as pre-registered
+(0034, 0036).
+
+These four are the filers where scope or content shows at the median. The same mechanisms
+are presumably present in smaller measure at others, which is why the measured error remains
+an upper bound on the tag mapping's own.
 
 ### 7.5 Error attribution
 
@@ -1029,13 +1075,14 @@ python analysis/milestone2/entity_event_audit.py   # section 8.3, needs the SEC
 python analysis/milestone3/persistence.py          # section 6.1
 python analysis/milestone3/regulatory_validation.py  # section 7.4
 python analysis/milestone3/error_attribution.py    # section 7.5
+python analysis/milestone3/disagreement_diagnosis.py  # section 7.4, the four disagreements
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 
 `dbt build` currently reports two warnings, from the cost and derived-quarter tests in
 section 10. The beta range test is also warn-severity and currently passes.
 Outputs are written to each script's `output/` directory. Every figure in this document was
-read from those outputs or from the warehouse after the build above, between 4 and 14
+read from those outputs or from the warehouse after the build above, between 4 and 21
 October 2026. The SEC filings and the rate series were loaded on 9 September 2026 and the
 Call Report figures in October 2026.
 Because EDGAR data is live, a later load can differ wherever a filer has restated.

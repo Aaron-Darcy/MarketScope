@@ -1499,3 +1499,58 @@ and deposits one subsidiary holds at another are eliminated in consolidation. Th
 error is therefore an upper bound on the tag mapping's own, and is reported separately for
 groups of a single institution, as specification 5 provides. Averaging error stays an open
 item for the FFIEC data.
+
+---
+
+## 0036 — Diagnose the four Call Report disagreements and leave both measures as they are
+
+**Date** 2026-10-21
+**Status** Accepted. Extends 0035.
+
+**Context.** The regulatory comparison of 0035 left four tier 1 filers more than 10 basis
+points from their Call Reports at the median: Citigroup, Capital One, American Express and
+Morgan Stanley. Three of them are in the headline sample. Scope was suspected and not shown,
+and an unexplained disagreement at a headline filer is a question about the headline.
+
+A holding company's filing and the sum of its banks' Call Reports differ in one direction
+by construction. Consolidation eliminates deposits one group entity holds at another and the
+interest on them, so the filing can report less than the banks, never more. That makes each
+disagreement testable: a ratio below one is consistent with scope, a ratio above one is not.
+
+**Decision.** Each disagreement is split into a balance and an expense difference and tested
+against the cause it points to, by a script rather than by inspection, and neither measure
+is adjusted.
+
+- Capital One's card bank held deposits placed by the rest of the group. Against the lead
+  bank alone the median gap is 3.3 basis points, not 21.1.
+- American Express reports fewer deposits than its only bank in every quarter since 2018Q2.
+- Morgan Stanley's banks reported $91m a quarter more deposit expense than the group until
+  2015Q2, on agreeing balances, and $1m after. No tier 1 quarter of it falls in a cycle.
+- Citigroup reports more expense than its banks, which scope cannot explain. Its deposit
+  interest expense included FDIC and foreign deposit insurance assessments until the fourth
+  quarter of 2021 (2017 10-K, Note 4; 2021 10-K, Note 1). Removing the disclosed amounts
+  brings every quarter from 2015 to 2021 within 10 basis points.
+
+The regulatory groups stay as every insured institution under the holder, and Citigroup's
+numerator stays as tagged. Citigroup's calibration beta with the assessments removed, 0.360
+against 0.330, and the headline computed with it, +0.599 against +0.590, are reported beside
+the result as a diagnostic.
+
+**Alternatives.** Measure Capital One against its lead bank alone. It agrees better, but the
+choice of which institution to drop is made after seeing which one disagrees, for one
+filer, and the American Express shortfall has no institution to drop at all. Subtract the
+assessments from Citigroup's numerator in the metric, through a pinned table of the
+disclosed amounts. Citigroup publishes them only by year before 2020, so every quarter before
+then would carry an allocation, and a hand-entered adjustment for one filer would sit inside the
+one implementation 0024 keeps free of them. Carry the adjusted Citigroup beta into the
+headline. 0034 fixed the headline before it was computed, and a change to one filer's
+figure made after the result, however well documented, is the kind of dial it exists to
+remove.
+
+**Consequences.** The measured error of 0035 is unchanged and is still an upper bound on the
+tag mapping's own; the four filers now carry a cause each, recorded in methodology 7.4. One
+of the causes is not scope at all. A concept can be tagged correctly and still hold an item
+another filer reports elsewhere, which no reconciliation within a filing can find and only
+an outside source can. Citigroup's restatement also explains two of its derived fourth
+quarters, recorded in methodology section 10. Whether other filers' annual figures were
+restated where their quarters were not has not been audited.

@@ -1,0 +1,52 @@
+Median over tier 1 quarters, XBRL against the sum of the group's Call Reports:
+                               quarters  gap bp  IB base   total  expense
+  CITIGROUP INC                      66    14.6    0.967   0.986    1.178
+  CAPITAL ONE FINANCIAL CORP         68    13.3    0.897   0.904    0.843
+  AMERICAN EXPRESS CO                66    12.5    0.895   0.901    0.977
+  MORGAN STANLEY                      6    39.8    1.011   1.008    0.116
+  A ratio below 1 is the holding company reporting less than its banks. Elimination of intra-group
+  balances can produce that and cannot produce a ratio above 1.
+
+Capital One while it held two insured banks (2009-09-30 to 2022-09-30, 50 quarters):
+  card bank's share of the two banks' deposits, median     22.2%
+  XBRL total deposits against both banks, median          0.827
+  XBRL total deposits against the lead bank alone, median    1.067
+  cost gap against both banks: median 21.1bp, 40% within 10bp
+  cost gap against the lead bank alone: median 3.3bp, 78% within 10bp
+
+American Express with one insured bank (33 quarters from 2018-06-30):
+  quarters in which the group reports fewer total deposits than its bank  33 of 33
+  shortfall, median and range  $11.1bn ($3.9bn to $19.1bn)
+  interest-bearing base, median ratio 0.907; expense, median ratio 0.889
+
+Morgan Stanley, every quarter the group reports its own deposit expense:
+  banks' expense less the group's, before 2015-09: median $91m a quarter across 23 quarters
+  banks' expense less the group's, from 2015-09:   median $1m a quarter across 33 quarters
+  XBRL total deposits against the banks', median 0.983
+  tier 1 quarters: 6, the last 2015-03-31; the calibration cycle starts in 2015Q4
+
+Citigroup, 2015 to 2021, against the deposit insurance assessments its 10-Ks disclose:
+  year   excess $m disclosed $m in XBRL $m
+  2015         994         1118       1118
+  2016         986         1145       1145
+  2017        1109         1249       1249
+  2018        1043         1182       1182
+  2019        -326          781          0
+  2020         321         1203          0
+  2021         446         1207          0
+  'In XBRL' is the assessment inside the figures the precedence rule selected: the whole year to 2018.
+  From 2019 the annual figure was restated and the first three quarters were not, so those
+  quarters carry their assessments and the derived fourth carries the same amount negative.
+
+  cost gap as measured:           median 15.7bp, 21% within 10bp
+  cost gap, assessments removed:  median 2.8bp, 100% within 10bp
+
+  Derived fourth quarters spanning the restatement:
+    2019-12-31  0.97% as derived, 1.23% with $586m of assessments restored; Call Reports 1.20%
+    2020-12-31  -0.02% as derived, 0.32% with $870m of assessments restored; Call Reports 0.28%
+
+  Calibration beta 2015-12-31 to 2019-03-31: 0.330 as measured, 0.360 with the assessments removed at both ends
+  (2015 and 2019 assessments spread evenly across their quarters). Rank of 22: 12 to 14.
+  The test cycle starts in 2022 and contains no assessment.
+  Headline with that beta, as a diagnostic: Spearman +0.599, p 0.0017, 95% interval +0.169 to +0.839
+  Spread of the 2020 quarterly assessments about their mean: 19%
