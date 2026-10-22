@@ -868,6 +868,17 @@ used wherever they exist (0026), which moves its test-cycle beta from −0.097 t
 Its 2025Q4 has not been reported in any later filing yet, so it is still derived and still
 wrong, at −0.74 percent. It feeds no beta and is flagged.
 
+**Diagnosed failure: Citigroup.** A restatement can reach the annual figure and not the
+quarters. Citigroup moved deposit insurance assessments out of deposit interest expense in
+the fourth quarter of 2021 and restated 2019 and 2020 annually, while the nine-month figures
+for those years stayed as the earlier 10-Qs filed them. The most recently filed value wins
+for each period separately (3.2), so the derivation subtracted a nine months that included
+the assessments from a year that did not, and 2020Q4 came out at −0.02 percent (section 10,
+0036). Nothing within the filer's own figures can see this: the band flags 2020Q4 only
+because the error happened to be large, and 2019Q4, wrong by 26 basis points, passes it. It
+was found by comparison with the Call Reports. Whether other filers' derived quarters mix a
+restated year with unrestated quarters has not been audited.
+
 ### 8.5 Tag drift and restatements
 
 **Handled: tag drift.** The concept lists cover the alternatives each filer has used
@@ -988,19 +999,28 @@ analysis.
 | BNY Mellon | 6 | −0.05% to −0.08%, 2020Q4–2022Q1 | Probably genuine |
 | State Street | 8 | down to −0.16%, 2020Q2–2022Q1 | Probably genuine |
 | Northern Trust | 8 | down to −0.06%, 2020Q2–2022Q1 | Probably genuine |
-| Citigroup | 1 | −0.02%, 2020Q4 | Probably genuine |
+| Citigroup | 1 | −0.02%, derived 2020Q4 | Derivation across a restatement (7.4, 0036) |
 
-The small negatives fall in years of zero US rates. The filers involved are custody banks
-and Citigroup, which hold large foreign deposits on which negative euro and yen rates were
-passed through. That explanation is plausible but has not been confirmed against filings.
-BNY Mellon's 2020–2022 negatives belong to this group, not to the fourth-quarter failure.
+The small negatives fall in years of zero US rates. The filers involved are custody banks,
+which hold large foreign deposits on which negative euro and yen rates were passed through.
+That explanation is plausible but has not been confirmed against filings. BNY Mellon's
+2020–2022 negatives belong to this group, not to the fourth-quarter failure.
 
-Five of these small negatives are derived fourth quarters, which the methodology first
-stated none were: State Street and Northern Trust in 2020Q4 and 2021Q4, and Citigroup in
-2020Q4. BNY Mellon's 2020Q4 and 2021Q4 are reported, not derived, and are negative as
-reported (0026). Where the neighbouring quarters are negative or near zero too, the
-derivation is not the likely cause. Citigroup's −0.02 percent lies between neighbours of
-0.50 and 0.27 percent and is not consistent with them, so it is left open (0025).
+Four of these small negatives are derived fourth quarters, which the methodology first
+stated none were: State Street and Northern Trust in 2020Q4 and 2021Q4. BNY Mellon's 2020Q4
+and 2021Q4 are reported, not derived, and are negative as reported (0026). Where the
+neighbouring quarters are negative or near zero too, the derivation is not the likely cause.
+
+Citigroup's 2020Q4, a fifth, was carried here as probably genuine and is not. It lay between
+neighbours of 0.50 and 0.27 percent, and the diagnosis in 7.4 explains it. Citigroup moved
+deposit insurance assessments out of interest expense in the fourth quarter of 2021 and
+restated 2019 and 2020 in its annual figures; the 10-Qs that supply those years' first
+three quarters were filed before the change and were never restated. The precedence rule
+takes the restated year and the unrestated nine months, so each derived fourth quarter
+carries the nine months' assessments with a negative sign: $870m in 2020, giving deposit
+expense of −$42m, and about $586m in 2019. Restored, 2020Q4 is 0.32 percent against 0.28 in
+the Call Reports and 2019Q4 1.23 against 1.20. The 2019Q4 figure, 0.97 percent as derived,
+is inside the plausibility band and was never flagged. Neither quarter is a beta endpoint.
 
 Until decision 0027 the test also caught 30 bank-quarters above 8 percent at Santander,
 Raymond James and Flagstar. Each tagged one deposit line as its whole interest-bearing
@@ -1013,7 +1033,8 @@ base, and each is now measured on the reconciled base (section 4.2).
 |---|---|---|---|
 | BNY Mellon | 2025Q4 | −0.74% against 2.72% and 2.22% | Q4 derivation failure (8.4) |
 | CIT Group | 2014Q4 | 3.58% against 1.67% and 1.69% | Unreconcilable base, below |
-| State Street, Northern Trust, Citigroup | 5, in 2020Q4 and 2021Q4 | small negatives | Above |
+| State Street, Northern Trust | 4, in 2020Q4 and 2021Q4 | small negatives | Probably genuine, above |
+| Citigroup | 2020Q4 | −0.02% against 0.50% and 0.27% | Derivation across a restatement, above |
 
 Neither BNY Mellon's 2025Q4 nor CIT's 2014Q4 feeds a beta.
 

@@ -40,6 +40,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Citigroup's derived 2020Q4 cost of deposits of −0.02 percent, carried in methodology
+  section 10 as probably genuine, is reassessed as a derivation failure. Its annual figure
+  was restated to exclude deposit insurance assessments and its first three quarters were
+  not, so the derived quarter subtracts $870m of assessments it never contained; restored,
+  it is 0.32 percent against 0.28 in the Call Reports. 2019Q4 has the same fault at 26 basis
+  points and was never flagged. Neither is a beta endpoint. Recorded in methodology 8.4 as
+  a failure mode the plausibility band cannot see in general.
 - CI runs `actions/checkout` and `actions/setup-python` at v7, which target Node 24 in
   place of the deprecated Node 20, on a pinned `ubuntu-24.04` image rather than
   `ubuntu-latest`.
