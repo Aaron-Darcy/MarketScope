@@ -623,11 +623,57 @@ understated numerators from sound ones.
 
 **Where it disagrees.** Four tier 1 filers have a median gap above 10 basis points:
 Citigroup, 14.6 across 66 quarters; Capital One, 13.3 across 68; American Express, 12.5
-across 66; and Morgan Stanley, 39.8 across 6. Citigroup holds deposits at non-US banking
-subsidiaries that file no Call Report, and Capital One's and American Express's bases differ
-from their banks' by about 10 percent, so scope rather than tagging is the likely cause for
-three of the four. None has been diagnosed. Citigroup, Capital One and American Express are
-in the headline sample.
+across 66; and Morgan Stanley, 39.8 across 6. Each is diagnosed by
+`python analysis/milestone3/disagreement_diagnosis.py` (0036). Three are consolidation
+scope; the fourth, Citigroup, is a charge inside the numerator that is not interest.
+
+The test is directional. A consolidated filing eliminates deposits one group entity holds at
+another, and the interest on them, while a sum of Call Reports keeps both. Elimination can
+leave a holding company reporting fewer deposits or less expense than its insured banks; it
+cannot leave it reporting more.
+
+- **Capital One.** Until October 2022 the group held two insured banks, and the card bank,
+  Capital One Bank (USA), held 22 percent of their combined deposits at the median. The
+  holding company's total deposits are 0.83 of the two banks' together and 1.07 of the lead
+  bank's alone: the card bank's deposits were almost all held within the group and are
+  eliminated. Measured against the lead bank alone, the gap falls from a median of 21.1 to
+  3.3 basis points over those 50 quarters, and the share within 10 rises from 40 to 78
+  percent. The card bank's deposits cost 2.7 to 3.5 percent in 2018 and 2019, against 0.9
+  to 1.5 at the lead bank, so including them raised the regulatory cost.
+- **American Express.** Since 2018Q2 the group has had one insured bank, and in all 33
+  quarters it reports fewer total deposits than that bank, by $3.9bn to $19.1bn and $11.1bn
+  at the median. A group can report fewer deposits than its only bank by eliminating
+  deposits other group entities hold there, or by presenting some of the bank's deposits
+  under another caption. The filings have not been read to tell which; both are scope, not
+  tagging.
+- **Morgan Stanley.** Balances agree to about 1 percent, but until 2015Q2 the banks reported
+  a median $91m a quarter more deposit expense than the group, across 23 quarters. From
+  2015Q3 the difference is $1m. Deposit expense the banks report and the group does not is
+  presumably paid within the group; the arrangement, and what ended it in 2015Q3, has not
+  been read from the filings. Every tier 1 quarter, the last 2015Q1, falls before the break
+  and before the calibration cycle starts, so no beta is affected.
+- **Citigroup.** The group reports more deposit expense than its banks pay, by $1.0 to
+  $1.1bn a year from 2015 to 2018, which elimination cannot produce. Its 10-Ks state that
+  interest expense on deposits included FDIC and similar foreign deposit insurance
+  assessments, of $1,118m to $1,249m a year over the same years, until the fourth quarter of
+  2021, when they were moved to operating expenses and 2019 to 2021 restated. Removing the
+  disclosed assessments from the figures that carry them takes Citigroup's median gap for
+  2015 to 2021 from 15.7 to 2.8 basis points, with every quarter within 10. The tag mapping
+  is right; the concept the filer tagged held something else as well.
+
+Citigroup's assessments reach a beta. Both calibration endpoints, 2015Q4 and 2019Q1, were
+filed before the reclassification and carry them, at about $280m and $195m a quarter on the
+annual figures spread evenly. Removed at both ends, Citigroup's calibration beta moves from
+0.330 to 0.360 and its rank among the 22 headline filers from 12 to 14; the headline
+correlation computed with that beta, as a diagnostic and not a variant, is +0.599 (p 0.0017,
+95 percent interval +0.169 to +0.839) against +0.590. The even spread is an approximation:
+2020's published quarterly assessments vary by 19 percent about their mean. The test cycle
+starts after the reclassification and carries none. The headline stands as pre-registered
+(0034, 0036).
+
+These four are the filers where scope or content shows at the median. The same mechanisms
+are presumably present in smaller measure at others, which is why the measured error remains
+an upper bound on the tag mapping's own.
 
 ### 7.5 Error attribution
 
@@ -822,6 +868,17 @@ used wherever they exist (0026), which moves its test-cycle beta from −0.097 t
 Its 2025Q4 has not been reported in any later filing yet, so it is still derived and still
 wrong, at −0.74 percent. It feeds no beta and is flagged.
 
+**Diagnosed failure: Citigroup.** A restatement can reach the annual figure and not the
+quarters. Citigroup moved deposit insurance assessments out of deposit interest expense in
+the fourth quarter of 2021 and restated 2019 and 2020 annually, while the nine-month figures
+for those years stayed as the earlier 10-Qs filed them. The most recently filed value wins
+for each period separately (3.2), so the derivation subtracted a nine months that included
+the assessments from a year that did not, and 2020Q4 came out at −0.02 percent (section 10,
+0036). Nothing within the filer's own figures can see this: the band flags 2020Q4 only
+because the error happened to be large, and 2019Q4, wrong by 26 basis points, passes it. It
+was found by comparison with the Call Reports. Whether other filers' derived quarters mix a
+restated year with unrestated quarters has not been audited.
+
 ### 8.5 Tag drift and restatements
 
 **Handled: tag drift.** The concept lists cover the alternatives each filer has used
@@ -942,19 +999,28 @@ analysis.
 | BNY Mellon | 6 | −0.05% to −0.08%, 2020Q4–2022Q1 | Probably genuine |
 | State Street | 8 | down to −0.16%, 2020Q2–2022Q1 | Probably genuine |
 | Northern Trust | 8 | down to −0.06%, 2020Q2–2022Q1 | Probably genuine |
-| Citigroup | 1 | −0.02%, 2020Q4 | Probably genuine |
+| Citigroup | 1 | −0.02%, derived 2020Q4 | Derivation across a restatement (7.4, 0036) |
 
-The small negatives fall in years of zero US rates. The filers involved are custody banks
-and Citigroup, which hold large foreign deposits on which negative euro and yen rates were
-passed through. That explanation is plausible but has not been confirmed against filings.
-BNY Mellon's 2020–2022 negatives belong to this group, not to the fourth-quarter failure.
+The small negatives fall in years of zero US rates. The filers involved are custody banks,
+which hold large foreign deposits on which negative euro and yen rates were passed through.
+That explanation is plausible but has not been confirmed against filings. BNY Mellon's
+2020–2022 negatives belong to this group, not to the fourth-quarter failure.
 
-Five of these small negatives are derived fourth quarters, which the methodology first
-stated none were: State Street and Northern Trust in 2020Q4 and 2021Q4, and Citigroup in
-2020Q4. BNY Mellon's 2020Q4 and 2021Q4 are reported, not derived, and are negative as
-reported (0026). Where the neighbouring quarters are negative or near zero too, the
-derivation is not the likely cause. Citigroup's −0.02 percent lies between neighbours of
-0.50 and 0.27 percent and is not consistent with them, so it is left open (0025).
+Four of these small negatives are derived fourth quarters, which the methodology first
+stated none were: State Street and Northern Trust in 2020Q4 and 2021Q4. BNY Mellon's 2020Q4
+and 2021Q4 are reported, not derived, and are negative as reported (0026). Where the
+neighbouring quarters are negative or near zero too, the derivation is not the likely cause.
+
+Citigroup's 2020Q4, a fifth, was carried here as probably genuine and is not. It lay between
+neighbours of 0.50 and 0.27 percent, and the diagnosis in 7.4 explains it. Citigroup moved
+deposit insurance assessments out of interest expense in the fourth quarter of 2021 and
+restated 2019 and 2020 in its annual figures; the 10-Qs that supply those years' first
+three quarters were filed before the change and were never restated. The precedence rule
+takes the restated year and the unrestated nine months, so each derived fourth quarter
+carries the nine months' assessments with a negative sign: $870m in 2020, giving deposit
+expense of −$42m, and about $586m in 2019. Restored, 2020Q4 is 0.32 percent against 0.28 in
+the Call Reports and 2019Q4 1.23 against 1.20. The 2019Q4 figure, 0.97 percent as derived,
+is inside the plausibility band and was never flagged. Neither quarter is a beta endpoint.
 
 Until decision 0027 the test also caught 30 bank-quarters above 8 percent at Santander,
 Raymond James and Flagstar. Each tagged one deposit line as its whole interest-bearing
@@ -967,7 +1033,8 @@ base, and each is now measured on the reconciled base (section 4.2).
 |---|---|---|---|
 | BNY Mellon | 2025Q4 | −0.74% against 2.72% and 2.22% | Q4 derivation failure (8.4) |
 | CIT Group | 2014Q4 | 3.58% against 1.67% and 1.69% | Unreconcilable base, below |
-| State Street, Northern Trust, Citigroup | 5, in 2020Q4 and 2021Q4 | small negatives | Above |
+| State Street, Northern Trust | 4, in 2020Q4 and 2021Q4 | small negatives | Probably genuine, above |
+| Citigroup | 2020Q4 | −0.02% against 0.50% and 0.27% | Derivation across a restatement, above |
 
 Neither BNY Mellon's 2025Q4 nor CIT's 2014Q4 feeds a beta.
 
@@ -1029,13 +1096,14 @@ python analysis/milestone2/entity_event_audit.py   # section 8.3, needs the SEC
 python analysis/milestone3/persistence.py          # section 6.1
 python analysis/milestone3/regulatory_validation.py  # section 7.4
 python analysis/milestone3/error_attribution.py    # section 7.5
+python analysis/milestone3/disagreement_diagnosis.py  # section 7.4, the four disagreements
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 
 `dbt build` currently reports two warnings, from the cost and derived-quarter tests in
 section 10. The beta range test is also warn-severity and currently passes.
 Outputs are written to each script's `output/` directory. Every figure in this document was
-read from those outputs or from the warehouse after the build above, between 4 and 14
+read from those outputs or from the warehouse after the build above, between 4 and 21
 October 2026. The SEC filings and the rate series were loaded on 9 September 2026 and the
 Call Report figures in October 2026.
 Because EDGAR data is live, a later load can differ wherever a filer has restated.

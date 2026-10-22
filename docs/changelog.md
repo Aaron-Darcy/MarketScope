@@ -40,6 +40,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Citigroup's derived 2020Q4 cost of deposits of −0.02 percent, carried in methodology
+  section 10 as probably genuine, is reassessed as a derivation failure. Its annual figure
+  was restated to exclude deposit insurance assessments and its first three quarters were
+  not, so the derived quarter subtracts $870m of assessments it never contained; restored,
+  it is 0.32 percent against 0.28 in the Call Reports. 2019Q4 has the same fault at 26 basis
+  points and was never flagged. Neither is a beta endpoint. Recorded in methodology 8.4 as
+  a failure mode the plausibility band cannot see in general.
 - CI runs `actions/checkout` and `actions/setup-python` at v7, which target Node 24 in
   place of the deprecated Node 20, on a pinned `ubuntu-24.04` image rather than
   `ubuntu-latest`.
@@ -125,6 +132,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- A diagnosis of the four tier 1 filers that disagree with their Call Reports (decision
+  0036, methodology 7.4). Capital One, American Express and Morgan Stanley are consolidation
+  scope: against Capital One's lead bank alone the median gap falls from 21.1 to 3.3 basis
+  points. Citigroup's deposit interest expense included FDIC and foreign deposit insurance
+  assessments until 2021, and removing the disclosed amounts brings every quarter from 2015
+  to 2021 within 10 basis points. Its calibration beta without them is 0.360 against 0.330,
+  and the headline computed with it +0.599 against +0.590, reported as a diagnostic; the
+  headline and both measures are unchanged.
 - Interest-bearing deposits split by domestic and foreign office in
   `raw.fdic_financials`, matching the office split of the deposit expense already loaded,
   so a Call Report cost of deposits can be read for each office alone. The two parts sum
