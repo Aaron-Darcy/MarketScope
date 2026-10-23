@@ -475,7 +475,23 @@ Every hypothesis below was formed after the result was seen, and none has been t
   funds rate, and a custody bank holds a large share of its deposits in other currencies. In
   2015–2019 euro policy rates stayed negative while the dollar rate rose, which would dilute
   the measured beta; in 2022–2023 the euro rate rose by 4.5 points as well. Northern Trust,
-  quartile 2 to 3, fits the same pattern. Testable with the foreign deposit share.
+  quartile 2 to 3, fits the same pattern.
+
+  Tested after the fact with the Call Report's split of deposits and their expense between
+  domestic and foreign offices (`python analysis/milestone3/foreign_deposits.py`). The
+  mechanism is there and does not explain State Street. Its foreign offices, 65 percent of
+  its interest-bearing deposits across the calibration cycle, did not reprice at all, with a
+  beta of −0.03 against 0.28 for its domestic offices, and reached 0.42 in the test cycle.
+  Northern Trust's, at 77 percent, lagged and caught up, 0.26 against 0.43 and then 0.66
+  against 0.69, and Citigroup's show the same pattern. But with every headline filer
+  measured on its domestic offices alone, State Street moves further, from quartile 1 to 4:
+  its domestic depositors went from among the slowest to among the fastest as well. Northern
+  Trust stays in quartile 3 in both cycles, so for it the foreign deposits do account for the
+  move. Across the 21 filers the foreign share barely predicts a rise in rank, at Spearman
+  +0.15. A foreign office is a location, not a currency, and dollar deposits booked offshore
+  count as foreign, so the split understates the effect if anything. State Street's
+  deviation is open; the test was designed after the result and after a first look at
+  State Street's split, and confirms nothing.
 - **Zions**, 0.252 to 0.612, quartile 1 to 3. A commercially funded regional with a large
   uninsured base, exposed to the 2023 regional bank deposit flight in a way it was not in
   2015–2019.
@@ -1097,13 +1113,14 @@ python analysis/milestone3/persistence.py          # section 6.1
 python analysis/milestone3/regulatory_validation.py  # section 7.4
 python analysis/milestone3/error_attribution.py    # section 7.5
 python analysis/milestone3/disagreement_diagnosis.py  # section 7.4, the four disagreements
+python analysis/milestone3/foreign_deposits.py     # section 6.1, the custody-bank deviators
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 
 `dbt build` currently reports two warnings, from the cost and derived-quarter tests in
 section 10. The beta range test is also warn-severity and currently passes.
 Outputs are written to each script's `output/` directory. Every figure in this document was
-read from those outputs or from the warehouse after the build above, between 4 and 21
+read from those outputs or from the warehouse after the build above, between 4 and 23
 October 2026. The SEC filings and the rate series were loaded on 9 September 2026 and the
 Call Report figures in October 2026.
 Because EDGAR data is live, a later load can differ wherever a filer has restated.

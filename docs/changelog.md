@@ -132,6 +132,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- A test of the post-hoc hypothesis for State Street and Northern Trust's move between
+  cycles, on Call Report betas by office (methodology 6.1). Foreign offices did reprice far
+  less than domestic ones in the calibration cycle and caught up in the test cycle, but on
+  domestic offices alone State Street moves further, quartile 1 to 4, so its deviation stays
+  unexplained. Northern Trust's does not survive the split: it sits in quartile 3 in both
+  cycles.
 - A diagnosis of the four tier 1 filers that disagree with their Call Reports (decision
   0036, methodology 7.4). Capital One, American Express and Morgan Stanley are consolidation
   scope: against Capital One's lead bank alone the median gap falls from 21.1 to 3.3 basis
