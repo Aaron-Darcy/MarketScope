@@ -1,0 +1,35 @@
+Headline filers: 22; with Call Reports: 21
+
+Filers with at least 10% of interest-bearing deposits in foreign offices across the calibration cycle,
+Call Report betas by office:
+                               foreign share    domestic  foreign   total
+  NORTHERN TRUST CORP                    77%cal    0.426    0.256    0.293
+                                         68%tes    0.689    0.655    0.666
+  STATE STREET CORP                      65%cal    0.278   -0.028    0.141
+                                         38%tes    0.748    0.423    0.645
+  CITIGROUP INC                          55%cal    0.606    0.150    0.351
+                                         46%tes    0.762    0.549    0.665
+  JPMORGAN CHASE & CO                    22%cal    0.398    0.294    0.375
+                                         23%tes    0.478    0.756    0.543
+  WELLS FARGO & COMPANY/MN               11%cal    0.321    0.813    0.349
+                                          2%tes    0.450    0.646    0.454
+
+Quartiles across the 21 headline filers with Call Report betas:
+  total betas, filers above the foreign share floor: JPMORGAN CHASE & 3 to 2; WELLS FARGO & CO 2 to 1; NORTHERN TRUST C 2 to 3; STATE STREET COR 1 to 3; CITIGROUP INC 3 to 3
+  total betas: cross-cycle Spearman +0.601; two or more quartiles apart: 3
+    STATE STREET CORP 1 to 3
+    ZIONS BANCORPORATION, NA 1 to 3
+    CAPITAL ONE FINANCIAL CO 4 to 2
+  domestic betas, filers above the foreign share floor: JPMORGAN CHASE & 3 to 1; WELLS FARGO & CO 2 to 1; NORTHERN TRUST C 3 to 3; STATE STREET COR 1 to 4; CITIGROUP INC 4 to 4
+  domestic betas: cross-cycle Spearman +0.619; two or more quartiles apart: 4
+    JPMORGAN CHASE & CO 3 to 1
+    STATE STREET CORP 1 to 4
+    ZIONS BANCORPORATION, NA 1 to 3
+    CAPITAL ONE FINANCIAL CO 4 to 2
+
+Across the same filers, Spearman of the calibration-cycle foreign share against the rise in rank
+from calibration to test on total betas: +0.147
+  NORTHERN TRUST CORP          share  77%, rank +8.0
+  STATE STREET CORP            share  65%, rank +11.0
+  CITIGROUP INC                share  55%, rank +3.0
+  JPMORGAN CHASE & CO          share  22%, rank -5.0
