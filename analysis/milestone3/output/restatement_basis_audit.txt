@@ -1,0 +1,29 @@
+Annual numerator figures restated after their nine months was last filed: 28, at 16 filers
+Bank-quarters whose cost moves when each is taken back to its consistent value: 24; by 1bp or more: 8
+Tier changes: 0
+
+  filer                             quarter      tier  as derived  consistent      bp
+  COLUMBIA BANKING SYSTEM, INC.     2021-12-31      1       1.06%       0.08%   -97.9
+  Santander Holdings USA, Inc.      2014-12-31      1       0.78%       0.52%   -25.9
+  FIRST HORIZON CORP                2015-12-31      3       0.26%       0.16%   -10.0
+  CITIGROUP INC                     2011-12-31      1       1.19%       1.21%    +1.5
+  CITIGROUP INC                     2010-12-31      1       1.15%       1.18%    +2.2
+  MUFG Americas Holdings Corp       2011-12-31      1       0.43%       0.54%   +11.3
+  CITIGROUP INC                     2019-12-31      1       0.97%       1.32%   +34.9
+  CITIGROUP INC                     2020-12-31      1      -0.02%       0.44%   +45.8
+
+Beta endpoints whose cost moves at all:
+  ZIONS BANCORPORATION, NATIONAL A  calibration 2015-12-31  tier 1  +0.50bp
+  COLUMBIA BANKING SYSTEM, INC.     test        2023-12-31  tier 1  -0.52bp
+  FIRST HORIZON CORP                calibration 2015-12-31  tier 3  -9.98bp
+  HUNTINGTON BANCSHARES INC /MD/    calibration 2015-12-31  tier 2  +0.13bp
+
+Santander Holdings USA, total deposits by the filing that reports them (* the combined basis, from 0000811830-16-000088 on):
+  2015-09-30  $ 55.5bn  first filed 2015-11-13
+  2015-12-31  $ 56.1bn  first filed 2016-04-14
+  2015-12-31  $ 65.6bn  first filed 2016-12-12 *
+  2016-06-30  $ 56.5bn  first filed 2016-12-08
+  2016-09-30  $ 67.7bn  first filed 2016-12-12 *
+  Each quarter end keeps its most recent value. 2015-12-31 is restated to the combined basis;
+  2015-09-30 and 2016-06-30 never are, so the steps into 2015Q4 and 2016Q3 are the basis
+  changing, not the deposit base.

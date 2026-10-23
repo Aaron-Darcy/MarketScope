@@ -1554,3 +1554,56 @@ another filer reports elsewhere, which no reconciliation within a filing can fin
 an outside source can. Citigroup's restatement also explains two of its derived fourth
 quarters, recorded in methodology section 10. Whether other filers' annual figures were
 restated where their quarters were not has not been audited.
+
+---
+
+## 0037 — Audit derived fourth quarters for restated years, and leave the derivation as it is
+
+**Date** 2026-10-23
+**Status** Accepted. Extends 0026 and 0030.
+
+**Context.** 0036 found that Citigroup's restated annual figures for 2019 and 2020 had been
+paired with nine-month figures that were never restated, because precedence picks each
+period's most recently filed value separately and the fourth quarter is derived from the
+two afterwards. Nothing within one filer's history can see this, and 0036 left open whether
+it happens elsewhere. Many calibration cycles start on a derived 2015Q4, so the question
+reaches the headline.
+
+**Decision.** Every annual numerator figure is audited, and one is flagged where its current
+value differs from the value it had when its nine months was last filed and the nine months
+has not changed since that earlier value. Each flagged year is taken back to its consistent
+value and the panel rebuilt through the library, so the effect is measured with the
+metric's own arithmetic. The derivation itself is not changed.
+
+The second condition was added after the first version of the audit flagged Santander's
+2015Q4 at 21 basis points. Santander's 2016 reorganisation was combined into its 2015 nine
+months in December 2016 and into its 2015 year in March 2017: the current values agree in
+basis, and the first version had compared the restated nine months with the unrestated year.
+
+28 annual figures at 16 filers are flagged, and 8 bank-quarters move by a basis point or
+more. No headline beta is affected. The only beta endpoint that moves by more than a basis
+point is First Horizon's tier 3 calibration start, by 10.
+
+Santander's 2015Q4 and 2016Q3 deposit steps, left unexplained by 0032, are the same
+reorganisation seen in balances. Santander Holdings USA became an intermediate holding
+company on 1 July 2016 and combined the transferred entities retrospectively for all periods
+presented (2016Q3 10-Q, 0000811830-16-000088). Its 2015 year-end balance was restated, from
+$56.1bn to $65.6bn, while its 2015Q3 and 2016Q2 balances never were. No entity event is
+recorded for it: the entity did not change, the basis of some of its published balances did,
+and both endpoints of each beta are on the combined basis.
+
+**Alternatives.** Derive every fourth quarter from the annual value consistent with its nine
+months. It would correct the quarters above, but it changes the metric's one
+implementation (0024), it needs its own tests, and the consistent value is not always the
+right one: for Citigroup it restores the deposit insurance 0036 shows does not belong in the
+numerator. With no beta in a pre-registered sample at stake, that change can be made on its
+own merits later rather than inside an audit. Record the Santander reorganisation as an
+entity event. 0032 would measure it by the step from an unrestated June to a combined
+September, 19.8 percent, call it material and take Santander out of the headline for a
+change in its reporting rather than in its deposit base.
+
+**Consequences.** The eight quarters are listed in methodology 8.4 and carried in section
+10. The same mechanism can reach balances as well as flows: a restated year-end beside an
+unrestated quarter-end puts a step in the deposit base, which is what Santander's is.
+Santander's calibration start is measured on the closing balance alone, so its beta does not
+pair the two bases. Other balance steps have not been audited this way.

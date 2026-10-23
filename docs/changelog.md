@@ -132,6 +132,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- An audit of derived fourth quarters for restated years paired with unrestated nine months
+  (decision 0037, methodology 8.4). 28 annual figures at 16 filers are flagged and 8
+  bank-quarters move by a basis point or more when each is taken back to the value
+  consistent with its nine months, Columbia Banking's 2021Q4 by 98. No headline beta is
+  affected; the derivation is unchanged. Santander's 2015Q4 and 2016Q3 deposit steps are
+  explained as its 2016 reorganisation, combined retrospectively into restated year-ends
+  beside quarter-ends that were never restated.
 - A test of the post-hoc hypothesis for State Street and Northern Trust's move between
   cycles, on Call Report betas by office (methodology 6.1). Foreign offices did reprice far
   less than domestic ones in the calibration cycle and caught up in the test cycle, but on
