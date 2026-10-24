@@ -40,6 +40,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Santander Holdings USA's 2015Q4 and 2016Q3 deposit steps move from the unexplained list
+  in methodology 8.3 to an explained one: the retrospective combination of its July 2016
+  reorganisation, which restated year-ends but not the quarter-ends beside them. Recorded
+  there rather than as an entity event, since the entity did not change and both its
+  calibration endpoints are on the combined basis (0037).
 - Citigroup's derived 2020Q4 cost of deposits of −0.02 percent, carried in methodology
   section 10 as probably genuine, is reassessed as a derivation failure. Its annual figure
   was restated to exclude deposit insurance assessments and its first three quarters were

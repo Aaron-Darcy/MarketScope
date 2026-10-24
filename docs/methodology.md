@@ -829,8 +829,20 @@ The measurement also tested the seed. Every quarter since 2015 with a deposit st
 percent and no recorded event was checked for a completion filing, and nine missing events
 were found and added, among them PacWest's acquisition of Square 1 in its calibration start
 quarter. Large steps with no completion filing are left unrecorded: the 2020 deposit surge,
-Santander Holdings USA in 2015Q4 and 2016Q3, Goldman Sachs in 2016Q2, E*TRADE in 2017Q1,
-Ameriprise in 2022Q3 and BNY Mellon in 2026Q1.
+Goldman Sachs in 2016Q2, E*TRADE in 2017Q1, Ameriprise in 2022Q3 and BNY Mellon in 2026Q1.
+
+Santander Holdings USA's steps in 2015Q4 and 2016Q3, on that list until 0037, are explained
+and are not an event. Santander became an intermediate holding company on 1 July 2016, took
+on Santander BanCorp, Banco Santander International and two broker-dealers from its parent,
+and combined them retrospectively for every period presented. Its 2015 year-end deposits
+were restated from $56.1bn to $65.6bn; its 2015Q3 and 2016Q2 balances appear in no later
+filing and were never restated. Each step is the panel moving from one basis to the other,
+and the combined entity's own deposits did not jump. Measured as 0032 measures an
+acquisition, the 2016Q3 step is 19.8 percent and would be material, which is why the
+reorganisation is recorded here and not in the seed. Santander's calibration beta starts at
+2015Q4 on the combined basis and ends on it, the start on its closing balance alone, so it
+measures one entity throughout. Other filers' steps have not been checked for the same
+cause; the audit in 8.4 covers flows, not balances.
 
 **Built: the flag on betas.** `fct_deposit_beta.material_event_in_cycle` is true where a
 material acquisition completed in any quarter from the cycle's start to its measured end.
