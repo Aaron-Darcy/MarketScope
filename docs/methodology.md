@@ -829,8 +829,20 @@ The measurement also tested the seed. Every quarter since 2015 with a deposit st
 percent and no recorded event was checked for a completion filing, and nine missing events
 were found and added, among them PacWest's acquisition of Square 1 in its calibration start
 quarter. Large steps with no completion filing are left unrecorded: the 2020 deposit surge,
-Santander Holdings USA in 2015Q4 and 2016Q3, Goldman Sachs in 2016Q2, E*TRADE in 2017Q1,
-Ameriprise in 2022Q3 and BNY Mellon in 2026Q1.
+Goldman Sachs in 2016Q2, E*TRADE in 2017Q1, Ameriprise in 2022Q3 and BNY Mellon in 2026Q1.
+
+Santander Holdings USA's steps in 2015Q4 and 2016Q3, on that list until 0037, are explained
+and are not an event. Santander became an intermediate holding company on 1 July 2016, took
+on Santander BanCorp, Banco Santander International and two broker-dealers from its parent,
+and combined them retrospectively for every period presented. Its 2015 year-end deposits
+were restated from $56.1bn to $65.6bn; its 2015Q3 and 2016Q2 balances appear in no later
+filing and were never restated. Each step is the panel moving from one basis to the other,
+and the combined entity's own deposits did not jump. Measured as 0032 measures an
+acquisition, the 2016Q3 step is 19.8 percent and would be material, which is why the
+reorganisation is recorded here and not in the seed. Santander's calibration beta starts at
+2015Q4 on the combined basis and ends on it, the start on its closing balance alone, so it
+measures one entity throughout. Other filers' steps have not been checked for the same
+cause; the audit in 8.4 covers flows, not balances.
 
 **Built: the flag on betas.** `fct_deposit_beta.material_event_in_cycle` is true where a
 material acquisition completed in any quarter from the cycle's start to its measured end.
@@ -892,8 +904,33 @@ for each period separately (3.2), so the derivation subtracted a nine months tha
 the assessments from a year that did not, and 2020Q4 came out at −0.02 percent (section 10,
 0036). Nothing within the filer's own figures can see this: the band flags 2020Q4 only
 because the error happened to be large, and 2019Q4, wrong by 26 basis points, passes it. It
-was found by comparison with the Call Reports. Whether other filers' derived quarters mix a
-restated year with unrestated quarters has not been audited.
+was found by comparison with the Call Reports.
+
+**Audited: restated years across the universe.** `python
+analysis/milestone3/restatement_basis_audit.py` finds every annual numerator figure whose
+current value differs from the one it had when its nine months was last filed, where the nine
+months has not changed since (0037). The second condition separates a restatement that
+reached both, as Santander's 2016 reorganisation did, from one that reached only the year.
+Each flagged year is taken back to the value consistent with its nine months and the panel
+rebuilt through the library. 28 annual figures at 16 filers are flagged. 24 bank-quarters
+move, 8 by a basis point or more, and no tier changes:
+
+| Filer | Quarter | As derived | Consistent | Cause |
+|---|---|---|---|---|
+| Citigroup | 2020Q4 | −0.02% | 0.44% | Deposit insurance moved out of interest expense (0036) |
+| Citigroup | 2019Q4 | 0.97% | 1.32% | The same |
+| Columbia Banking | 2021Q4 | 1.06% | 0.08% | Umpqua's year less Columbia's nine months, the reverse acquisition of 0030 |
+| Santander | 2014Q4 | 0.78% | 0.52% | Year recast for the 2016 reorganisation, nine months not |
+| MUFG Americas | 2011Q4 | 0.43% | 0.54% | Not diagnosed |
+| First Horizon | 2015Q4 | 0.26% | 0.16% | Not diagnosed |
+| Citigroup | 2010Q4, 2011Q4 | 1.15%, 1.19% | 1.18%, 1.21% | Not diagnosed |
+
+The consistent value is not always the right one: it is consistent with the nine months, so
+for Citigroup it still carries the assessments 7.4 removes. It shows how much of a derived
+quarter is the restatement rather than the quarter. Four beta endpoints move at all. First
+Horizon's tier 3 calibration start falls by 10.0 basis points, about 0.04 of its beta, and
+tier 3 is in no pre-registered sample; Zions, Huntington and Columbia Banking move by half a
+basis point or less. No headline beta is affected.
 
 ### 8.5 Tag drift and restatements
 
@@ -1080,7 +1117,7 @@ Three betas have a `closing_only` endpoint: Santander and Discover in the calibr
 (2015Q4) and Flagstar in the test cycle (2022Q1). Taking the closing balance alone errs
 where the balance moved within the quarter. Its size has not been measured for these three.
 
-**Carried without a test.** Two findings have no warn-severity test to catch them.
+**Carried without a test.** Three findings have no warn-severity test to catch them.
 
 - 167 bank-quarters rest on an interest-bearing base that cannot be reconciled to total
   deposits, because the filer tags no total or no complete non-interest-bearing figure
@@ -1092,6 +1129,11 @@ where the balance moved within the quarter. Its size has not been measured for t
 - Raymond James's 2023Q1 deposit expense is a 2025 filing's figure for 2024Q1, reported
   against the wrong quarter and accepted by the precedence rule (section 8.5, 0030). It is
   not a beta endpoint.
+- Eight derived fourth quarters at five filers take a restated year and an unrestated nine
+  months, and are off by a basis point or more (section 8.4, 0037). Columbia Banking's
+  2021Q4 is the largest at 98 basis points; Citigroup's 2020Q4, also in the table above, is
+  one of them. Only First Horizon's 2015Q4, a tier 3 calibration start, is a beta endpoint.
+  The derivation is unchanged.
 
 ---
 
@@ -1114,6 +1156,7 @@ python analysis/milestone3/regulatory_validation.py  # section 7.4
 python analysis/milestone3/error_attribution.py    # section 7.5
 python analysis/milestone3/disagreement_diagnosis.py  # section 7.4, the four disagreements
 python analysis/milestone3/foreign_deposits.py     # section 6.1, the custody-bank deviators
+python analysis/milestone3/restatement_basis_audit.py  # section 8.4, restated years
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 
