@@ -13,10 +13,10 @@ Tier changes: 0
   CITIGROUP INC                     2020-12-31      1      -0.02%       0.44%   +45.8
 
 Beta endpoints whose cost moves at all:
-  ZIONS BANCORPORATION, NATIONAL A  calibration 2015-12-31  tier 1  +0.50bp
-  COLUMBIA BANKING SYSTEM, INC.     test        2023-12-31  tier 1  -0.52bp
   FIRST HORIZON CORP                calibration 2015-12-31  tier 3  -9.98bp
   HUNTINGTON BANCSHARES INC /MD/    calibration 2015-12-31  tier 2  +0.13bp
+  ZIONS BANCORPORATION, NATIONAL A  calibration 2015-12-31  tier 1  +0.50bp
+  COLUMBIA BANKING SYSTEM, INC.     test        2023-12-31  tier 1  -0.52bp
 
 Santander Holdings USA, total deposits by the filing that reports them (* the combined basis, from 0000811830-16-000088 on):
   2015-09-30  $ 55.5bn  first filed 2015-11-13

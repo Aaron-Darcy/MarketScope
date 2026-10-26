@@ -67,6 +67,7 @@ def read_betas(connection: duckdb.DuckDBPyConnection) -> pd.DataFrame:
         left join int_regulatory_deposit_cost as closing
           on closing.cik = betas.cik
          and closing.quarter_end = betas.measured_end_quarter
+        order by betas.cik, betas.cycle_name
         """
     ).df()
     frame["regulatory_beta"] = [
