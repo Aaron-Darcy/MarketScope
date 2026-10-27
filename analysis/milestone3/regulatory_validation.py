@@ -62,6 +62,7 @@ def read_pairs(connection: duckdb.DuckDBPyConnection) -> pd.DataFrame:
         left join int_deposit_balances as balances
           on balances.cik = costs.cik
          and balances.quarter_end = costs.quarter_end
+        order by costs.cik, costs.quarter_end
         """
     ).df()
     frame["difference_bp"] = (frame["xbrl_cost"] - frame["regulatory_cost"]) * BASIS_POINTS

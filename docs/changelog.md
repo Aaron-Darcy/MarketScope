@@ -6,6 +6,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Fixed
 
+- Three Milestone 3 scripts read their rows without an order, so a rerun on an unchanged
+  warehouse could reorder `error_attribution.csv` and the endpoint list of the restatement
+  audit. Each now orders by filer and period, and two consecutive runs of every Milestone 3
+  script produce identical files. No figure changes.
 - The terminal-filer test now requires an exit event once a member's last periodic report
   is six months older than the newest, rather than a year. Comerica and Synovus last filed a
   10-Q for 2025Q3 and merged out in early 2026, and the one-year rule had not yet noticed.
@@ -40,6 +44,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Methodology statements the validation work had overtaken are corrected: 6.1 no longer says
+  the tag mapping's error is unmeasured, 8.4 gives the derived-quarter test's current count
+  of 7 rather than 11, and section 9 describes the group aggregation as done. The README
+  records the cause of each of the four Call Report disagreements.
 - Santander Holdings USA's 2015Q4 and 2016Q3 deposit steps move from the unexplained list
   in methodology 8.3 to an explained one: the retrospective combination of its July 2016
   reorganisation, which restated year-ends but not the quarter-ends beside them. Recorded

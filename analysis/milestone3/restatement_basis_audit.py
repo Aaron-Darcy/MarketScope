@@ -187,6 +187,7 @@ def audit(connection: duckdb.DuckDBPyConnection) -> list[str]:
         select cik, cycle_name, start_quarter, measured_end_quarter, metric_tier
         from fct_deposit_beta
         where deposit_beta is not null
+        order by cik, cycle_name
         """
     ).fetchall()
     touched = [

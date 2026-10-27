@@ -328,8 +328,9 @@ with `avg_method = 'endpoint'`.
 - Where the previous quarter cannot be resolved on that base, the closing balance is used
   alone and the row carries `avg_method = 'closing_only'`. There are 179 such rows.
 - Endpoint averaging errs most when balances move sharply within a quarter, which is
-  exactly the condition under study in 2023. The error is to be measured against
-  regulatory true averages at Milestone 3 and has not been measured yet.
+  exactly the condition under study in 2023. Measuring it needs the quarterly average
+  balances in the FFIEC's bulk Call Report files, which the FDIC API does not publish, and
+  it has not been measured (section 9).
 
 For a time this averaging was not actually happening. Until Milestone 2,
 `previous_quarter_end` returned its own argument, so every "average" averaged the closing
@@ -502,8 +503,10 @@ Every hypothesis below was formed after the result was seen, and none has been t
 
 **What the result does not show.** It is an association across 22 banks, not a forecast
 for any one of them (specification 1.2). Its interval is wide: the data are consistent with
-a correlation as modest as 0.15 or as strong as 0.84. It rests on the tag mapping, whose
-error against regulatory data has not been measured (section 9). Three of the 22 betas rest
+a correlation as modest as 0.15 or as strong as 0.84. It rests on the tag mapping, which
+agrees with the Call Reports to a median of 1.1 basis points at tier 1 (section 7.4); the
+one headline filer whose numerator holds something else, Citigroup, moves the correlation by
+0.01 when it is removed. Three of the 22 betas rest
 on an interest-bearing base that cannot be reconciled at one endpoint: Regions in the
 calibration cycle, Truist and HSBC USA in the test cycle (section 10).
 
@@ -882,7 +885,7 @@ within band of its neighbouring quarters. `assert_derived_fourth_quarter_is_plau
 flags a derived quarter that is negative, or that lies more than one percentage point
 outside the range of its two neighbours, at warn severity. The band is three times the
 largest distance seen among second quarters, the only quarters whose neighbours are both
-reported (0025). It flags 11 quarters, listed in section 10.
+reported (0025). It flags 7 quarters, listed in section 10.
 
 **Diagnosed failure: BNY Mellon.** BNY Mellon's 10-K tags only deposits in domestic offices
 under `InterestExpenseDeposits`, the concept its 10-Qs use for total deposit expense, and
@@ -1027,14 +1030,16 @@ nothing.
 Report's quarterly average balances, so the error of endpoint averaging (4.5) cannot be
 measured against it. It needs the FFIEC's bulk Call Report files.
 
-**Measured: the tag mapping's error**, in section 7.4, and **how much of the dispersion
-across banks is reporting difference**, in section 7.5.
+**Measured: the tag mapping's error**, in section 7.4, with each disagreement above 10
+basis points at the median traced to its cause, and **how much of the dispersion across
+banks is reporting difference**, in section 7.5.
 
 Still unknown: the size of the endpoint-averaging error, especially in 2023.
 
-The entity mismatch is already known: FDIC data is per insured bank and SEC data is per
-holding company. Validation will be restricted to single-bank holding companies, or CERTs
-will be aggregated to the holding company with the residual mismatch stated.
+FDIC data is per insured bank and SEC data is per holding company. The CERTs of each group
+are aggregated to the holding company, groups of a single institution are reported apart,
+and the residual mismatch is stated and, for the four filers where it shows, diagnosed
+(7.4).
 
 ---
 
@@ -1163,7 +1168,7 @@ python analysis/universe/reference_audit.py        # section 2.3
 `dbt build` currently reports two warnings, from the cost and derived-quarter tests in
 section 10. The beta range test is also warn-severity and currently passes.
 Outputs are written to each script's `output/` directory. Every figure in this document was
-read from those outputs or from the warehouse after the build above, between 4 and 23
+read from those outputs or from the warehouse after the build above, between 4 and 27
 October 2026. The SEC filings and the rate series were loaded on 9 September 2026 and the
 Call Report figures in October 2026.
 Because EDGAR data is live, a later load can differ wherever a filer has restated.
