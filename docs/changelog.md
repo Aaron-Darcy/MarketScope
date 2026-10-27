@@ -44,6 +44,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Methodology statements the validation work had overtaken are corrected: 6.1 no longer says
+  the tag mapping's error is unmeasured, 8.4 gives the derived-quarter test's current count
+  of 7 rather than 11, and section 9 describes the group aggregation as done. The README
+  records the cause of each of the four Call Report disagreements.
 - Santander Holdings USA's 2015Q4 and 2016Q3 deposit steps move from the unexplained list
   in methodology 8.3 to an explained one: the retrospective combination of its July 2016
   reorganisation, which restated year-ends but not the quarter-ends beside them. Recorded

@@ -37,7 +37,11 @@ within 10 in 87 percent of 1,948 bank-quarters. Recomputed entirely on Call Repo
 the headline correlation is +0.60, so the persistence belongs to the banks rather than to
 how their filings are tagged. Adding SVB, and First Republic and Signature recovered from
 their Call Reports, raises it to +0.64 across 25 filers: leaving out the failed banks, as an
-EDGAR-only sample must, slightly understates it. The error of endpoint averaging is not yet
+EDGAR-only sample must, slightly understates it. The four filers that disagree with their
+Call Reports by more than 10 basis points are traced to a cause each: consolidation scope at
+Capital One, American Express and Morgan Stanley, and at Citigroup deposit insurance
+assessments booked as deposit interest until 2021, which moves the headline by 0.01 when
+removed. The error of endpoint averaging is not yet
 measured, because the regulatory source the project reaches does not publish quarterly
 average balances. See [docs/methodology.md](docs/methodology.md) sections 6.1 and 7 and
 [docs/specification.md](docs/specification.md).
