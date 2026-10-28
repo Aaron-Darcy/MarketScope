@@ -1,5 +1,5 @@
-"""Load the committed universe, its SEC filings, the FRED rate series and the Call Report
-deposit figures for the regulatory comparison into DuckDB.
+"""Load the committed universe, its SEC filings, the FRED rate series, the Call Report
+deposit figures for the regulatory comparison and the FFIEC quarterly averages into DuckDB.
 
 Usage:
     python -m marketscope.pipeline
@@ -19,6 +19,7 @@ import duckdb
 
 from marketscope import store
 from marketscope.facts import extract_facts
+from marketscope.ingestion import ffiec
 from marketscope.ingestion.fdic import FdicClient
 from marketscope.ingestion.fred import FredClient
 from marketscope.ingestion.sec import SecClient
@@ -169,6 +170,32 @@ def load_fdic(connection: duckdb.DuckDBPyConnection, report: LoadReport) -> None
     )
 
 
+def load_ffiec(connection: duckdb.DuckDBPyConnection, report: LoadReport, directory: Path) -> None:
+    """Load the deposit items of every bulk Call Report archive in a directory.
+
+    The archives are downloaded by hand (decision 0038), so an empty directory is recorded
+    as a failure rather than loaded as an empty table: a warehouse that silently lost its
+    averages would report the averaging error as unmeasured without saying why. A malformed
+    archive is recorded as a failure and leaves the previous load intact, since loading the
+    quarters that parsed would describe a set of quarters nobody chose.
+    """
+    try:
+        paths = ffiec.archives(directory) if directory.is_dir() else []
+        if not paths:
+            report.failures.append(f"FFIEC: no bulk Call Report archives in {directory}")
+            logger.error("No FFIEC archives in %s", directory)
+            return
+        with store.replacing(connection, "ffiec_call_items", store.FFIEC_COLUMNS) as appender:
+            for path in paths:
+                logger.info("Reading %s", path.name)
+                appender.append(store.ffiec_rows(ffiec.read_archive(path)))
+    except ffiec.BulkFileError as error:
+        report.failures.append(f"FFIEC: {error}")
+        logger.error("FFIEC load failed: %s", error)
+        return
+    report.counts["ffiec_call_items"] = appender.rows
+
+
 def run(
     database: Path = DATABASE_PATH,
     seed: Path = SEED_PATH,
@@ -176,6 +203,8 @@ def run(
     skip_sec: bool = False,
     skip_fred: bool = False,
     skip_fdic: bool = False,
+    skip_ffiec: bool = False,
+    ffiec_dir: Path = ffiec.FFIEC_DIR,
 ) -> LoadReport:
     members = read_seed(seed)
     logger.info("Loading %d universe members from %s", len(members), seed)
@@ -198,6 +227,10 @@ def run(
             logger.info("Skipping FDIC")
         else:
             load_fdic(connection, report)
+        if skip_ffiec:
+            logger.info("Skipping FFIEC")
+        else:
+            load_ffiec(connection, report, ffiec_dir)
     finally:
         connection.close()
 
@@ -211,6 +244,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--skip-sec", action="store_true")
     parser.add_argument("--skip-fred", action="store_true")
     parser.add_argument("--skip-fdic", action="store_true")
+    parser.add_argument("--skip-ffiec", action="store_true")
+    parser.add_argument("--ffiec-dir", type=Path, default=ffiec.FFIEC_DIR)
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
@@ -224,6 +259,8 @@ def main(argv: list[str] | None = None) -> int:
         skip_sec=args.skip_sec,
         skip_fred=args.skip_fred,
         skip_fdic=args.skip_fdic,
+        skip_ffiec=args.skip_ffiec,
+        ffiec_dir=args.ffiec_dir,
     )
 
     print(f"\nLoaded into {args.database}")

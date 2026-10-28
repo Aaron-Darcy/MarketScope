@@ -45,5 +45,34 @@ sources:
             tests: [not_null]
           - name: report_date
             tests: [not_null]
+      - name: ffiec_call_items
+        description: >
+          Call Report deposit items per filer and quarter from the FFIEC's bulk archives,
+          in thousands of dollars, one row per reported item: Schedule RC-K quarterly
+          averages and the RC-E and RC quarter-end balances on the same definitions, for
+          every Call Report filer. Read from archives downloaded by hand (decision 0038).
+        columns:
+          - name: report_date
+            tests: [not_null]
+          - name: cert
+            tests: [not_null]
+          - name: item
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values:
+                      - RCON3485
+                      - RCONB563
+                      - RCONA514
+                      - RCONA529
+                      - RCONHK16
+                      - RCONHK17
+                      - RCFN3404
+                      - RCON2385
+                      - RCON6636
+                      - RCFN6636
+          - name: value
+            tests: [not_null]
       - name: ingest_log
         description: Row count and load time per raw table, for run-on-run change detection.

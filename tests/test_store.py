@@ -9,6 +9,7 @@ import pytest
 
 from marketscope import store
 from marketscope.facts import Fact
+from marketscope.ingestion.ffiec import CallItem
 from marketscope.ingestion.fred import Observation
 from marketscope.universe import SeedRow
 
@@ -43,6 +44,7 @@ def test_connect_creates_the_raw_tables(connection: duckdb.DuckDBPyConnection) -
         "sec_registrants",
         "fred_observations",
         "fdic_financials",
+        "ffiec_call_items",
         "ingest_log",
     }
 
@@ -240,3 +242,21 @@ def test_connect_adds_the_office_split_to_a_warehouse_created_before_it(
         columns = [row[0] for row in handle.execute("DESCRIBE raw.fdic_financials").fetchall()]
 
     assert columns[-2:] == ["depidom", "depifor"]
+
+
+def test_ffiec_rows_keep_the_item_in_thousands_as_reported(
+    connection: duckdb.DuckDBPyConnection,
+) -> None:
+    items = [
+        CallItem(date(2023, 12, 31), 852218, 628, "RCK", "RCONB563", 1305189000),
+        CallItem(date(2023, 12, 31), 852218, 628, "RCE", "RCON2385", 0),
+    ]
+
+    store.replace(connection, "ffiec_call_items", store.FFIEC_COLUMNS, store.ffiec_rows(items))
+
+    assert connection.execute(
+        "select report_date, cert, schedule, item, value from raw.ffiec_call_items order by item"
+    ).fetchall() == [
+        (date(2023, 12, 31), 628, "RCE", "RCON2385", 0),
+        (date(2023, 12, 31), 628, "RCK", "RCONB563", 1305189000),
+    ]

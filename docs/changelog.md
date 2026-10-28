@@ -145,6 +145,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `raw.ffiec_call_items`, loaded by the pipeline from the bulk archives in
+  `data/raw/ffiec/`: 961,360 deposit items for 6,412 Call Report filers across 30
+  quarters. `--skip-ffiec` loads the other sources without it. An empty directory or a
+  malformed archive is recorded as a failure and leaves the previous load in place.
 - A reader for the FFIEC's bulk Call Report archives (decision 0038). It parses the
   quarterly average deposit items of Schedule RC-K and the quarter-end balances of RC-E
   and RC on the same definitions, maps each filer's RSSD to its FDIC certificate, and
