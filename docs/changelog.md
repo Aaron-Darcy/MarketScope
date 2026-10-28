@@ -145,6 +145,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `int_regulatory_average_balances`: the endpoint-averaging error of 1,179 group-quarters
+  across the 43 regulatory groups, 880 of them at the 32 groups whose averages reconcile
+  on a basis. Tests require one row per group-quarter and an error exactly where a basis
+  is chosen.
 - `marketscope.averaging`, which measures endpoint averaging against Call Report
   averages on the basis each group's RC-K reconciles to, interest-bearing or
   nontransaction, within 2 percent at the median (decision 0039). A group reconciling on
