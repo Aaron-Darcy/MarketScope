@@ -145,6 +145,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `stg_ffiec__deposit_balances`: RC-K quarterly average deposits beside the quarter-end
+  balances on the same definitions, per filer and quarter, in dollars. A test requires
+  each filer's quarter-end interest-bearing deposits to match BankFind's to the
+  thousand, which all 2,714 institution-quarters the two sources share do, so the RSSD
+  to certificate mapping is checked on every build.
 - `raw.ffiec_call_items`, loaded by the pipeline from the bulk archives in
   `data/raw/ffiec/`: 961,360 deposit items for 6,412 Call Report filers across 30
   quarters. `--skip-ffiec` loads the other sources without it. An empty directory or a
