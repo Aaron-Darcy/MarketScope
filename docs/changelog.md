@@ -145,6 +145,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- A reader for the FFIEC's bulk Call Report archives (decision 0038). It parses the
+  quarterly average deposit items of Schedule RC-K and the quarter-end balances of RC-E
+  and RC on the same definitions, maps each filer's RSSD to its FDIC certificate, and
+  refuses an archive whose name, schedules or items are not laid out as expected.
 - An audit of derived fourth quarters for restated years paired with unrestated nine months
   (decision 0037, methodology 8.4). 28 annual figures at 16 filers are flagged and 8
   bank-quarters move by a basis point or more when each is taken back to the value

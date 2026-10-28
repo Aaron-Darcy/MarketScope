@@ -1607,3 +1607,39 @@ change in its reporting rather than in its deposit base.
 unrestated quarter-end puts a step in the deposit base, which is what Santander's is.
 Santander's calibration start is measured on the closing balance alone, so its beta does not
 pair the two bases. Other balance steps have not been audited this way.
+
+---
+
+## 0038 — Read the FFIEC bulk Call Reports from archives downloaded by hand
+
+**Date** 2026-10-28
+**Status** Accepted. Extends 0016 and 0035.
+
+**Context.** 0011 requires the error of endpoint averaging to be measured against the
+quarterly average balances regulatory filings report, and 0035 left it open because the FDIC
+BankFind API does not publish them. The Call Report's Schedule RC-K does, and the FFIEC's
+Central Data Repository distributes every filer's schedules for a quarter as one bulk
+archive. The archives are served from an interactive form rather than a stable address,
+and an automated fetch of it was refused in October as circumventing the bot protection
+0016 found on the FFIEC's public pages.
+
+**Decision.** The archives are downloaded by hand, one per quarter, and placed unopened in
+`data/raw/ffiec/`, which is not committed. The pipeline reads them from there. A reader
+parses the RC-K average deposit items and, from RC-E and RC, the quarter-end balances on the
+same definitions, and refuses an archive whose name, schedules or items are not as expected
+rather than reading what it can. Thirty quarters are held: 2015Q3 to 2019Q3 and 2021Q4 to
+2024Q4, which cover both study cycles and the quarter before each.
+
+**Alternatives.** Fetch the archives in the pipeline. That means working around a control
+the FFIEC put there to stop automated download, which this project does not do. Read the
+averages from the FR Y-9C, whose Schedule HC-K reports them at holding-company level and
+would remove the consolidation difference 0035 describes. The Y-9C is distributed by the
+Federal Reserve's National Information Center behind the same kind of control, and the
+FDIC CERT mapping already built for the Call Reports would not carry over.
+
+**Consequences.** The FFIEC load is the one source a scheduled refresh cannot reproduce on
+its own: a clean checkout reproduces it only once the archives are downloaded again, and
+the methodology lists the quarters it needs. A missing quarter leaves its averages absent
+rather than failing the load, and every measurement says which quarters it covers. The
+quarters 2019Q4 to 2021Q3 are not held, so nothing in the trough between the cycles is
+measured.
