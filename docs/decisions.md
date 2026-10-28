@@ -1643,3 +1643,50 @@ the methodology lists the quarters it needs. A missing quarter leaves its averag
 rather than failing the load, and every measurement says which quarters it covers. The
 quarters 2019Q4 to 2021Q3 are not held, so nothing in the trough between the cycles is
 measured.
+
+---
+
+## 0039 — Measure each group's averaging error on the base its averages reconcile to
+
+**Date** 2026-10-28
+**Status** Accepted. Extends 0011 and 0027.
+
+**Context.** Schedule RC-K's deposit averages are not the interest-bearing base the XBRL
+metric divides by. RC-K averages interest-bearing transaction accounts, but it averages
+every nontransaction account, interest-bearing or not, and banks that sweep demand balances
+into savings for reserve purposes report the swept balances inconsistently. JPMorgan Chase
+Bank's RC-K savings average, $1,305bn in 2023Q4, matches its quarter-end savings on RC-E
+and exceeds its whole quarter-end interest-bearing domestic base. Zions's 2016Q4 average,
+$18.2bn, is less than half its RC-E savings of $44.1bn, because it leaves the swept balances
+out. Set against the wrong quarter-end figure, either looks like an averaging error of 20 to
+100 percent.
+
+**Decision.** Each group is measured on one of two bases on which RC-K and the quarter-end
+schedules share a definition: the whole RC-K total against interest-bearing deposits, or
+RC-K's nontransaction and foreign-office averages against RC-E's nontransaction accounts and
+RC's interest-bearing deposits in foreign offices. A basis is chosen if the median gap
+between the endpoint and the reported average across the group's quarters is within 2
+percent, the interest-bearing basis first. A definitional difference holds in every quarter
+and moves the median, while averaging error varies from one quarter to the next and largely
+does not. The 2 percent is the base reconciliation tolerance of 0027, used again rather than
+read from these gaps. A group that reconciles on neither is reported with both gaps and not
+measured.
+
+**Alternatives.** Measure every group on the whole RC-K total. For most groups that sets
+an average including non-interest-bearing savings against an interest-bearing quarter end,
+and records a definition as an error. Subtract each group's median gap and measure only the
+variation about it. That would admit every group, but it would also remove any averaging
+error that recurs at every quarter end, such as balances that leave at each quarter end and
+return, which is exactly what an endpoint average misses.
+
+**Consequences.** 32 of the 43 groups reconcile, 15 on the interest-bearing basis and 17 on
+the nontransaction basis, over 880 group-quarters. Eleven do not: Citigroup, PNC, US
+Bancorp, State Street, Citizens, M&T, First Citizens, First Horizon, Santander, SVB and USAA,
+with median gaps on their closer basis from 2.0 to 9.1 percent. Four of the eleven are within
+3 percent, and the analysis reports the measured error with them admitted at a looser
+tolerance as a sensitivity rather than as the result. On the nontransaction basis the
+interest-bearing transaction accounts are not measured at all, a median of 8 percent of the
+RC-K total and up to 37 percent at the 90th percentile, and the error measured is assumed
+to apply to them. A recurring quarter-end
+effect larger than 2 percent at a group would also leave it unreconciled, so the error
+measured on the 32 is a lower bound for any group where one exists.

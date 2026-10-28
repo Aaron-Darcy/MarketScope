@@ -145,6 +145,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `marketscope.averaging`, which measures endpoint averaging against Call Report
+  averages on the basis each group's RC-K reconciles to, interest-bearing or
+  nontransaction, within 2 percent at the median (decision 0039). A group reconciling on
+  neither is reported with both gaps and not measured.
 - `stg_ffiec__deposit_balances`: RC-K quarterly average deposits beside the quarter-end
   balances on the same definitions, per filer and quarter, in dollars. A test requires
   each filer's quarter-end interest-bearing deposits to match BankFind's to the
