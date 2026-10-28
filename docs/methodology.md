@@ -30,6 +30,7 @@ control is never written up as a working one.
 | FRED | `DGS2`, `DGS10` | Context on bank pages; not used in any result |
 | FDIC BankFind | Institution financials at 2022-12-31 | Sizing the EDGAR coverage gap (0016) |
 | FDIC BankFind | Call Report deposit figures per institution, quarterly from 2009 | Validating the XBRL metric (specification 5) |
+| FFIEC CDR | Bulk Call Report archives, one per quarter, downloaded by hand (0038) | Measuring the error of endpoint averaging (4.5) |
 
 All of these are public and free to redistribute. Nothing licensed is used (specification
 1.2).
@@ -71,7 +72,20 @@ All of these are public and free to redistribute. Nothing licensed is used (spec
   Signature and USAA. A group is every institution reporting its regulatory high holder in
   the quarter, or the institution alone where it has none. Figures stay in thousands, as
   published. The current load holds 6,778 institution-quarters across 186 institutions,
-  from 2009Q1 to 2026Q2. `--skip-sec`, `--skip-fred` and `--skip-fdic` load a source alone.
+  from 2009Q1 to 2026Q2.
+- **Bulk Call Reports.** `raw.ffiec_call_items` holds, for every Call Report filer, the
+  Schedule RC-K quarterly averages of interest-bearing transaction accounts, savings, time
+  deposits and interest-bearing deposits in foreign offices, beside the quarter-end balances
+  of nontransaction accounts (RC-E) and interest-bearing deposits by office (RC). One row per
+  reported item, in thousands; a blank item produces no row. The archives cannot be fetched
+  by the pipeline (0038) and are read from `data/raw/ffiec/`, which is not committed: a
+  reproduction needs the "Call Reports -- Single Period", "All Schedules" tab-delimited
+  archive for each of 2015Q3 to 2019Q3 and 2021Q4 to 2024Q4, saved under the name the FFIEC
+  gives it. An archive that is not laid out as expected fails the load rather than loading
+  in part. The current load holds 961,360 items for 6,412 filers across those 30 quarters,
+  and every institution-quarter BankFind holds for them has a match.
+  `--skip-sec`, `--skip-fred`, `--skip-fdic` and `--skip-ffiec` load the other sources
+  without one.
 
 **Filer identity.** The registrant name comes from the submissions endpoint and never from
 `entityName` on the company facts payload. That field names whichever entity published a

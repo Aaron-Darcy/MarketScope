@@ -87,3 +87,31 @@ models:
         tests: [not_null]
       - name: foreign_deposit_expense
         description: Null for an institution with no foreign offices.
+
+  - name: stg_ffiec__deposit_balances
+    description: >
+      Call Report quarterly average deposits from Schedule RC-K beside the quarter-end
+      balances on the same definitions, per filer and quarter, in dollars. Interest-bearing
+      transaction accounts are averaged; savings and time deposits are every nontransaction
+      account, interest-bearing or not.
+    columns:
+      - name: cert
+        tests: [not_null]
+      - name: quarter_end
+        tests: [not_null]
+      - name: average_interest_bearing_transaction
+        tests: [not_null]
+      - name: average_savings
+        tests: [not_null]
+      - name: average_time
+        description: Either time-deposit pair summed; each quarter's schedule carries one.
+        tests: [not_null]
+      - name: average_foreign_interest_bearing
+        description: Null for a filer with no foreign offices.
+      - name: nontransaction
+        description: Quarter-end nontransaction accounts in domestic offices, from RC-E.
+        tests: [not_null]
+      - name: domestic_interest_bearing
+        tests: [not_null]
+      - name: foreign_interest_bearing
+        description: Null for a filer with no foreign offices.

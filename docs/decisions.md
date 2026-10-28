@@ -1607,3 +1607,86 @@ change in its reporting rather than in its deposit base.
 unrestated quarter-end puts a step in the deposit base, which is what Santander's is.
 Santander's calibration start is measured on the closing balance alone, so its beta does not
 pair the two bases. Other balance steps have not been audited this way.
+
+---
+
+## 0038 — Read the FFIEC bulk Call Reports from archives downloaded by hand
+
+**Date** 2026-10-28
+**Status** Accepted. Extends 0016 and 0035.
+
+**Context.** 0011 requires the error of endpoint averaging to be measured against the
+quarterly average balances regulatory filings report, and 0035 left it open because the FDIC
+BankFind API does not publish them. The Call Report's Schedule RC-K does, and the FFIEC's
+Central Data Repository distributes every filer's schedules for a quarter as one bulk
+archive. The archives are served from an interactive form rather than a stable address,
+and an automated fetch of it was refused in October as circumventing the bot protection
+0016 found on the FFIEC's public pages.
+
+**Decision.** The archives are downloaded by hand, one per quarter, and placed unopened in
+`data/raw/ffiec/`, which is not committed. The pipeline reads them from there. A reader
+parses the RC-K average deposit items and, from RC-E and RC, the quarter-end balances on the
+same definitions, and refuses an archive whose name, schedules or items are not as expected
+rather than reading what it can. Thirty quarters are held: 2015Q3 to 2019Q3 and 2021Q4 to
+2024Q4, which cover both study cycles and the quarter before each.
+
+**Alternatives.** Fetch the archives in the pipeline. That means working around a control
+the FFIEC put there to stop automated download, which this project does not do. Read the
+averages from the FR Y-9C, whose Schedule HC-K reports them at holding-company level and
+would remove the consolidation difference 0035 describes. The Y-9C is distributed by the
+Federal Reserve's National Information Center behind the same kind of control, and the
+FDIC CERT mapping already built for the Call Reports would not carry over.
+
+**Consequences.** The FFIEC load is the one source a scheduled refresh cannot reproduce on
+its own: a clean checkout reproduces it only once the archives are downloaded again, and
+the methodology lists the quarters it needs. A missing quarter leaves its averages absent
+rather than failing the load, and every measurement says which quarters it covers. The
+quarters 2019Q4 to 2021Q3 are not held, so nothing in the trough between the cycles is
+measured.
+
+---
+
+## 0039 — Measure each group's averaging error on the base its averages reconcile to
+
+**Date** 2026-10-28
+**Status** Accepted. Extends 0011 and 0027.
+
+**Context.** Schedule RC-K's deposit averages are not the interest-bearing base the XBRL
+metric divides by. RC-K averages interest-bearing transaction accounts, but it averages
+every nontransaction account, interest-bearing or not, and banks that sweep demand balances
+into savings for reserve purposes report the swept balances inconsistently. JPMorgan Chase
+Bank's RC-K savings average, $1,305bn in 2023Q4, matches its quarter-end savings on RC-E
+and exceeds its whole quarter-end interest-bearing domestic base. Zions's 2016Q4 average,
+$18.2bn, is less than half its RC-E savings of $44.1bn, because it leaves the swept balances
+out. Set against the wrong quarter-end figure, either looks like an averaging error of 20 to
+100 percent.
+
+**Decision.** Each group is measured on one of two bases on which RC-K and the quarter-end
+schedules share a definition: the whole RC-K total against interest-bearing deposits, or
+RC-K's nontransaction and foreign-office averages against RC-E's nontransaction accounts and
+RC's interest-bearing deposits in foreign offices. A basis is chosen if the median gap
+between the endpoint and the reported average across the group's quarters is within 2
+percent, the interest-bearing basis first. A definitional difference holds in every quarter
+and moves the median, while averaging error varies from one quarter to the next and largely
+does not. The 2 percent is the base reconciliation tolerance of 0027, used again rather than
+read from these gaps. A group that reconciles on neither is reported with both gaps and not
+measured.
+
+**Alternatives.** Measure every group on the whole RC-K total. For most groups that sets
+an average including non-interest-bearing savings against an interest-bearing quarter end,
+and records a definition as an error. Subtract each group's median gap and measure only the
+variation about it. That would admit every group, but it would also remove any averaging
+error that recurs at every quarter end, such as balances that leave at each quarter end and
+return, which is exactly what an endpoint average misses.
+
+**Consequences.** 32 of the 43 groups reconcile, 15 on the interest-bearing basis and 17 on
+the nontransaction basis, over 880 group-quarters. Eleven do not: Citigroup, PNC, US
+Bancorp, State Street, Citizens, M&T, First Citizens, First Horizon, Santander, SVB and USAA,
+with median gaps on their closer basis from 2.0 to 9.1 percent. Four of the eleven are within
+3 percent, and the analysis reports the measured error with them admitted at a looser
+tolerance as a sensitivity rather than as the result. On the nontransaction basis the
+interest-bearing transaction accounts are not measured at all, a median of 8 percent of the
+RC-K total and up to 37 percent at the 90th percentile, and the error measured is assumed
+to apply to them. A recurring quarter-end
+effect larger than 2 percent at a group would also leave it unreconciled, so the error
+measured on the 32 is a lower bound for any group where one exists.

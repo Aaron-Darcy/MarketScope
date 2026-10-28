@@ -350,6 +350,7 @@ staging/
   stg_sec__tickers
   stg_fred__series
   stg_fdic__financials
+  stg_ffiec__deposit_balances
 
 intermediate/
   int_bank_universe
@@ -358,6 +359,7 @@ intermediate/
   int_deposit_balances      (Python model)
   int_fact_revisions        (Python model)
   int_regulatory_deposit_cost (Python model)
+  int_regulatory_average_balances (Python model)
   int_filing_timeliness
 
 marts/
@@ -499,6 +501,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-10-28 | `stg_ffiec__deposit_balances` and `int_regulatory_average_balances` added to 7.1: Call Report quarterly averages from the FFIEC bulk archives, read from disk, against which endpoint averaging is measured on the basis each group's averages reconcile to. See decisions 0038 and 0039. |
 | 2026-10-13 | Regulatory cost of deposits built from FDIC Call Report figures with the XBRL metric's own arithmetic; `stg_fdic__financials` and `int_regulatory_deposit_cost` added to 7.1. The endpoint-averaging error is not measurable from this source. See decision 0035. |
 | 2026-10-10 | Section 6.1 added: the persistence analysis pre-registered before computation — sample rules, statistic, test, interval, interpretation and four robustness variants. See decision 0034. |
 | 2026-10-09 | Milestone 2 closed: `fct_deposit_beta` populated with tiers and entity event flags, revisions and entity events recorded. Flagging individual bank-quarters moves with `fct_bank_quarter` to Milestone 4. See decision 0033. |

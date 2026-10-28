@@ -146,3 +146,32 @@ models:
           - accepted_values:
               arguments:
                 values: [endpoint, closing_only]
+
+  - name: int_regulatory_average_balances
+    description: >
+      Endpoint averaging error per regulatory group and quarter: the two-point average of a
+      group's quarter-end deposits against the quarterly average its Call Reports report on
+      Schedule RC-K, summed across the group's insured institutions. Each group is measured
+      on the basis its averages reconcile to within 2 percent at the median, and a group
+      reconciling on neither carries a null basis and error (decision 0039). Only quarters
+      the FFIEC archives hold, with the quarter before, are measured.
+    columns:
+      - name: group_key
+        tests: [not_null]
+      - name: quarter_end
+        tests: [not_null]
+      - name: interest_bearing_gap
+        description: Endpoint against reported average less one, RC-K total against interest-bearing deposits.
+        tests: [not_null]
+      - name: nontransaction_gap
+        description: The same on nontransaction accounts plus interest-bearing deposits in foreign offices.
+        tests: [not_null]
+      - name: basis
+        tests:
+          - accepted_values:
+              arguments:
+                values: [interest_bearing, nontransaction]
+      - name: averaging_error
+        description: >
+          Endpoint against reported average less one on the group's basis. Positive where
+          the endpoint average overstates the balance and so understates the cost.

@@ -10,6 +10,7 @@ import duckdb
 import pyarrow
 
 from marketscope.facts import Fact
+from marketscope.ingestion.ffiec import CallItem
 from marketscope.ingestion.fred import Observation
 from marketscope.universe import SeedRow
 
@@ -96,6 +97,18 @@ DDL: tuple[str, ...] = (
     # before it would otherwise keep the old shape and refuse the load.
     f"ALTER TABLE {RAW_SCHEMA}.fdic_financials ADD COLUMN IF NOT EXISTS depidom DOUBLE",
     f"ALTER TABLE {RAW_SCHEMA}.fdic_financials ADD COLUMN IF NOT EXISTS depifor DOUBLE",
+    # Call Report deposit items per filer and quarter from the FFIEC bulk archives, in
+    # thousands of dollars, one row per reported item: RC-K quarterly averages beside the
+    # RC-E and RC quarter-end balances on the same definitions. Every filer in the archive
+    # is kept, not only the pinned groups, so the load does not depend on BankFind.
+    f"""CREATE TABLE IF NOT EXISTS {RAW_SCHEMA}.ffiec_call_items (
+        report_date DATE NOT NULL,
+        rssd BIGINT NOT NULL,
+        cert BIGINT NOT NULL,
+        schedule VARCHAR NOT NULL,
+        item VARCHAR NOT NULL,
+        value BIGINT NOT NULL
+    )""",
     f"""CREATE TABLE IF NOT EXISTS {RAW_SCHEMA}.ingest_log (
         source VARCHAR NOT NULL,
         loaded_at TIMESTAMPTZ NOT NULL,
@@ -287,6 +300,8 @@ FDIC_COLUMNS = (
     "depifor",
 )
 
+FFIEC_COLUMNS = ("report_date", "rssd", "cert", "schedule", "item", "value")
+
 
 def universe_rows(seed: Iterable[SeedRow]) -> list[tuple[Any, ...]]:
     return [(row.cik, row.registrant_name, row.rank, row.pinned, row.pinned_reason) for row in seed]
@@ -384,6 +399,13 @@ def fdic_rows(
             )
         )
     return rows
+
+
+def ffiec_rows(items: Iterable[CallItem]) -> list[tuple[Any, ...]]:
+    return [
+        (item.report_date, item.rssd, item.cert, item.schedule, item.item, item.value)
+        for item in items
+    ]
 
 
 def table_counts(connection: duckdb.DuckDBPyConnection) -> dict[str, int]:

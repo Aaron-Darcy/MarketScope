@@ -145,6 +145,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `int_regulatory_average_balances`: the endpoint-averaging error of 1,179 group-quarters
+  across the 43 regulatory groups, 880 of them at the 32 groups whose averages reconcile
+  on a basis. Tests require one row per group-quarter and an error exactly where a basis
+  is chosen.
+- `marketscope.averaging`, which measures endpoint averaging against Call Report
+  averages on the basis each group's RC-K reconciles to, interest-bearing or
+  nontransaction, within 2 percent at the median (decision 0039). A group reconciling on
+  neither is reported with both gaps and not measured.
+- `stg_ffiec__deposit_balances`: RC-K quarterly average deposits beside the quarter-end
+  balances on the same definitions, per filer and quarter, in dollars. A test requires
+  each filer's quarter-end interest-bearing deposits to match BankFind's to the
+  thousand, which all 2,714 institution-quarters the two sources share do, so the RSSD
+  to certificate mapping is checked on every build.
+- `raw.ffiec_call_items`, loaded by the pipeline from the bulk archives in
+  `data/raw/ffiec/`: 961,360 deposit items for 6,412 Call Report filers across 30
+  quarters. `--skip-ffiec` loads the other sources without it. An empty directory or a
+  malformed archive is recorded as a failure and leaves the previous load in place.
+- A reader for the FFIEC's bulk Call Report archives (decision 0038). It parses the
+  quarterly average deposit items of Schedule RC-K and the quarter-end balances of RC-E
+  and RC on the same definitions, maps each filer's RSSD to its FDIC certificate, and
+  refuses an archive whose name, schedules or items are not laid out as expected.
 - An audit of derived fourth quarters for restated years paired with unrestated nine months
   (decision 0037, methodology 8.4). 28 annual figures at 16 filers are flagged and 8
   bank-quarters move by a basis point or more when each is taken back to the value
