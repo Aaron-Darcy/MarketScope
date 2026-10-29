@@ -145,6 +145,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Call Report cycle betas for the 29 reconciling groups with both endpoints measured,
+  restated on reported averages. The median beta moves by 0.004 in the calibration cycle
+  and 0.003 in the test cycle, and the restated betas order the groups as the endpoint
+  betas do (Spearman +0.996 and +0.998). Seven move by 0.02 or more, American Express's
+  calibration beta most, from 0.762 to 0.683.
 - The error of endpoint averaging, measured against Call Report quarterly averages at the
   32 groups whose averages reconcile (`analysis/milestone3/averaging_error.py`). Across 870
   group-quarters without a material acquisition the endpoint cost of deposits differs from

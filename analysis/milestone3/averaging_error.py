@@ -30,7 +30,10 @@ import duckdb
 import pandas as pd
 
 from marketscope import store
-from marketscope.cycles import read_study_cycles
+from marketscope.averaging import cost_on_reported_average
+from marketscope.cycles import RateCycle, read_study_cycles
+from marketscope.metrics import cumulative_beta
+from marketscope.ranking import spearman
 from marketscope.regulatory import REFERENCE_MAP
 from marketscope.store import DATABASE_PATH
 
@@ -173,6 +176,72 @@ def listed(rows: pd.DataFrame, title: str, limit: int | None = None) -> list[str
     return lines
 
 
+def regulatory_betas(measured: pd.DataFrame, cycles: dict[str, RateCycle]) -> pd.DataFrame:
+    """Each reconciling group's cycle betas from its Call Reports, on both averages.
+
+    Only complete cycles with an error measured at both ends, so the two betas differ by
+    the averaging alone.
+    """
+    indexed = measured.set_index(["group_key", "quarter_end"])
+    rows: list[dict[str, object]] = []
+    for group_key in sorted(measured["group_key"].unique()):
+        for name, cycle in cycles.items():
+            ends = [(group_key, cycle.start), (group_key, cycle.end)]
+            if not all(end in indexed.index for end in ends):
+                continue
+            start, end = (indexed.loc[key] for key in ends)
+            endpoint = cumulative_beta(
+                start["endpoint_cost"], end["endpoint_cost"], cycle.start_rate, cycle.end_rate
+            )
+            reported = cumulative_beta(
+                cost_on_reported_average(start["endpoint_cost"], start["averaging_error"]),
+                cost_on_reported_average(end["endpoint_cost"], end["averaging_error"]),
+                cycle.start_rate,
+                cycle.end_rate,
+            )
+            if endpoint is None or reported is None:
+                continue
+            rows.append(
+                {
+                    "group_key": group_key,
+                    "group_name": start["group_name"],
+                    "cycle": name,
+                    "endpoint_beta": endpoint,
+                    "reported_beta": reported,
+                    "stepped_endpoint": bool(start["stepped"] or end["stepped"]),
+                }
+            )
+    betas = pd.DataFrame(rows)
+    betas["difference"] = betas["reported_beta"] - betas["endpoint_beta"]
+    return betas
+
+
+def beta_effect(betas: pd.DataFrame) -> list[str]:
+    lines = [
+        "Call Report cycle betas on the endpoint average and on the reported average",
+        f"{'':<14}{'groups':>7} {'median |diff|':>14} {'p90 |diff|':>11} {'max |diff|':>11} "
+        f"{'Spearman':>9}",
+    ]
+    for cycle, rows in betas.groupby("cycle", sort=False):
+        difference = rows["difference"].abs()
+        lines.append(
+            f"{cycle!s:<14}{len(rows):>7} {difference.median():>14.3f} "
+            f"{difference.quantile(0.9):>11.3f} {difference.max():>11.3f} "
+            f"{spearman(list(rows['endpoint_beta']), list(rows['reported_beta'])):>+9.3f}"
+        )
+    lines += ["", "Betas moving by 0.02 or more, the scale 0032 treats as material:"]
+    moved = betas[betas["difference"].abs() >= 0.02].sort_values("difference", key=abs)
+    for _, row in moved.iloc[::-1].iterrows():
+        lines.append(
+            f"  {row['group_name'][:36]:<36} {row['cycle']:<12} {row['endpoint_beta']:.3f} "
+            f"to {row['reported_beta']:.3f}"
+            + ("  (an endpoint stepped by a tenth)" if row["stepped_endpoint"] else "")
+        )
+    if moved.empty:
+        lines.append("  none")
+    return lines
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--database", type=Path, default=DATABASE_PATH)
@@ -198,6 +267,8 @@ def main(argv: list[str] | None = None) -> int:
     acquisitions = on_basis[on_basis["material_event"]]
     measured = on_basis[~on_basis["material_event"]]
 
+    betas = regulatory_betas(measured, cycles)
+
     sections = [
         bases(frame),
         distribution(measured),
@@ -211,11 +282,15 @@ def main(argv: list[str] | None = None) -> int:
             "Quarters where the base stepped by a tenth or more, summarised above:",
         ),
         listed(acquisitions, "Quarters of a material acquisition, not summarised:"),
+        beta_effect(betas),
     ]
     report = "\n\n".join("\n".join(section) for section in sections)
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     frame.drop(columns=["group_name"]).to_csv(args.output_dir / "averaging_error.csv", index=False)
+    betas.drop(columns=["group_name"]).to_csv(
+        args.output_dir / "averaging_error_betas.csv", index=False
+    )
     (args.output_dir / "averaging_error.txt").write_text(report + "\n", encoding="utf-8")
     print(report)
     return 0

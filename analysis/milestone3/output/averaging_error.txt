@@ -86,3 +86,17 @@ Quarters of a material acquisition, not summarised:
   Valley National Bancorp              2022-06-30 interest_bearing  step  +17.1% err   -3.4% cost   +1.1bp
   Webster Financial Corporation        2022-03-31 interest_bearing  step  +78.3% err   -8.2% cost   +0.8bp
   Huntington Bancshares Inc            2016-09-30 nontransaction    step  +36.4% err   -0.9% cost   +0.2bp
+
+Call Report cycle betas on the endpoint average and on the reported average
+               groups  median |diff|  p90 |diff|  max |diff|  Spearman
+calibration        29          0.004       0.026       0.079    +0.996
+test               29          0.003       0.011       0.023    +0.998
+
+Betas moving by 0.02 or more, the scale 0032 treats as material:
+  American Express Company             calibration  0.762 to 0.683  (an endpoint stepped by a tenth)
+  Zions Bancorporation, N.A.           calibration  0.221 to 0.273  (an endpoint stepped by a tenth)
+  Flagstar Bank, National Association  calibration  0.243 to 0.213
+  Northern Trust Corporation           calibration  0.293 to 0.318
+  HSBC Holdings plc                    calibration  0.501 to 0.524
+  The Goldman Sachs Group, Inc.        test         0.742 to 0.765
+  First Republic Bank                  calibration  0.282 to 0.303
