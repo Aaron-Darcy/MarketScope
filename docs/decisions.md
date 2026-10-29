@@ -1690,3 +1690,48 @@ RC-K total and up to 37 percent at the 90th percentile, and the error measured i
 to apply to them. A recurring quarter-end
 effect larger than 2 percent at a group would also leave it unreconciled, so the error
 measured on the 32 is a lower bound for any group where one exists.
+
+---
+
+## 0040 — Keep endpoint averaging in the metric and report the measured error beside it
+
+**Date** 2026-10-29
+**Status** Accepted. Closes the open item of 0011 and 0035. Corrects a figure in 0039.
+
+**Context.** 0011 adopted endpoint averaging for every denominator and required its error
+to be measured against regulatory averages. Measured at the 32 groups whose Call Report
+averages reconcile (0039), across 870 group-quarters without a material acquisition, the
+endpoint cost of deposits differs from the cost on the reported average by 0.63 basis points
+at the median and 4.28 at the 90th percentile. Recomputed on reported averages, Call Report
+cycle betas move by 0.004 and 0.003 at the median and order the groups as before. Restating
+the headline endpoints that can be restated moves the pre-registered correlation from +0.590
+to +0.617, inside its interval. The largest cost gaps are not averaging: Comerica's 2023Q1
+is a change in how it reported swept balances and Zions's 2015Q4 a merger of its charters
+into the certificate its group is keyed on. First Republic's 2023Q1, its run, is: the
+endpoint average understates that quarter's balance by 11 percent.
+
+0039 said JPMorgan Chase Bank's 2023Q4 savings average exceeded its whole quarter-end
+interest-bearing domestic base. It does not: the savings average is $1,305bn and the base
+$1,392bn. Its domestic RC-K averages in total, $1,898bn, exceed the base, which is the
+point 0039 was making. Nothing in 0039's rule or counts depends on the figure.
+
+**Decision.** The metric keeps endpoint averaging, with `avg_method` on every row as before.
+The measured error is reported in methodology 7.6 and the restated headline is reported
+beside the pre-registered one as a diagnostic.
+
+**Alternatives.** Restate each cost of deposits on its group's reported average inside the
+metric. That would put a figure from a second source into the one implementation 0024
+keeps, for 32 of 51 members and only in the 28 quarters the archives hold, so the metric
+would change basis between members and between quarters of one member; and 0034 fixed the
+headline before it was computed. Replace the metric's denominator with RC-K wherever it is
+available. RC-K is an institution's figure and the filing a holding company's, and on most
+groups it averages a base that includes non-interest-bearing savings, which is the
+comparability problem 0012 exists to avoid.
+
+**Consequences.** The open item of 0011 is closed with a measured answer: endpoint
+averaging is not where the metric's error lies. The tag mapping's error in 7.4 is larger at
+the median and at the 90th percentile. The error is unmeasured at the 11 groups that
+reconcile on neither basis, four of them headline filers, and a recurring quarter-end effect
+larger than the 2 percent tolerance would place a group among them, so the measurement
+describes the 32 groups it covers and not the 11. A scheduled refresh cannot reproduce it
+without the archives (0038).

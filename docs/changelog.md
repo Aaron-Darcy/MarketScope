@@ -44,6 +44,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Methodology section 7.6 records the averaging error, its method and its limits, and
+  sections 4.5, 9 and 10 no longer call it unmeasured. Endpoint averaging stays in the
+  metric (decision 0040). Section 10 carries a new finding: Zions's regulatory group is
+  keyed on the certificate its affiliate banks merged into on 31 December 2015, so its
+  Call Report figures to 2015Q4 cover Zions First National Bank alone. The README states the measured
+  error rather than its absence.
 - Methodology statements the validation work had overtaken are corrected: 6.1 no longer says
   the tag mapping's error is unmeasured, 8.4 gives the derived-quarter test's current count
   of 7 rather than 11, and section 9 describes the group aggregation as done. The README
