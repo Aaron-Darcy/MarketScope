@@ -145,6 +145,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- The error of endpoint averaging, measured against Call Report quarterly averages at the
+  32 groups whose averages reconcile (`analysis/milestone3/averaging_error.py`). Across 870
+  group-quarters without a material acquisition the endpoint cost of deposits differs from
+  the cost on the reported average by 0.6 basis points at the median and 4.3 at the 90th
+  percentile; 19 quarters differ by more than 10, and the largest, Comerica's 2023Q1, is a
+  change in how it reported swept balances rather than averaging.
 - `int_regulatory_average_balances`: the endpoint-averaging error of 1,179 group-quarters
   across the 43 regulatory groups, 880 of them at the 32 groups whose averages reconcile
   on a basis. Tests require one row per group-quarter and an error exactly where a basis
