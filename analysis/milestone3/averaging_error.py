@@ -30,7 +30,7 @@ import duckdb
 import pandas as pd
 
 from marketscope import store
-from marketscope.averaging import cost_on_reported_average
+from marketscope.averaging import RECONCILIATION_TOLERANCE, cost_on_reported_average
 from marketscope.cycles import RateCycle, read_study_cycles
 from marketscope.metrics import cumulative_beta
 from marketscope.persistence import CALIBRATION, HEADLINE, TEST, assess_pairs, eligible, read_filers
@@ -243,35 +243,53 @@ def beta_effect(betas: pd.DataFrame) -> list[str]:
     return lines
 
 
-def read_headline(connection: duckdb.DuckDBPyConnection) -> pd.DataFrame:
-    """The headline sample's beta endpoints, with the group each filer maps to."""
+def read_endpoints(connection: duckdb.DuckDBPyConnection) -> pd.DataFrame:
+    """Every measured beta's endpoints, how each was averaged, and the filer's group."""
     sample = {filer.cik for filer in read_filers(connection) if eligible(filer, HEADLINE)}
     groups = {cik: key for key, cik in mapped_registrants().items()}
     frame = connection.execute(
         """
-        select cik, registrant_name, cycle_name, start_quarter, measured_end_quarter,
-            start_cost_of_deposits, end_cost_of_deposits, start_rate_fraction,
-            end_rate_fraction, deposit_beta
-        from fct_deposit_beta
-        order by cik, cycle_name
+        select
+            betas.cik,
+            betas.registrant_name,
+            betas.cycle_name,
+            betas.start_quarter,
+            betas.measured_end_quarter,
+            betas.start_cost_of_deposits,
+            betas.end_cost_of_deposits,
+            betas.start_rate_fraction,
+            betas.end_rate_fraction,
+            betas.deposit_beta,
+            starts.avg_method as start_avg_method,
+            ends.avg_method as end_avg_method
+        from fct_deposit_beta as betas
+        join int_deposit_cost as starts
+          on starts.cik = betas.cik
+         and starts.quarter_end = betas.start_quarter
+        join int_deposit_cost as ends
+          on ends.cik = betas.cik
+         and ends.quarter_end = betas.measured_end_quarter
+        where betas.deposit_beta is not null
+        order by betas.cik, betas.cycle_name
         """
     ).df()
-    frame = frame[frame["cik"].isin(sample)].copy()
     for column in ("start_quarter", "measured_end_quarter"):
         frame[column] = frame[column].dt.date
     frame["group_key"] = frame["cik"].map(groups)
+    frame["headline"] = frame["cik"].isin(sample)
     return frame
 
 
 def restated_cost(
-    measured: pd.DataFrame, group_key: object, quarter: date, cost: float
+    measured: pd.DataFrame, group_key: object, quarter: date, cost: float, avg_method: str
 ) -> tuple[float, str]:
-    """An XBRL endpoint cost restated by its group's averaging error, and why if it is not.
+    """An XBRL endpoint cost restated by its group's error, and why if it is not.
 
-    The error is measured on the group's Call Reports and applied to the holding company's
-    filing, which assumes the two bases moved alike within the quarter. Quarters where the
-    group's base stepped by a tenth are left as measured, since the step need not be one
-    the filing shares.
+    A cost averaged from two quarter ends is restated by the endpoint error and one taken on
+    the closing balance alone by the closing-only error. The error is measured on the
+    group's Call Reports and applied to the holding company's filing, which assumes the two
+    bases moved alike within the quarter. Quarters where the group's base stepped by a tenth
+    are left as measured, since the step need not be one the filing shares.
     """
     if not isinstance(group_key, str):
         return cost, "no regulatory group"
@@ -281,48 +299,58 @@ def restated_cost(
     row = rows.iloc[0]
     if row["stepped"]:
         return cost, "base stepped by a tenth"
+    if avg_method == "closing_only":
+        return cost_on_reported_average(cost, row["closing_only_error"]), "restated, closing only"
     return cost_on_reported_average(cost, row["averaging_error"]), "restated"
 
 
-def headline(measured: pd.DataFrame, endpoints: pd.DataFrame) -> list[str]:
-    """The pre-registered headline with every restatable endpoint restated. A diagnostic,
-    not a variant: specification 6.1 fixes the headline on the metric as built."""
+def restate(measured: pd.DataFrame, endpoints: pd.DataFrame) -> tuple[pd.Series, dict[str, int]]:
+    """Every endpoint's beta restated where its group allows, with a count of outcomes."""
     outcomes: dict[str, int] = {}
-    restated: dict[tuple[int, str], float] = {}
+    betas: list[float] = []
     for _, row in endpoints.iterrows():
         start, start_outcome = restated_cost(
-            measured, row["group_key"], row["start_quarter"], row["start_cost_of_deposits"]
+            measured,
+            row["group_key"],
+            row["start_quarter"],
+            row["start_cost_of_deposits"],
+            row["start_avg_method"],
         )
         end, end_outcome = restated_cost(
-            measured, row["group_key"], row["measured_end_quarter"], row["end_cost_of_deposits"]
+            measured,
+            row["group_key"],
+            row["measured_end_quarter"],
+            row["end_cost_of_deposits"],
+            row["end_avg_method"],
         )
         for outcome in (start_outcome, end_outcome):
             outcomes[outcome] = outcomes.get(outcome, 0) + 1
         beta = cumulative_beta(start, end, row["start_rate_fraction"], row["end_rate_fraction"])
         if beta is None:
             raise ValueError(f"{row['registrant_name']} has no restated {row['cycle_name']} beta")
-        restated[(row["cik"], row["cycle_name"])] = beta
+        betas.append(beta)
+    return pd.Series(betas, index=endpoints.index), outcomes
 
-    names = dict(zip(endpoints["cik"], endpoints["registrant_name"], strict=False))
-    measured_betas = {
-        (row["cik"], row["cycle_name"]): row["deposit_beta"] for _, row in endpoints.iterrows()
-    }
-    ciks = sorted(names)
-    pairs = {
-        label: (
-            [betas[(cik, CALIBRATION)] for cik in ciks],
-            [betas[(cik, TEST)] for cik in ciks],
-        )
-        for label, betas in (("as measured", measured_betas), ("restated", restated))
-    }
+
+def paired(endpoints: pd.DataFrame, betas: pd.Series) -> tuple[list[float], list[float]]:
+    """Calibration and test betas in the same filer order."""
+    frame = endpoints.assign(beta=betas).pivot(index="cik", columns="cycle_name", values="beta")
+    return list(frame[CALIBRATION]), list(frame[TEST])
+
+
+def headline(measured: pd.DataFrame, endpoints: pd.DataFrame) -> list[str]:
+    """The pre-registered headline with every restatable endpoint restated. A diagnostic,
+    not a variant: specification 6.1 fixes the headline on the metric as built."""
+    sample = endpoints[endpoints["headline"]]
+    restated, outcomes = restate(measured, sample)
 
     lines = [
         "The headline on reported averages, as a diagnostic (specification 6.1 is unchanged)",
-        f"  {len(ciks)} filers, {sum(outcomes.values())} beta endpoints: "
+        f"  {sample['cik'].nunique()} filers, {sum(outcomes.values())} beta endpoints: "
         + ", ".join(f"{count} {outcome}" for outcome, count in sorted(outcomes.items())),
     ]
-    for label, (calibration, test) in pairs.items():
-        result = assess_pairs(calibration, test)
+    for label, betas in (("as measured", sample["deposit_beta"]), ("restated", restated)):
+        result = assess_pairs(*paired(sample, betas))
         lines.append(
             f"  {label:<12} Spearman {result.spearman:+.3f}, p {result.p_value:.4f}, "
             f"95% interval {result.interval.low:+.3f} to {result.interval.high:+.3f}"
@@ -332,16 +360,92 @@ def headline(measured: pd.DataFrame, endpoints: pd.DataFrame) -> list[str]:
         "",
         "  Headline betas moving by 0.02 or more, with rank of the sample before and after:",
     ]
-    for cycle, position in ((CALIBRATION, 0), (TEST, 1)):
-        before = average_ranks(pairs["as measured"][position])
-        after = average_ranks(pairs["restated"][position])
-        for index, cik in enumerate(ciks):
-            difference = restated[(cik, cycle)] - measured_betas[(cik, cycle)]
-            if abs(difference) >= 0.02:
+    for cycle in (CALIBRATION, TEST):
+        rows = sample["cycle_name"] == cycle
+        before = average_ranks(list(sample.loc[rows, "deposit_beta"]))
+        after = average_ranks(list(restated[rows]))
+        cycle_betas = zip(list(restated[rows]), sample[rows].iterrows(), strict=True)
+        for index, (beta, (_, row)) in enumerate(cycle_betas):
+            if abs(beta - row["deposit_beta"]) >= 0.02:
                 lines.append(
-                    f"  {names[cik][:32]:<32} {cycle:<12} {measured_betas[(cik, cycle)]:.3f} to "
-                    f"{restated[(cik, cycle)]:.3f}, rank {before[index]:g} to {after[index]:g}"
+                    f"  {row['registrant_name'][:32]:<32} {cycle:<12} "
+                    f"{row['deposit_beta']:.3f} to {beta:.3f}, "
+                    f"rank {before[index]:g} to {after[index]:g}"
                 )
+    return lines
+
+
+def closing_only(measured: pd.DataFrame, endpoints: pd.DataFrame) -> list[str]:
+    """Betas with an endpoint taken on the closing balance alone, which section 10 of the
+    methodology carries as unmeasured."""
+    rows = endpoints[
+        (endpoints["start_avg_method"] == "closing_only")
+        | (endpoints["end_avg_method"] == "closing_only")
+    ]
+    restated, _ = restate(measured, rows)
+    lines = ["Betas with a closing-only endpoint, restated on the reported average:"]
+    for beta, (_, row) in zip(list(restated), rows.iterrows(), strict=True):
+        quarter = (
+            row["start_quarter"]
+            if row["start_avg_method"] == "closing_only"
+            else row["measured_end_quarter"]
+        )
+        error = measured[
+            (measured["group_key"] == row["group_key"]) & (measured["quarter_end"] == quarter)
+        ]["closing_only_error"]
+        measured_error = (
+            f"closing balance {error.iloc[0] * PERCENT:+.1f}% against the average"
+            if not error.empty
+            else "group not measured"
+        )
+        lines.append(
+            f"  {row['registrant_name'][:32]:<32} {row['cycle_name']:<12} {quarter} "
+            f"{measured_error}; beta {row['deposit_beta']:.3f} to {beta:.3f}"
+            + ("  (headline)" if row["headline"] else "")
+        )
+    return lines
+
+
+def admitted(frame: pd.DataFrame, tolerance: float) -> pd.DataFrame:
+    """The measured quarters with unreconciled groups admitted on their closer basis.
+
+    For the sensitivity decision 0039 promises, not the result. The quarter-end balances
+    of an admitted group's basis are not carried, so its quarters cannot be checked for a
+    step and none is treated as one.
+    """
+    medians = frame.groupby("group_key")[["interest_bearing_gap", "nontransaction_gap"]].median()
+    loosened = frame[~frame["material_event"]].copy()
+    for group_key, gaps in medians.iterrows():
+        rows = (loosened["group_key"] == group_key) & loosened["basis"].isna()
+        closer = str(gaps.abs().idxmin())
+        if not rows.any() or abs(gaps[closer]) > tolerance:
+            continue
+        loosened.loc[rows, "basis"] = closer.removesuffix("_gap")
+        loosened.loc[rows, "averaging_error"] = loosened.loc[rows, closer]
+        loosened.loc[rows, "stepped"] = False
+    loosened = loosened[loosened["basis"].notna()].copy()
+    loosened["cost_error_bp"] = (
+        -loosened["averaging_error"] * loosened["endpoint_cost"] * BASIS_POINTS
+    )
+    return loosened
+
+
+def sensitivity(frame: pd.DataFrame, endpoints: pd.DataFrame) -> list[str]:
+    sample = endpoints[endpoints["headline"]]
+    lines = [
+        "Sensitivity to the reconciliation tolerance of decision 0039",
+        f"{'tolerance':<11}{'groups':>7}{'quarters':>9} {'|bp|':>6} {'p90 bp':>7} "
+        f"{'restated headline':>18}",
+    ]
+    for tolerance in (RECONCILIATION_TOLERANCE, 0.03, 0.05):
+        loosened = admitted(frame, tolerance)
+        restated, _ = restate(loosened, sample)
+        result = assess_pairs(*paired(sample, restated))
+        cost = loosened["cost_error_bp"].abs()
+        lines.append(
+            f"{tolerance:<11.0%}{loosened['group_key'].nunique():>7}{len(loosened):>9} "
+            f"{cost.median():>6.2f} {cost.quantile(0.9):>7.2f} {result.spearman:>+18.3f}"
+        )
     return lines
 
 
@@ -357,7 +461,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         frame = read_errors(connection)
         cycles = read_study_cycles(connection)
-        endpoints = read_headline(connection)
+        endpoints = read_endpoints(connection)
     finally:
         connection.close()
 
@@ -388,6 +492,8 @@ def main(argv: list[str] | None = None) -> int:
         listed(acquisitions, "Quarters of a material acquisition, not summarised:"),
         beta_effect(betas),
         headline(measured, endpoints),
+        closing_only(measured, endpoints),
+        sensitivity(frame, endpoints),
     ]
     report = "\n\n".join("\n".join(section) for section in sections)
 

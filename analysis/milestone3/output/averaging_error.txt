@@ -102,7 +102,7 @@ Betas moving by 0.02 or more, the scale 0032 treats as material:
   First Republic Bank                  calibration  0.282 to 0.303
 
 The headline on reported averages, as a diagnostic (specification 6.1 is unchanged)
-  22 filers, 88 beta endpoints: 3 base stepped by a tenth, 17 group not measured, 4 no regulatory group, 64 restated
+  22 filers, 88 beta endpoints: 3 base stepped by a tenth, 17 group not measured, 4 no regulatory group, 63 restated, 1 restated, closing only
   as measured  Spearman +0.590, p 0.0020, 95% interval +0.154 to +0.836
   restated     Spearman +0.617, p 0.0012, 95% interval +0.224 to +0.839
 
@@ -110,3 +110,14 @@ The headline on reported averages, as a diagnostic (specification 6.1 is unchang
   AMERICAN EXPRESS CO              calibration  0.528 to 0.459, rank 22 to 20
   NORTHERN TRUST CORP              calibration  0.283 to 0.307, rank 8 to 9
   HSBC USA INC /MD/                calibration  0.513 to 0.534, rank 21 to 22
+
+Betas with a closing-only endpoint, restated on the reported average:
+  Santander Holdings USA, Inc.     calibration  2015-12-31 group not measured; beta 0.240 to 0.240  (headline)
+  FLAGSTAR BANK, NATIONAL ASSOCIAT test         2022-03-31 closing balance +1.9% against the average; beta 0.647 to 0.653
+  Discover Financial Services      calibration  2015-12-31 closing balance +1.3% against the average; beta 0.415 to 0.408  (headline)
+
+Sensitivity to the reconciliation tolerance of decision 0039
+tolerance   groups quarters   |bp|  p90 bp  restated headline
+2%              32      870   0.63    4.28             +0.617
+3%              36      969   0.68    4.27             +0.617
+5%              38     1025   0.73    4.33             +0.622

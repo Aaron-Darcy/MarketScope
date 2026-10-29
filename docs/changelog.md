@@ -145,6 +145,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- The three betas with a closing-only endpoint, measured: Discover's 2015Q4 closing
+  balance is 1.3 percent above its Call Report average and Flagstar's 2022Q1 1.9 percent,
+  moving their betas by 0.007 and 0.006. Santander's group does not reconcile and stays
+  unmeasured. The averaging error is reported at 3 and 5 percent reconciliation
+  tolerances beside the 2 percent of decision 0039; the restated headline is +0.617,
+  +0.617 and +0.622.
 - The headline restated on reported averages, as a diagnostic beside the pre-registered
   result: 64 of its 88 beta endpoints can be restated, and the Spearman correlation moves
   from +0.590 to +0.617, p 0.0012, interval +0.224 to +0.839. American Express's
