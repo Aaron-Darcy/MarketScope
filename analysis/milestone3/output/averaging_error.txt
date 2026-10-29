@@ -1,0 +1,123 @@
+Groups measured: 32 of 43
+  interest-bearing basis: 15
+  nontransaction basis:   17
+
+Groups reconciling on neither basis, median gap on each (decision 0039):
+  SVB Financial Group                        -78.3%    -2.0%  over 20 quarters
+  U.S. Bancorp                                +2.4%   +23.0%  over 28 quarters
+  First Citizens BancShares Inc              -27.8%    -2.5%  over 28 quarters
+  Citizens Financial Group Inc               -22.2%    -2.8%  over 27 quarters
+  Citigroup Inc                               -7.3%    -3.6%  over 28 quarters
+  United Services Automobile Association      +4.2%    +4.0%  over 28 quarters
+  State Street Corporation                    -7.0%    +5.9%  over 28 quarters
+  M&T Bank Corporation                       -26.8%    -6.0%  over 28 quarters
+  Banco Santander SA                         -12.9%    -8.5%  over 28 quarters
+  PNC Financial Services Group               -23.4%    -8.7%  over 28 quarters
+  First Horizon Corporation                  -19.2%    -9.1%  over 28 quarters
+
+Endpoint against reported average, on each group's reconciling basis, in quarters
+without a material acquisition
+  err: endpoint average over reported average, less one; positive overstates the base
+  bp: the endpoint cost of deposits less the cost on the reported average
+
+                      n  |err|%   p90 %  mean %    |bp|  p90 bp  max bp  >10bp
+all                 870    0.79    3.22   +0.22    0.63    4.28   132.1     19
+without a step      845    0.77    3.05   +0.17    0.62    3.96    18.4     13
+calibration cycle   442    0.85    3.58   -0.07    0.43    2.15    18.4      3
+test cycle          244    0.75    2.92   +0.65    0.83    5.38   132.1      7
+outside cycles      184    0.67    2.99   +0.35    1.63    6.54    15.6      9
+
+2015                 31    1.41    4.96   -2.36    0.34    1.22    11.4      1
+2016                126    0.73    3.70   -0.08    0.24    1.38     8.7      0
+2017                128    0.86    3.59   -0.18    0.30    1.55    10.7      1
+2018                127    0.84    2.27   +0.50    0.57    2.31     9.7      0
+2019                 94    1.09    4.74   +0.76    1.13    5.99    18.4      1
+2022                124    0.81    2.76   +0.43    0.31    1.58     7.4      0
+2023                120    0.72    2.95   +0.87    2.01    8.11   132.1      7
+2024                120    0.57    1.98   +0.02    1.83    7.05    15.6      9
+
+Largest cost differences in quarters without a step:
+  American Express Company             2019-03-31 interest_bearing  step   +7.0% err   -6.9% cost  +18.4bp
+  The Bank of New York Mellon Corporat 2023-09-30 interest_bearing  step   -4.0% err   +4.8% cost  -16.4bp
+  Northern Trust Corporation           2024-03-31 interest_bearing  step   +5.9% err   -4.2% cost  +15.6bp
+  The Bank of New York Mellon Corporat 2024-06-30 interest_bearing  step   -0.5% err   +4.1% cost  -14.8bp
+  The Goldman Sachs Group, Inc.        2024-03-31 interest_bearing  step   -0.4% err   -3.2% cost  +14.6bp
+  The Goldman Sachs Group, Inc.        2023-12-31 interest_bearing  step   +1.8% err   +3.1% cost  -13.1bp
+  HSBC Holdings plc                    2024-12-31 nontransaction    step   +4.5% err   -3.3% cost  +12.7bp
+  Wintrust Financial Corporation       2024-03-31 interest_bearing  step   +4.5% err   +3.3% cost  -11.2bp
+  The Bank of New York Mellon Corporat 2024-03-31 interest_bearing  step   +8.9% err   +3.0% cost  -10.9bp
+  East West Bancorp, Inc.              2017-03-31 nontransaction    step   +1.0% err  +22.3% cost  -10.7bp
+
+Quarters where the base stepped by a tenth or more, summarised above:
+  Comerica Incorporated                2023-03-31 nontransaction    step  -61.1% err  +83.4% cost -132.1bp
+  Flagstar Bank, National Association  2023-06-30 nontransaction    step  -26.9% err  +16.1% cost  -46.9bp
+  First Republic Bank                  2023-03-31 nontransaction    step  -40.7% err  -11.4% cost  +27.3bp
+  Western Alliance Bancorporation      2023-03-31 nontransaction    step  -16.5% err   -4.9% cost  +14.0bp
+  Zions Bancorporation, N.A.           2015-12-31 interest_bearing  step +171.8% err  -47.2% cost  +11.4bp
+  Zions Bancorporation, N.A.           2023-06-30 interest_bearing  step  +19.6% err   +5.3% cost  -11.3bp
+  Flagstar Bank, National Association  2019-06-30 nontransaction    step  +12.2% err   -5.9% cost   +8.6bp
+  The Goldman Sachs Group, Inc.        2016-06-30 interest_bearing  step  +22.5% err   -9.3% cost   +7.9bp
+  Comerica Incorporated                2023-06-30 nontransaction    step  +19.0% err   -2.9% cost   +7.2bp
+  Signature Bank                       2022-12-31 nontransaction    step  -13.0% err   -1.9% cost   +5.9bp
+  American Express Company             2017-06-30 interest_bearing  step  +15.5% err   -3.6% cost   +4.7bp
+  Flagstar Bank, National Association  2018-09-30 nontransaction    step  +12.1% err   -2.1% cost   +2.7bp
+  Flagstar Bank, National Association  2019-09-30 nontransaction    step  +10.3% err   -1.7% cost   +2.7bp
+  Valley National Bancorp              2022-12-31 interest_bearing  step  +11.0% err   +1.3% cost   -2.7bp
+  The Bank of New York Mellon Corporat 2019-06-30 interest_bearing  step  +17.9% err   +1.4% cost   -1.5bp
+  Capital One Financial Corp           2022-12-31 nontransaction    step  -15.7% err  +14.0% cost   -1.1bp
+  KeyCorp                              2022-06-30 nontransaction    step  -64.2% err  +11.4% cost   -0.9bp
+  American Express Company             2015-12-31 interest_bearing  step  +15.6% err   -0.7% cost   +0.7bp
+  Valley National Bancorp              2018-12-31 interest_bearing  step  +11.1% err   -0.4% cost   +0.6bp
+  The Charles Schwab Corporation       2023-03-31 interest_bearing  step  -11.2% err   +0.6% cost   -0.4bp
+  Raymond James Financial, Inc.        2015-12-31 interest_bearing  step  +10.3% err   +5.4% cost   -0.4bp
+  The Charles Schwab Corporation       2018-03-31 interest_bearing  step  +12.1% err   +1.2% cost   -0.2bp
+  Valley National Bancorp              2015-12-31 interest_bearing  step  +15.3% err   +0.3% cost   -0.2bp
+  The Charles Schwab Corporation       2022-09-30 interest_bearing  step  -10.4% err   -0.5% cost   +0.1bp
+  HSBC Holdings plc                    2022-03-31 nontransaction    step  -12.1% err   -0.1% cost   +0.0bp
+
+Quarters of a material acquisition, not summarised:
+  Flagstar Bank, National Association  2022-12-31 nontransaction    step +309.6% err  -31.2% cost  +76.9bp
+  Flagstar Bank, National Association  2023-03-31 nontransaction    step  +81.7% err  +16.1% cost  -33.6bp
+  Synovus Financial Corp.              2019-03-31 nontransaction    step  +44.5% err  -15.0% cost  +21.9bp
+  Valley National Bancorp              2018-03-31 interest_bearing  step  +22.5% err   -8.8% cost   +9.0bp
+  Fifth Third Bancorp                  2019-03-31 nontransaction    step  +15.3% err   -5.3% cost   +5.1bp
+  Raymond James Financial, Inc.        2022-06-30 interest_bearing  step  +41.4% err  -11.5% cost   +3.8bp
+  KeyCorp                              2016-09-30 nontransaction    step  +40.8% err   -9.3% cost   +2.9bp
+  Valley National Bancorp              2022-06-30 interest_bearing  step  +17.1% err   -3.4% cost   +1.1bp
+  Webster Financial Corporation        2022-03-31 interest_bearing  step  +78.3% err   -8.2% cost   +0.8bp
+  Huntington Bancshares Inc            2016-09-30 nontransaction    step  +36.4% err   -0.9% cost   +0.2bp
+
+Call Report cycle betas on the endpoint average and on the reported average
+               groups  median |diff|  p90 |diff|  max |diff|  Spearman
+calibration        29          0.004       0.026       0.079    +0.996
+test               29          0.003       0.011       0.023    +0.998
+
+Betas moving by 0.02 or more, the scale 0032 treats as material:
+  American Express Company             calibration  0.762 to 0.683  (an endpoint stepped by a tenth)
+  Zions Bancorporation, N.A.           calibration  0.221 to 0.273  (an endpoint stepped by a tenth)
+  Flagstar Bank, National Association  calibration  0.243 to 0.213
+  Northern Trust Corporation           calibration  0.293 to 0.318
+  HSBC Holdings plc                    calibration  0.501 to 0.524
+  The Goldman Sachs Group, Inc.        test         0.742 to 0.765
+  First Republic Bank                  calibration  0.282 to 0.303
+
+The headline on reported averages, as a diagnostic (specification 6.1 is unchanged)
+  22 filers, 88 beta endpoints: 3 base stepped by a tenth, 17 group not measured, 4 no regulatory group, 63 restated, 1 restated, closing only
+  as measured  Spearman +0.590, p 0.0020, 95% interval +0.154 to +0.836
+  restated     Spearman +0.617, p 0.0012, 95% interval +0.224 to +0.839
+
+  Headline betas moving by 0.02 or more, with rank of the sample before and after:
+  AMERICAN EXPRESS CO              calibration  0.528 to 0.459, rank 22 to 20
+  NORTHERN TRUST CORP              calibration  0.283 to 0.307, rank 8 to 9
+  HSBC USA INC /MD/                calibration  0.513 to 0.534, rank 21 to 22
+
+Betas with a closing-only endpoint, restated on the reported average:
+  Santander Holdings USA, Inc.     calibration  2015-12-31 group not measured; beta 0.240 to 0.240  (headline)
+  FLAGSTAR BANK, NATIONAL ASSOCIAT test         2022-03-31 closing balance +1.9% against the average; beta 0.647 to 0.653
+  Discover Financial Services      calibration  2015-12-31 closing balance +1.3% against the average; beta 0.415 to 0.408  (headline)
+
+Sensitivity to the reconciliation tolerance of decision 0039
+tolerance   groups quarters   |bp|  p90 bp  restated headline
+2%              32      870   0.63    4.28             +0.617
+3%              36      969   0.68    4.27             +0.617
+5%              38     1025   0.73    4.33             +0.622

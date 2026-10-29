@@ -44,6 +44,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Methodology section 7.6 records the averaging error, its method and its limits, and
+  sections 4.5, 9 and 10 no longer call it unmeasured. Endpoint averaging stays in the
+  metric (decision 0040). Section 10 carries a new finding: Zions's regulatory group is
+  keyed on the certificate its affiliate banks merged into on 31 December 2015, so its
+  Call Report figures to 2015Q4 cover Zions First National Bank alone. The README states the measured
+  error rather than its absence.
 - Methodology statements the validation work had overtaken are corrected: 6.1 no longer says
   the tag mapping's error is unmeasured, 8.4 gives the derived-quarter test's current count
   of 7 rather than 11, and section 9 describes the group aggregation as done. The README
@@ -145,6 +151,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- The three betas with a closing-only endpoint, measured: Discover's 2015Q4 closing
+  balance is 1.3 percent above its Call Report average and Flagstar's 2022Q1 1.9 percent,
+  moving their betas by 0.007 and 0.006. Santander's group does not reconcile and stays
+  unmeasured. The averaging error is reported at 3 and 5 percent reconciliation
+  tolerances beside the 2 percent of decision 0039; the restated headline is +0.617,
+  +0.617 and +0.622.
+- The headline restated on reported averages, as a diagnostic beside the pre-registered
+  result: 64 of its 88 beta endpoints can be restated, and the Spearman correlation moves
+  from +0.590 to +0.617, p 0.0012, interval +0.224 to +0.839. American Express's
+  calibration beta moves most, from 0.528 to 0.459. The headline is unchanged.
+- Call Report cycle betas for the 29 reconciling groups with both endpoints measured,
+  restated on reported averages. The median beta moves by 0.004 in the calibration cycle
+  and 0.003 in the test cycle, and the restated betas order the groups as the endpoint
+  betas do (Spearman +0.996 and +0.998). Seven move by 0.02 or more, American Express's
+  calibration beta most, from 0.762 to 0.683.
+- The error of endpoint averaging, measured against Call Report quarterly averages at the
+  32 groups whose averages reconcile (`analysis/milestone3/averaging_error.py`). Across 870
+  group-quarters without a material acquisition the endpoint cost of deposits differs from
+  the cost on the reported average by 0.6 basis points at the median and 4.3 at the 90th
+  percentile; 19 quarters differ by more than 10, and the largest, Comerica's 2023Q1, is a
+  change in how it reported swept balances rather than averaging.
 - `int_regulatory_average_balances`: the endpoint-averaging error of 1,179 group-quarters
   across the 43 regulatory groups, 880 of them at the 32 groups whose averages reconcile
   on a basis. Tests require one row per group-quarter and an error exactly where a basis

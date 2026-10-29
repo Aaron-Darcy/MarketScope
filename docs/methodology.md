@@ -8,12 +8,13 @@ made. This document says how, in enough detail to reproduce every figure from a 
 checkout. Decisions are cited by number, for example (0021), and specification sections as
 "specification 3.1".
 
-**State at writing, 14 October 2026: Milestone 3 in progress.** Everything up to
+**State at writing, 29 October 2026: Milestone 3 in progress.** Everything up to
 `fct_deposit_beta` is built and tested, with the table of revisions, the entity events and
 their materiality, and the member dimension. The pre-registered persistence result, its
 robustness variants and the survivorship comparison are computed (section 6.1), and the
-metric is validated against Call Reports (sections 7.4 and 7.5). The error of endpoint
-averaging is not measured, and flags on individual bank-quarters move to Milestone 4 (0033).
+metric is validated against Call Reports (sections 7.4 and 7.5), including the error of
+endpoint averaging (section 7.6). Flags on individual bank-quarters move to Milestone 4
+(0033).
 Each section says which parts are in force and which are still to be built. A planned
 control is never written up as a working one.
 
@@ -342,9 +343,10 @@ with `avg_method = 'endpoint'`.
 - Where the previous quarter cannot be resolved on that base, the closing balance is used
   alone and the row carries `avg_method = 'closing_only'`. There are 179 such rows.
 - Endpoint averaging errs most when balances move sharply within a quarter, which is
-  exactly the condition under study in 2023. Measuring it needs the quarterly average
-  balances in the FFIEC's bulk Call Report files, which the FDIC API does not publish, and
-  it has not been measured (section 9).
+  exactly the condition under study in 2023. Measured against Call Report quarterly
+  averages at 32 regulatory groups, it moves the cost of deposits by 0.6 basis points at the
+  median and 4.3 at the 90th percentile, and the headline by less than its interval
+  (section 7.6). The metric keeps endpoint averaging (0040).
 
 For a time this averaging was not actually happening. Until Milestone 2,
 `previous_quarter_end` returned its own argument, so every "average" averaged the closing
@@ -735,6 +737,133 @@ regulatory table. This is a check on the source of the figures and does not repl
 headline, which specification 6.1 fixes. It shows the persistence is a property of the banks'
 reported deposit costs and not of how their filings are tagged.
 
+### 7.6 Endpoint averaging against Call Report averages
+
+Every denominator is the mean of two quarter-end balances (4.5). Schedule RC-K of the Call
+Report reports quarterly averages, and the FFIEC's bulk archives carry it for every filer
+(0038), so the error of that approximation can be measured at the regulatory groups of 7.4.
+Reproduce with `python analysis/milestone3/averaging_error.py`, after loading the archives
+(section 1.1).
+
+**What RC-K averages.** RC-K does not report average interest-bearing deposits as such. It
+averages interest-bearing transaction accounts, savings and time deposits, and
+interest-bearing deposits in foreign offices, and its savings and time deposits are every
+nontransaction account, interest-bearing or not. Banks that sweep demand balances into
+savings for reserve purposes report the swept balances inconsistently. JPMorgan Chase
+Bank's 2023Q4 savings average of $1,305bn matches its quarter-end savings on RC-E, and its
+domestic RC-K averages total $1,898bn against quarter-end interest-bearing domestic deposits
+of $1,392bn. Zions's 2016Q4
+savings average of $18.2bn is less than half its RC-E savings of $44.1bn. Neither RC-K total
+is the base the metric divides by at every bank.
+
+**Two bases, chosen per group (0039).** Each group is measured on one of two bases on which
+RC-K and a quarter-end schedule share a definition: the whole RC-K total against RC's
+interest-bearing deposits, or RC-K's nontransaction and foreign-office averages against
+RC-E's nontransaction accounts and RC's foreign-office interest-bearing deposits. A basis is
+chosen where the median gap between endpoint and reported average across the group's
+quarters is within 2 percent, the base tolerance of 0027, and the interest-bearing basis is
+preferred. A definition holds in every quarter and moves the median; averaging error varies
+from quarter to quarter and largely does not.
+
+32 of the 43 groups reconcile, 15 on the interest-bearing basis and 17 on the
+nontransaction basis. Eleven reconcile on neither and are not measured:
+
+| Group | Interest-bearing | Nontransaction |
+|---|---|---|
+| SVB Financial Group | −78.3% | −2.0% |
+| U.S. Bancorp | +2.4% | +23.0% |
+| First Citizens BancShares | −27.8% | −2.5% |
+| Citizens Financial Group | −22.2% | −2.8% |
+| Citigroup | −7.3% | −3.6% |
+| USAA | +4.2% | +4.0% |
+| State Street | −7.0% | +5.9% |
+| M&T Bank | −26.8% | −6.0% |
+| Santander | −12.9% | −8.5% |
+| PNC Financial Services | −23.4% | −8.7% |
+| First Horizon | −19.2% | −9.1% |
+
+Median gap of endpoint over reported average, less one, across each group's quarters.
+
+**The cost of deposits.** The expense is the same either way, so a cost restated on the
+reported average is the endpoint cost times one plus the error. Across the 870
+group-quarters without a material acquisition:
+
+| | Group-quarters | Median error | 90th percentile | Median cost gap | 90th percentile | Above 10bp |
+|---|---|---|---|---|---|---|
+| All | 870 | 0.79% | 3.22% | 0.63bp | 4.28bp | 19 |
+| Calibration cycle | 442 | 0.85% | 3.58% | 0.43bp | 2.15bp | 3 |
+| Test cycle | 244 | 0.75% | 2.92% | 0.83bp | 5.38bp | 7 |
+| Outside the cycles | 184 | 0.67% | 2.99% | 1.63bp | 6.54bp | 9 |
+
+Errors in balance are no larger in the test cycle than in the calibration cycle. Costs are,
+because the same proportional error is a larger cost gap at a 3 percent cost of deposits
+than at 0.3. The error has no material sign: its mean is +0.22 percent.
+
+**Quarters where the base stepped by a tenth.** 25 quarters moved the group's quarter-end
+base on its basis by a tenth or more, the deposit step 0032 makes material. They are kept
+in the figures above and listed by the script, because a step can be what averaging misses
+or something else entirely. The four largest cost gaps among them:
+
+- **Comerica 2023Q1, −132bp.** Not averaging. Its RC-E nontransaction accounts fell from
+  $62.2bn to $24.1bn that quarter while its interest-bearing deposits did not move,
+  consistent with ending the reclassification of swept balances into savings, so its two
+  quarter ends are on different definitions. Its quarters before and after reconcile
+  normally.
+- **Flagstar 2023Q2, −47bp.** The quarter after New York Community's bank took on Signature
+  Bank's deposits on 20 March 2023. The base fell 27 percent from that quarter end, within the
+  quarter, which is what an endpoint average misses.
+- **First Republic 2023Q1, +27bp.** Its run. Deposits fell 41 percent between the year end
+  and 31 March, most of it in the last three weeks, so the endpoint average understates the
+  quarter's balance by 11 percent and overstates the cost.
+- **Zions 2015Q4, +11bp.** Not averaging. Zions merged its affiliate banks into Zions First
+  National Bank on 31 December 2015, and its group is keyed on that bank's certificate, so at
+  2015Q3 the group holds only that one bank, $15.8bn of a $48.9bn holding company. Every
+  regulatory figure for Zions to 2015Q4 has the same fault, including its 7.4 comparison and
+  its 7.5 calibration start (section 10).
+
+The three quarters in which a group's filer completed a material acquisition, Flagstar's
+2022Q4 and 2023Q1 and Synovus's 2019Q1, are listed and not summarised: the reported average
+straddles the completion, which is the entity event of 8.3 rather than averaging.
+
+**Betas.** A level error common to both ends of a cycle cancels in a beta. Recomputed on the
+reported average at 29 groups a cycle with both endpoints measured, Call Report betas move by
+0.004 at the median in the calibration cycle and 0.003 in the test cycle, at most 0.079 and
+0.023, and order the groups as before (Spearman +0.996 and +0.998). Seven move by 0.02 or
+more, American Express's calibration beta most, from 0.762 to 0.683.
+
+**The headline on reported averages, a diagnostic.** Each headline endpoint whose group was
+measured in that quarter is restated by its group's error, and a closing-only endpoint by
+the closing-only error, assuming the holding company's base moved within the quarter as its
+banks' did. 64 of the 88 endpoints are restated. Of the rest, 16 belong to State Street,
+PNC, Santander and Citigroup, whose groups do not reconcile; 4 to Cullen/Frost, which has
+no regulatory group; 3 fall in quarters where the base stepped, Zions's and American
+Express's 2015Q4 and HSBC's 2022Q1; and Synchrony's 2015Q4 is the first quarter its group
+holds, with no quarter end before it. The correlation moves from +0.590 to
++0.617 (one-sided p 0.0012; 95 percent interval +0.224 to +0.839). Three betas move by 0.02
+or more: American Express's calibration beta from 0.528 to 0.459, rank 22 to 20, Northern
+Trust's from 0.283 to 0.307 and HSBC's from 0.513 to 0.534. The headline is unchanged
+(0040).
+
+**Sensitivity to the tolerance.** At 3 percent four more groups are admitted on their closer
+basis and at 5 percent six, Citigroup among them. The median cost gap is 0.63, 0.68 and
+0.73bp, and the restated headline +0.617, +0.617 and +0.622.
+
+**Limits.**
+
+- On the nontransaction basis interest-bearing transaction accounts are not measured. They
+  are a median of 8 percent of a group's RC-K total and 37 percent at the 90th percentile,
+  and the error measured is assumed to apply to them.
+- A quarter-end effect that recurs every quarter, such as balances leaving at each quarter
+  end and returning, moves the median gap. Larger than 2 percent, it leaves the group
+  unreconciled; smaller, it is part of the error measured. The 11 groups not measured may
+  include such effects, so the figures above describe the 32 that reconcile.
+- The archives held cover 2015Q3 to 2019Q3 and 2021Q4 to 2024Q4. Nothing between the cycles
+  is measured, and the error at 2015Q3 and 2021Q4 cannot be, since the quarter before each is
+  not held.
+- RC-K is an institution's figure. The holding company's filing includes balances at
+  subsidiaries that file no Call Report, and their movement within the quarter is not
+  measured (7.4).
+
 ---
 
 ## 8. Data problems
@@ -1040,15 +1169,17 @@ quarterly expense is its own differencing of the year-to-date Call Report, so no
 derived here. An institution with no foreign offices has a null foreign expense, which adds
 nothing.
 
-**Not measurable from this source: averaging error.** BankFind does not publish the Call
-Report's quarterly average balances, so the error of endpoint averaging (4.5) cannot be
-measured against it. It needs the FFIEC's bulk Call Report files.
+**Built: the averaging error.** BankFind does not publish the Call Report's quarterly
+average balances. The FFIEC's bulk archives do, read from disk (0038), and
+`int_regulatory_average_balances` sets each group's endpoint average against them on the
+basis its averages reconcile to (0039). The result is in section 7.6.
 
 **Measured: the tag mapping's error**, in section 7.4, with each disagreement above 10
 basis points at the median traced to its cause, and **how much of the dispersion across
 banks is reporting difference**, in section 7.5.
 
-Still unknown: the size of the endpoint-averaging error, especially in 2023.
+Still unknown: the averaging error at the 11 groups whose Call Report averages reconcile on
+neither basis, and between the cycles, where no archive is held.
 
 FDIC data is per insured bank and SEC data is per holding company. The CERTs of each group
 are aggregated to the holding company, groups of a single institution are reported apart,
@@ -1134,9 +1265,12 @@ case so far has been one.
 
 Three betas have a `closing_only` endpoint: Santander and Discover in the calibration cycle
 (2015Q4) and Flagstar in the test cycle (2022Q1). Taking the closing balance alone errs
-where the balance moved within the quarter. Its size has not been measured for these three.
+where the balance moved within the quarter. Against Call Report averages, Discover's closing
+balance is 1.3 percent above its quarter's average and Flagstar's 1.9 percent, which move
+their betas by 0.007 and 0.006 (7.6). Santander's group does not reconcile, and its error is
+not measured.
 
-**Carried without a test.** Three findings have no warn-severity test to catch them.
+**Carried without a test.** Four findings have no warn-severity test to catch them.
 
 - 167 bank-quarters rest on an interest-bearing base that cannot be reconciled to total
   deposits, because the filer tags no total or no complete non-interest-bearing figure
@@ -1148,6 +1282,12 @@ where the balance moved within the quarter. Its size has not been measured for t
 - Raymond James's 2023Q1 deposit expense is a 2025 filing's figure for 2024Q1, reported
   against the wrong quarter and accepted by the precedence rule (section 8.5, 0030). It is
   not a beta endpoint.
+- Zions's regulatory group is keyed on the certificate of Zions First National Bank, into
+  which its affiliate banks merged on 31 December 2015. To 2015Q3 the group holds that bank
+  alone, $15.8bn of the holding company's $48.9bn of deposits, so every Call Report figure
+  for Zions to 2015Q4 covers a different entity from its filing: its 7.4 comparison, its
+  7.5 calibration start and its averaging error at 2015Q4 (7.6). The calibration start is a
+  beta endpoint in 7.5 only; the headline beta is measured on the filing.
 - Eight derived fourth quarters at five filers take a restated year and an unrestated nine
   months, and are off by a basis point or more (section 8.4, 0037). Columbia Banking's
   2021Q4 is the largest at 98 basis points; Citigroup's 2020Q4, also in the table above, is
@@ -1176,13 +1316,14 @@ python analysis/milestone3/error_attribution.py    # section 7.5
 python analysis/milestone3/disagreement_diagnosis.py  # section 7.4, the four disagreements
 python analysis/milestone3/foreign_deposits.py     # section 6.1, the custody-bank deviators
 python analysis/milestone3/restatement_basis_audit.py  # section 8.4, restated years
+python analysis/milestone3/averaging_error.py      # section 7.6, needs the FFIEC archives
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 
 `dbt build` currently reports two warnings, from the cost and derived-quarter tests in
 section 10. The beta range test is also warn-severity and currently passes.
 Outputs are written to each script's `output/` directory. Every figure in this document was
-read from those outputs or from the warehouse after the build above, between 4 and 27
+read from those outputs or from the warehouse after the build above, between 4 and 29
 October 2026. The SEC filings and the rate series were loaded on 9 September 2026 and the
 Call Report figures in October 2026.
 Because EDGAR data is live, a later load can differ wherever a filer has restated.

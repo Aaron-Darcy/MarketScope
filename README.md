@@ -41,9 +41,10 @@ EDGAR-only sample must, slightly understates it. The four filers that disagree w
 Call Reports by more than 10 basis points are traced to a cause each: consolidation scope at
 Capital One, American Express and Morgan Stanley, and at Citigroup deposit insurance
 assessments booked as deposit interest until 2021, which moves the headline by 0.01 when
-removed. The error of endpoint averaging is not yet
-measured, because the regulatory source the project reaches does not publish quarterly
-average balances. See [docs/methodology.md](docs/methodology.md) sections 6.1 and 7 and
+removed. Endpoint averaging, used because no filer tags an average deposit balance, is
+measured against the Call Reports' own quarterly averages: it moves the cost of deposits by
+0.6 basis points at the median, and restated on reported averages the headline correlation
+is +0.62. See [docs/methodology.md](docs/methodology.md) sections 6.1 and 7 and
 [docs/specification.md](docs/specification.md).
 
 ---
@@ -65,8 +66,9 @@ work:
   deposits divided by total deposits is not the same measure as one divided by average
   interest-bearing deposits. Metrics are therefore assigned a comparability tier and never
   silently mixed.
-- **Average balances are frequently untagged.** Where they are unavailable, endpoint
-  averaging is used and the row is marked accordingly.
+- **Average balances are untagged.** No filer tags one, so every denominator averages two
+  quarter ends and the row is marked accordingly. The error this introduces is measured
+  against Call Report averages rather than assumed small.
 - **Fourth-quarter flows usually have to be derived** as the fiscal year less the first
   three quarters, since most filers do not file a fourth 10-Q.
 - **Failed banks stop filing.** Silicon Valley Bank leaves the data after 2022 and PacWest
@@ -141,7 +143,10 @@ The SEC rejects requests without one and limits callers to ten requests per seco
 constraints are enforced in `marketscope.ingestion.http`.
 
 Load the committed universe, its filings, the rate series and the Call Report deposit
-figures used for validation into DuckDB:
+figures used for validation into DuckDB. The FFIEC's bulk Call Report archives, which
+measure the averaging error, cannot be fetched by the pipeline and are read from
+`data/raw/ffiec/` once downloaded by hand; methodology section 1.1 lists the quarters.
+`--skip-ffiec` loads everything else without them:
 
 ```
 python -m marketscope.pipeline
