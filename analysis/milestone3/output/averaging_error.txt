@@ -100,3 +100,13 @@ Betas moving by 0.02 or more, the scale 0032 treats as material:
   HSBC Holdings plc                    calibration  0.501 to 0.524
   The Goldman Sachs Group, Inc.        test         0.742 to 0.765
   First Republic Bank                  calibration  0.282 to 0.303
+
+The headline on reported averages, as a diagnostic (specification 6.1 is unchanged)
+  22 filers, 88 beta endpoints: 3 base stepped by a tenth, 17 group not measured, 4 no regulatory group, 64 restated
+  as measured  Spearman +0.590, p 0.0020, 95% interval +0.154 to +0.836
+  restated     Spearman +0.617, p 0.0012, 95% interval +0.224 to +0.839
+
+  Headline betas moving by 0.02 or more, with rank of the sample before and after:
+  AMERICAN EXPRESS CO              calibration  0.528 to 0.459, rank 22 to 20
+  NORTHERN TRUST CORP              calibration  0.283 to 0.307, rank 8 to 9
+  HSBC USA INC /MD/                calibration  0.513 to 0.534, rank 21 to 22

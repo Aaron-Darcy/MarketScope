@@ -145,6 +145,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- The headline restated on reported averages, as a diagnostic beside the pre-registered
+  result: 64 of its 88 beta endpoints can be restated, and the Spearman correlation moves
+  from +0.590 to +0.617, p 0.0012, interval +0.224 to +0.839. American Express's
+  calibration beta moves most, from 0.528 to 0.459. The headline is unchanged.
 - Call Report cycle betas for the 29 reconciling groups with both endpoints measured,
   restated on reported averages. The median beta moves by 0.004 in the calibration cycle
   and 0.003 in the test cycle, and the restated betas order the groups as the endpoint

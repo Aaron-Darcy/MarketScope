@@ -33,8 +33,9 @@ from marketscope import store
 from marketscope.averaging import cost_on_reported_average
 from marketscope.cycles import RateCycle, read_study_cycles
 from marketscope.metrics import cumulative_beta
-from marketscope.ranking import spearman
-from marketscope.regulatory import REFERENCE_MAP
+from marketscope.persistence import CALIBRATION, HEADLINE, TEST, assess_pairs, eligible, read_filers
+from marketscope.ranking import average_ranks, spearman
+from marketscope.regulatory import REFERENCE_MAP, mapped_registrants
 from marketscope.store import DATABASE_PATH
 
 logger = logging.getLogger(__name__)
@@ -242,6 +243,108 @@ def beta_effect(betas: pd.DataFrame) -> list[str]:
     return lines
 
 
+def read_headline(connection: duckdb.DuckDBPyConnection) -> pd.DataFrame:
+    """The headline sample's beta endpoints, with the group each filer maps to."""
+    sample = {filer.cik for filer in read_filers(connection) if eligible(filer, HEADLINE)}
+    groups = {cik: key for key, cik in mapped_registrants().items()}
+    frame = connection.execute(
+        """
+        select cik, registrant_name, cycle_name, start_quarter, measured_end_quarter,
+            start_cost_of_deposits, end_cost_of_deposits, start_rate_fraction,
+            end_rate_fraction, deposit_beta
+        from fct_deposit_beta
+        order by cik, cycle_name
+        """
+    ).df()
+    frame = frame[frame["cik"].isin(sample)].copy()
+    for column in ("start_quarter", "measured_end_quarter"):
+        frame[column] = frame[column].dt.date
+    frame["group_key"] = frame["cik"].map(groups)
+    return frame
+
+
+def restated_cost(
+    measured: pd.DataFrame, group_key: object, quarter: date, cost: float
+) -> tuple[float, str]:
+    """An XBRL endpoint cost restated by its group's averaging error, and why if it is not.
+
+    The error is measured on the group's Call Reports and applied to the holding company's
+    filing, which assumes the two bases moved alike within the quarter. Quarters where the
+    group's base stepped by a tenth are left as measured, since the step need not be one
+    the filing shares.
+    """
+    if not isinstance(group_key, str):
+        return cost, "no regulatory group"
+    rows = measured[(measured["group_key"] == group_key) & (measured["quarter_end"] == quarter)]
+    if rows.empty:
+        return cost, "group not measured"
+    row = rows.iloc[0]
+    if row["stepped"]:
+        return cost, "base stepped by a tenth"
+    return cost_on_reported_average(cost, row["averaging_error"]), "restated"
+
+
+def headline(measured: pd.DataFrame, endpoints: pd.DataFrame) -> list[str]:
+    """The pre-registered headline with every restatable endpoint restated. A diagnostic,
+    not a variant: specification 6.1 fixes the headline on the metric as built."""
+    outcomes: dict[str, int] = {}
+    restated: dict[tuple[int, str], float] = {}
+    for _, row in endpoints.iterrows():
+        start, start_outcome = restated_cost(
+            measured, row["group_key"], row["start_quarter"], row["start_cost_of_deposits"]
+        )
+        end, end_outcome = restated_cost(
+            measured, row["group_key"], row["measured_end_quarter"], row["end_cost_of_deposits"]
+        )
+        for outcome in (start_outcome, end_outcome):
+            outcomes[outcome] = outcomes.get(outcome, 0) + 1
+        beta = cumulative_beta(start, end, row["start_rate_fraction"], row["end_rate_fraction"])
+        if beta is None:
+            raise ValueError(f"{row['registrant_name']} has no restated {row['cycle_name']} beta")
+        restated[(row["cik"], row["cycle_name"])] = beta
+
+    names = dict(zip(endpoints["cik"], endpoints["registrant_name"], strict=False))
+    measured_betas = {
+        (row["cik"], row["cycle_name"]): row["deposit_beta"] for _, row in endpoints.iterrows()
+    }
+    ciks = sorted(names)
+    pairs = {
+        label: (
+            [betas[(cik, CALIBRATION)] for cik in ciks],
+            [betas[(cik, TEST)] for cik in ciks],
+        )
+        for label, betas in (("as measured", measured_betas), ("restated", restated))
+    }
+
+    lines = [
+        "The headline on reported averages, as a diagnostic (specification 6.1 is unchanged)",
+        f"  {len(ciks)} filers, {sum(outcomes.values())} beta endpoints: "
+        + ", ".join(f"{count} {outcome}" for outcome, count in sorted(outcomes.items())),
+    ]
+    for label, (calibration, test) in pairs.items():
+        result = assess_pairs(calibration, test)
+        lines.append(
+            f"  {label:<12} Spearman {result.spearman:+.3f}, p {result.p_value:.4f}, "
+            f"95% interval {result.interval.low:+.3f} to {result.interval.high:+.3f}"
+        )
+
+    lines += [
+        "",
+        "  Headline betas moving by 0.02 or more, with rank of the sample before and after:",
+    ]
+    for cycle, position in ((CALIBRATION, 0), (TEST, 1)):
+        before = average_ranks(pairs["as measured"][position])
+        after = average_ranks(pairs["restated"][position])
+        for index, cik in enumerate(ciks):
+            difference = restated[(cik, cycle)] - measured_betas[(cik, cycle)]
+            if abs(difference) >= 0.02:
+                lines.append(
+                    f"  {names[cik][:32]:<32} {cycle:<12} {measured_betas[(cik, cycle)]:.3f} to "
+                    f"{restated[(cik, cycle)]:.3f}, rank {before[index]:g} to {after[index]:g}"
+                )
+    return lines
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--database", type=Path, default=DATABASE_PATH)
@@ -254,6 +357,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         frame = read_errors(connection)
         cycles = read_study_cycles(connection)
+        endpoints = read_headline(connection)
     finally:
         connection.close()
 
@@ -283,6 +387,7 @@ def main(argv: list[str] | None = None) -> int:
         ),
         listed(acquisitions, "Quarters of a material acquisition, not summarised:"),
         beta_effect(betas),
+        headline(measured, endpoints),
     ]
     report = "\n\n".join("\n".join(section) for section in sections)
 
