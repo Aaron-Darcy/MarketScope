@@ -15,8 +15,8 @@ project measures deposit beta for US bank holding companies directly from XBRL f
 data, calibrates it over the 2015–2019 tightening cycle, and tests whether the resulting
 cross-bank ordering holds during the far faster 2022–2023 cycle.
 
-**Status: Milestone 3 — cycles, persistence and validation.** Milestone 2 closed on 9
-October 2026. Cost of deposits is resolved for 3,066 bank-quarters across the largest fifty
+**Status: Milestone 3 closed on 30 October 2026; Milestone 4, the site, is next.** Cost of
+deposits is resolved for 3,066 bank-quarters across the largest fifty
 deposit-taking US filers and one pinned terminal filer, each at a stated comparability tier,
 and `fct_deposit_beta` carries a tiered beta for every member in both study cycles, with a
 flag where a material acquisition changed the deposit base inside the cycle. Every revision

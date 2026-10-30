@@ -1735,3 +1735,54 @@ reconcile on neither basis, four of them headline filers, and a recurring quarte
 larger than the 2 percent tolerance would place a group among them, so the measurement
 describes the 32 groups it covers and not the 11. A scheduled refresh cannot reproduce it
 without the archives (0038).
+
+---
+
+## 0041 — Close Milestone 3
+
+**Date** 2026-10-30
+**Status** Accepted
+
+**Context.** Milestone 3 exits when the headline figure exists and is defensible. It exists:
+the correlation between calibration and test betas across the 22 filers of the pre-registered
+sample is +0.590, one-sided p 0.002, 95 percent interval +0.154 to +0.836, computed once on a
+plan fixed before it (0034). The case for it being defensible rests on five checks, each made
+after the plan and none able to change the headline:
+
+- the four pre-registered variants, +0.534 to +0.629;
+- survivorship: adding SVB, and First Republic and Signature recovered from Call Reports,
+  +0.640 across 25 filers;
+- the tag mapping against Call Reports, 1.1 basis points at the median at tier 1, with the
+  four filers above 10 traced to a cause each (0035, 0036);
+- the headline recomputed on Call Report betas, +0.601 (methodology 7.5);
+- the error of endpoint averaging, 0.6 basis points at the median, and the headline on
+  reported averages, +0.617 (0040).
+
+Specification 6 also asks for a stated hypothesis for each material deviator. Each of the
+three has one. State Street's was tested after the fact and failed, and it has no supported
+one.
+
+**Decision.** Milestone 3 is closed. The work it leaves open is carried, not finished:
+
+- State Street's and Zions's moves between cycles, without a supported hypothesis;
+- the consistent-basis fourth-quarter derivation 0037 declined, and the audit of balance
+  steps between restated year-ends and unrestated quarter-ends;
+- the unexplained deposit steps of methodology 8.3;
+- the averaging error at the 11 groups that reconcile on neither basis (0039);
+- Zions's regulatory group, which before 2016 holds one of its banks (methodology 10).
+
+USAA is the third institution specification 4 said would be recovered from regulatory
+data. Its Call Reports are loaded and enter the validation tables, but it enters no result:
+it did not fail, so it is not part of the survivorship question, and 0034 names only First
+Republic and Signature.
+
+**Alternatives.** Hold the milestone open until State Street's deviation is explained.
+Specification 6 asks for a hypothesis to be stated, not confirmed, and a hypothesis found
+after the result and then confirmed would carry little weight. Add USAA to the universe on
+its Call Reports. That would make one member's every figure regulatory, against
+specification 1, for an institution outside the question.
+
+**Consequences.** Milestone 4 can start: the site's overview, bank explorer and comparison
+pages, and `fct_bank_quarter` with the bank-quarter event flags 0033 moved to it. The open
+items above are listed in methodology sections 6.1, 8 and 10, which a reader of the site's
+methodology page will reach.

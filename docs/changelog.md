@@ -44,6 +44,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- Milestone 3 is closed (decision 0041). The specification's milestone table records
+  the result and the checks behind it, and section 4 records that USAA's Call Reports
+  are loaded but enter no result. Methodology statements that still described the
+  survivorship comparison and the partial-cycle exclusion as unbuilt, and the
+  deviators' hypotheses as all untested, are corrected.
 - Methodology section 7.6 records the averaging error, its method and its limits, and
   sections 4.5, 9 and 10 no longer call it unmeasured. Endpoint averaging stays in the
   metric (decision 0040). Section 10 carries a new finding: Zions's regulatory group is
