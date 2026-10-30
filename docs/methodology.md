@@ -8,7 +8,7 @@ made. This document says how, in enough detail to reproduce every figure from a 
 checkout. Decisions are cited by number, for example (0021), and specification sections as
 "specification 3.1".
 
-**State at writing, 29 October 2026: Milestone 3 in progress.** Everything up to
+**State at writing, 30 October 2026: Milestone 3 closed (0041).** Everything up to
 `fct_deposit_beta` is built and tested, with the table of revisions, the entity events and
 their materiality, and the member dimension. The pre-registered persistence result, its
 robustness variants and the survivorship comparison are computed (section 6.1), and the
@@ -148,8 +148,9 @@ would have reported no gap at all.
 The result: 40 of the 50 are in EDGAR. Of the 10 that are not, 3 have no registered
 securities (First Republic, USAA, Signature) and 7 are US operations of foreign banking
 organisations. The 7 are outside the project's scope; they are not US bank holding
-companies. The 3 are a coverage failure, and they are to be recovered from regulatory data
-at Milestone 3. Reproduce with `python analysis/universe/reference_audit.py`.
+companies. The 3 are a coverage failure. First Republic and Signature, which failed, are
+recovered from their Call Reports into the survivorship comparison (section 6.1). USAA's
+Call Reports are loaded but it enters no result, since it did not fail (0041). Reproduce with `python analysis/universe/reference_audit.py`.
 
 ---
 
@@ -486,7 +487,8 @@ beta with slope 0.723, intercept 0.348 and R² 0.357. The median beta rose from 
 levels are not compared.
 
 **Material deviators.** Three filers are two or more quartiles apart between the cycles.
-Every hypothesis below was formed after the result was seen, and none has been tested.
+Every hypothesis below was formed after the result was seen. Only State Street's has been
+tested, after the fact, and it failed.
 
 - **State Street**, 0.190 to 0.660, quartile 1 to 3. A beta is measured against the federal
   funds rate, and a custody bank holds a large share of its deposits in other currencies. In
@@ -898,8 +900,9 @@ exit or failure event in `entity_events`, which a dbt test enforces (section 8.3
 
 Eight of the eleven left before the end of the test cycle and three after it.
 
-**Not yet built.** The headline full-sample versus survivors-only comparison has not been
-computed, because there is no headline result yet.
+**Built: the comparison.** The headline sample is survivors-only by construction. R4 adds
+SVB on its shortened test cycle, and First Republic and Signature recovered from Call
+Reports, and moves the correlation from +0.590 to +0.640 (section 6.1).
 
 **Recovered from regulatory data.** First Republic and Signature, the two institutions
 where the effect under study was most acute, are not in EDGAR at all (section 2.3). Their
@@ -920,8 +923,9 @@ beta at an earlier date.
 **Limitation.** A partial-cycle beta is not comparable with full-cycle betas. Deposit
 costs lag the policy rate, so a beta measured over the first three quarters of a cycle
 understates where it would have ended. These rows must be excluded from any calculation
-that needs a complete cycle. That exclusion will be applied in the Milestone 3 analysis and
-is not yet tested anywhere.
+that needs a complete cycle. The persistence analysis applies that exclusion: a partial
+cycle enters only R4, and only as a terminal filer's test cycle, and
+`tests/test_persistence.py` tests both rules.
 
 ### 8.3 Entity continuity
 

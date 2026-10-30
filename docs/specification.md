@@ -218,8 +218,10 @@ The driver is registered securities, not corporate structure: Zions Bancorporati
 dissolved its holding company in 2018, files as the bank itself, and is fully covered. The
 7 foreign banking organisations are a scope boundary rather than a coverage failure — they
 are not US bank holding companies and file FR Y-9C rather than 10-K — and are not
-recovered. The 3 without registered securities are recovered from regulatory data at
-Milestone 3. Both counts are published on the data health page. See decision 0016.
+recovered. Of the 3 without registered securities, First Republic and Signature, which
+failed, are recovered from regulatory data into the survivorship comparison. USAA's Call
+Reports are loaded but it enters no result, since it did not fail (decision 0041). Both
+counts are published on the data health page. See decision 0016.
 
 **Partial-cycle coverage.** Terminal filers have filings through approximately fiscal 2022
 but not through the mid-2023 cycle peak. Their cumulative beta is computed to the last
@@ -434,7 +436,7 @@ Built with Evidence.dev, deployed as a static site at no running cost.
 | 0 | Feasibility profiling on the twelve-bank sample | Gate criteria in 9.1 all pass. **Passed** |
 | 1 | Hardened ingestion, DuckDB load, staging models | Full universe ingests reproducibly. **Passed:** 51 members, 1.81m facts, four staging models, 21 tests green |
 | 2 | Harmonisation, bank-quarter panel, restatement precedence, entity events, beta | `fct_deposit_beta` populated with tiers. **Passed:** 102 rows for 51 members across both cycles, 89 betas, each carrying both endpoint tiers and a flag for material entity events; 3,066 bank-quarters resolved; 48,206 revisions and 53 verified entity events recorded; 100 dbt tests, 2 warning by design. Bank-quarter event flags move to `fct_bank_quarter` at Milestone 4 (decision 0033) |
-| 3 | Cycles, rank persistence, survivorship sensitivity, regulatory validation | Headline figure exists and is defensible |
+| 3 | Cycles, rank persistence, survivorship sensitivity, regulatory validation | Headline figure exists and is defensible. **Passed:** Spearman +0.590 across 22 filers, p 0.002, on the plan pre-registered in 6.1; robustness variants +0.534 to +0.629; +0.640 with SVB, First Republic and Signature; tag mapping within 1.1bp of Call Reports at the median; endpoint averaging 0.6bp at the median, headline +0.617 on reported averages (decision 0041) |
 | 4 | Site: overview, bank explorer, comparison, primary case study; `fct_bank_quarter` with entity event flags | Deploys publicly |
 | 5 | Filing behaviour case study, data health page, dbt tests and docs | Tests green, coverage published |
 | 6 | Methodology, README, scheduled refresh | Unattended refresh runs green |
@@ -501,6 +503,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-10-30 | Milestone 3 closed: the headline is pre-registered, robust to its variants and to survivorship, and validated against Call Reports for both the tag mapping and endpoint averaging. Section 4 records that First Republic and Signature are recovered into the survivorship comparison and USAA enters no result. See decision 0041. |
 | 2026-10-28 | `stg_ffiec__deposit_balances` and `int_regulatory_average_balances` added to 7.1: Call Report quarterly averages from the FFIEC bulk archives, read from disk, against which endpoint averaging is measured on the basis each group's averages reconcile to. See decisions 0038 and 0039. |
 | 2026-10-13 | Regulatory cost of deposits built from FDIC Call Report figures with the XBRL metric's own arithmetic; `stg_fdic__financials` and `int_regulatory_deposit_cost` added to 7.1. The endpoint-averaging error is not measurable from this source. See decision 0035. |
 | 2026-10-10 | Section 6.1 added: the persistence analysis pre-registered before computation — sample rules, statistic, test, interval, interpretation and four robustness variants. See decision 0034. |
