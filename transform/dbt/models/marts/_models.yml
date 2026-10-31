@@ -124,3 +124,49 @@ models:
           - accepted_values:
               arguments:
                 values: [exit_merger, exit_deregistration, failure]
+
+  - name: fct_bank_quarter
+    description: >
+      One row per universe member and quarter end at which a cost of deposits or a deposit
+      balance resolves: the cost with its tier and provenance, the deposit base, the policy
+      rate, the study cycle the quarter falls in, and the entity event completing in the
+      quarter. The bank explorer reads it. Exits and failures complete in the quarter after
+      a member's last report, so they appear on dim_bank rather than here.
+    columns:
+      - name: cik
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_bank')
+                field: cik
+      - name: quarter_end
+        description: >
+          The end of the filer's fiscal quarter. Discover's quarters to 2012 and Goldman
+          Sachs's of 2009 end off the calendar quarter, 17 rows in all.
+        tests: [not_null]
+      - name: metric_tier
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["1", "2", "3", "X"]
+      - name: policy_rate_fraction
+        description: >
+          Quarterly average effective federal funds rate as a decimal fraction. Null for the
+          17 fiscal quarters that do not end on a calendar quarter end.
+      - name: cycle_name
+        description: The study cycle whose window holds the quarter, null outside both.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [calibration, test]
+      - name: event_type
+        tests:
+          - accepted_values:
+              arguments:
+                values: [acquisition, reverse_acquisition]
+      - name: material_event
+        description: >
+          Whether an acquisition that moved the deposit base by a tenth or more completed in
+          the quarter (decision 0032). False, not null, where none did.
+        tests: [not_null]
