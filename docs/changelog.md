@@ -156,6 +156,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Three tests on `fct_bank_quarter` from specification 7.2: no bank-quarter appears
+  twice, every terminal filer has a resolved cost in the last quarter it filed, and every
+  acquisition falls on a row and is flagged there with its materiality.
 - `fct_bank_quarter`: one row per member and quarter end at which a cost or a deposit
   balance resolves, 3,158 across the 51 members, with the cost, tier and provenance, the
   deposit base, the policy rate, the study cycle and the entity event of the quarter.
