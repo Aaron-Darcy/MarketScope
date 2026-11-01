@@ -170,3 +170,18 @@ models:
           Whether an acquisition that moved the deposit base by a tenth or more completed in
           the quarter (decision 0032). False, not null, where none did.
         tests: [not_null]
+      - name: regulatory_cost_of_deposits
+        description: >
+          The cost of deposits of the filer's regulatory group, from its insured
+          institutions' Call Reports by the metric's arithmetic. Null for a filer outside
+          the pinned regulatory table and for quarters before 2009.
+      - name: averaging_basis
+        description: The basis the group's Call Report averages reconcile to, where they do.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [interest_bearing, nontransaction]
+      - name: averaging_error
+        description: >
+          The group's endpoint average against its reported average, less one, on its
+          basis. Only in quarters the FFIEC archives hold, with the quarter before.

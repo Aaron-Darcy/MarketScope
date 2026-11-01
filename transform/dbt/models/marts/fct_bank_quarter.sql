@@ -7,6 +7,11 @@
 -- is untagged, and a cost can resolve on a closing balance the balance table does not carry
 -- for the quarter before. Specification 4 asks for the bank-quarters an entity event affects
 -- to be flagged, which decision 0033 moved here from Milestone 2.
+--
+-- The Call Report cost of deposits of the filer's regulatory group sits beside its own, so
+-- the bank explorer can show the measured agreement of 7.4 quarter by quarter, with the
+-- group's averaging error where its averages reconcile (decision 0039). Both are the
+-- group's figures, not the filer's, and differ from it by consolidation scope.
 
 {{ config(materialized='table') }}
 
@@ -49,7 +54,11 @@ select
     -- False rather than null where no acquisition completed, so a filter on the flag cannot
     -- drop the quarters it is meant to keep. An exit or failure is not an acquisition and
     -- has no materiality of its own.
-    coalesce(events.material, false) as material_event
+    coalesce(events.material, false) as material_event,
+    regulatory.cost_of_deposits as regulatory_cost_of_deposits,
+    regulatory.institutions as regulatory_institutions,
+    averages.basis as averaging_basis,
+    averages.averaging_error
 from keys
 left join {{ ref('int_deposit_cost') }} as costs
   on costs.cik = keys.cik
@@ -64,3 +73,9 @@ left join cycles
 left join {{ ref('bank_entity_events') }} as events
   on events.cik = keys.cik
  and events.event_quarter = keys.quarter_end
+left join {{ ref('int_regulatory_deposit_cost') }} as regulatory
+  on regulatory.cik = keys.cik
+ and regulatory.quarter_end = keys.quarter_end
+left join {{ ref('int_regulatory_average_balances') }} as averages
+  on averages.cik = keys.cik
+ and averages.quarter_end = keys.quarter_end

@@ -156,6 +156,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `fct_bank_quarter` carries the Call Report cost of deposits of each filer's regulatory
+  group, on 2,551 of its rows, and the group's averaging error on the 823 where its
+  averages reconcile and the archives hold the quarter, so the bank explorer can show
+  the validation of methodology 7.4 and 7.6 beside each filer's own series.
 - Three tests on `fct_bank_quarter` from specification 7.2: no bank-quarter appears
   twice, every terminal filer has a resolved cost in the last quarter it filed, and every
   acquisition falls on a row and is flagged there with its materiality.
