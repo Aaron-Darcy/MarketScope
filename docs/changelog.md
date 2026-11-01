@@ -156,6 +156,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `fct_bank_quarter` carries the Call Report cost of deposits of each filer's regulatory
+  group, on 2,551 of its rows, and the group's averaging error on the 823 where its
+  averages reconcile and the archives hold the quarter, so the bank explorer can show
+  the validation of methodology 7.4 and 7.6 beside each filer's own series.
+- Three tests on `fct_bank_quarter` from specification 7.2: no bank-quarter appears
+  twice, every terminal filer has a resolved cost in the last quarter it filed, and every
+  acquisition falls on a row and is flagged there with its materiality.
+- `fct_bank_quarter`: one row per member and quarter end at which a cost or a deposit
+  balance resolves, 3,158 across the 51 members, with the cost, tier and provenance, the
+  deposit base, the policy rate, the study cycle and the entity event of the quarter.
+  Every acquisition falls on a row; 38 are flagged material (decision 0033).
 - The three betas with a closing-only endpoint, measured: Discover's 2015Q4 closing
   balance is 1.3 percent above its Call Report average and Flagstar's 2022Q1 1.9 percent,
   moving their betas by 0.007 and 0.006. Santander's group does not reconcile and stays

@@ -13,8 +13,8 @@ checkout. Decisions are cited by number, for example (0021), and specification s
 their materiality, and the member dimension. The pre-registered persistence result, its
 robustness variants and the survivorship comparison are computed (section 6.1), and the
 metric is validated against Call Reports (sections 7.4 and 7.5), including the error of
-endpoint averaging (section 7.6). Flags on individual bank-quarters move to Milestone 4
-(0033).
+endpoint averaging (section 7.6). Milestone 4 has begun with `fct_bank_quarter`, which
+flags individual bank-quarters (section 8.3).
 Each section says which parts are in force and which are still to be built. A planned
 control is never written up as a working one.
 
@@ -1012,9 +1012,11 @@ comparative quarter's expense but not that quarter's balance sheet. Its test-cyc
 flagged. Its calibration-cycle beta measures Columbia before the merger, so any comparison of
 Columbia across the two cycles compares two different banks.
 
-**Moved to Milestone 4.** Individual bank-quarters are not flagged. The event quarter is
-on every row of `bank_entity_events`, and the flag belongs on `fct_bank_quarter`, which the
-site's bank explorer reads and which is built with it (0033).
+**Built: bank-quarter flags.** `fct_bank_quarter` carries the entity event completing in
+each bank-quarter and whether it was material, as specification 4 asks, moved there from
+Milestone 2 (0033). All 42 acquisitions fall on a row, 38 of them material. The 11 exits and
+failures complete in the quarter after the member's last report, which has no row, and are
+read from `dim_bank`.
 
 ### 8.4 Fourth-quarter derivation
 
