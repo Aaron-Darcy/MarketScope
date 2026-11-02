@@ -156,6 +156,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Four tests on the site marts: every headline filer has tier 1 coverage of at least 80
+  percent in each cycle, the remaining coverage test of specification 7.2; the comparison
+  mart's betas equal the fact table's; headline ranks form a complete set and no other
+  filer has one; and the overview counts every resolved bank-quarter once. dbt build: 181
+  pass, 2 warn by design.
 - `mart_bank_overview`, one row per member for the bank explorer: identity and exit,
   coverage by tier, each cycle's beta with its flags, and the median gap to the member's
   Call Reports over tier 1 quarters. Across the 35 members that have one, the median is
