@@ -44,6 +44,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- The README and methodology record Milestone 4 as in progress, with the tables the
+  site reads built and the site not. The specification marks the comparison mart as a
+  Python model (decision 0042). The methodology dates the FFIEC archives by the FFIEC's
+  publication rather than by a load.
 - Milestone 3 is closed (decision 0041). The specification's milestone table records
   the result and the checks behind it, and section 4 records that USAA's Call Reports
   are loaded but enter no result. Methodology statements that still described the

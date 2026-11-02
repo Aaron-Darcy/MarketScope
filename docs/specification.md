@@ -372,7 +372,7 @@ marts/
   fct_bank_quarter
   fct_deposit_beta
   mart_bank_overview
-  mart_cross_bank_comparison
+  mart_cross_bank_comparison (Python model)
   mart_filing_behaviour
   mart_data_quality
 ```
@@ -503,6 +503,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-11-02 | `mart_cross_bank_comparison` marked in 7.1 as a dbt Python model: it places members in the pre-registered samples through the persistence library rather than a second implementation of the rules in SQL. See decision 0042. |
 | 2026-10-30 | Milestone 3 closed: the headline is pre-registered, robust to its variants and to survivorship, and validated against Call Reports for both the tag mapping and endpoint averaging. Section 4 records that First Republic and Signature are recovered into the survivorship comparison and USAA enters no result. See decision 0041. |
 | 2026-10-28 | `stg_ffiec__deposit_balances` and `int_regulatory_average_balances` added to 7.1: Call Report quarterly averages from the FFIEC bulk archives, read from disk, against which endpoint averaging is measured on the basis each group's averages reconcile to. See decisions 0038 and 0039. |
 | 2026-10-13 | Regulatory cost of deposits built from FDIC Call Report figures with the XBRL metric's own arithmetic; `stg_fdic__financials` and `int_regulatory_deposit_cost` added to 7.1. The endpoint-averaging error is not measurable from this source. See decision 0035. |

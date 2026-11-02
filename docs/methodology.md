@@ -8,13 +8,14 @@ made. This document says how, in enough detail to reproduce every figure from a 
 checkout. Decisions are cited by number, for example (0021), and specification sections as
 "specification 3.1".
 
-**State at writing, 30 October 2026: Milestone 3 closed (0041).** Everything up to
-`fct_deposit_beta` is built and tested, with the table of revisions, the entity events and
+**State at writing, 2 November 2026: Milestone 4 in progress.** Milestone 3 closed on
+30 October (0041). Everything up to `fct_deposit_beta` is built and tested, with the table of revisions, the entity events and
 their materiality, and the member dimension. The pre-registered persistence result, its
 robustness variants and the survivorship comparison are computed (section 6.1), and the
 metric is validated against Call Reports (sections 7.4 and 7.5), including the error of
-endpoint averaging (section 7.6). Milestone 4 has begun with `fct_bank_quarter`, which
-flags individual bank-quarters (section 8.3).
+endpoint averaging (section 7.6). For the site, `fct_bank_quarter` flags individual
+bank-quarters (section 8.3), and the marts behind its first pages are built (section 11);
+the site itself is not.
 Each section says which parts are in force and which are still to be built. A planned
 control is never written up as a working one.
 
@@ -1326,10 +1327,16 @@ python analysis/milestone3/averaging_error.py      # section 7.6, needs the FFIE
 python analysis/universe/reference_audit.py        # section 2.3
 ```
 
+`dbt build` also builds what the site reads: `fct_bank_quarter`, `mart_bank_overview` and
+`mart_cross_bank_comparison`. The last places every member in the pre-registered samples
+through the persistence library, so its headline and variant flags, ranks and quartiles are
+those of section 6.1 (0042), and a test holds its betas to `fct_deposit_beta`.
+
 `dbt build` currently reports two warnings, from the cost and derived-quarter tests in
 section 10. The beta range test is also warn-severity and currently passes.
 Outputs are written to each script's `output/` directory. Every figure in this document was
 read from those outputs or from the warehouse after the build above, between 4 and 29
-October 2026. The SEC filings and the rate series were loaded on 9 September 2026 and the
-Call Report figures in October 2026.
+October 2026. The SEC filings and the rate series were loaded on 9 September 2026, the
+BankFind Call Report figures in October 2026, and the FFIEC archives are those the FFIEC
+published on 15 October 2026.
 Because EDGAR data is live, a later load can differ wherever a filer has restated.
