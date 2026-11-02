@@ -8,11 +8,13 @@ import pytest
 from marketscope.cycles import RateCycle
 from marketscope.persistence import (
     CALIBRATION,
+    COMPARISON_COLUMNS,
     HEADLINE,
     TEST,
     VARIANTS,
     CycleBeta,
     Filer,
+    comparison_frame,
     eligible,
     recovered_beta,
 )
@@ -161,3 +163,49 @@ def test_a_recovered_bank_below_the_coverage_floor_is_refused() -> None:
     )
 
     assert recovered_beta(costs, POLICY, CYCLES) is None
+
+
+def _ranked(
+    cik: int, calibration: float, test: float, *, rank: int | None = 10, acquired: bool = False
+) -> Filer:
+    filer = _filer(
+        rank=rank,
+        calibration=_cycle(beta=calibration, material_event=acquired),
+        test=_cycle(beta=test),
+    )
+    return replace(filer, cik=cik, registrant_name=f"Bank {cik}")
+
+
+def test_the_comparison_places_headline_filers_by_rank_and_quartile() -> None:
+    filers = [_ranked(cik, 0.1 * cik, 0.1 * cik) for cik in range(1, 5)]
+    filers[0] = _ranked(1, 0.1, 0.9)
+
+    frame = comparison_frame(filers).set_index("cik")
+
+    assert frame["calibration_rank"].tolist() == [1.0, 2.0, 3.0, 4.0]
+    assert frame["test_rank"].tolist() == [4.0, 1.0, 2.0, 3.0]
+    assert frame["quartile_shift"].tolist() == [3, -1, -1, -1]
+    assert frame["material_deviator"].tolist() == [True, False, False, False]
+
+
+def test_a_filer_outside_the_headline_has_no_place_in_it() -> None:
+    outside = _ranked(9, 0.5, 0.5, rank=None)
+    frame = comparison_frame([_ranked(1, 0.2, 0.3), _ranked(2, 0.4, 0.6), outside])
+
+    row = frame[frame["cik"] == 9].iloc[0]
+    assert not row["in_headline"]
+    assert frame[frame["cik"] == 9][["calibration_rank", "test_quartile"]].isna().all(axis=None)
+    assert row["calibration_beta"] == 0.5
+
+
+def test_each_variant_column_follows_the_variant_it_is_named_for() -> None:
+    acquirer = _ranked(3, 0.3, 0.3, acquired=True)
+    frame = comparison_frame([_ranked(1, 0.2, 0.3), _ranked(2, 0.4, 0.6), acquirer])
+
+    variant_columns = [column for column in COMPARISON_COLUMNS if column.startswith("in_r")]
+    assert variant_columns == [f"in_{key.lower()}" for key in VARIANTS]
+    row = frame[frame["cik"] == 3].iloc[0]
+    assert not row["in_headline"]
+    assert [bool(row[column]) for column in variant_columns] == [
+        eligible(acquirer, rules) for _, rules in VARIANTS.values()
+    ]

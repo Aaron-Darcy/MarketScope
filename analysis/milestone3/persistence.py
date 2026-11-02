@@ -24,6 +24,7 @@ from marketscope import store
 from marketscope.cycles import read_policy_rate, read_study_cycles
 from marketscope.persistence import (
     CALIBRATION,
+    DEVIATION,
     HEADLINE,
     PERMUTATIONS,
     RESAMPLES,
@@ -53,9 +54,6 @@ from marketscope.store import DATABASE_PATH
 logger = logging.getLogger(__name__)
 
 OUTPUT_DIR = Path(__file__).parent / "output"
-
-# Filers two or more quartiles apart between the cycles are material deviators.
-DEVIATION = 2
 
 # Decision 0034 adds these two to R4 once recovered from regulatory data. Neither filed with
 # the SEC, so their betas come from Call Reports, which section 7.5 of the methodology shows

@@ -156,6 +156,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `mart_cross_bank_comparison`, a dbt Python model placing every member in the
+  pre-registered samples through `marketscope.persistence` (decision 0042): headline and
+  variant flags, ranks, quartiles and material deviators, matching methodology 6.1. The
+  deviator threshold moves from the two analysis scripts into the library; their outputs
+  are unchanged.
 - `fct_bank_quarter` carries the Call Report cost of deposits of each filer's regulatory
   group, on 2,551 of its rows, and the group's averaging error on the 823 where its
   averages reconcile and the archives hold the quarter, so the bank explorer can show

@@ -185,3 +185,35 @@ models:
         description: >
           The group's endpoint average against its reported average, less one, on its
           basis. Only in quarters the FFIEC archives hold, with the quarter before.
+
+  - name: mart_cross_bank_comparison
+    description: >
+      One row per universe member: its cycle betas and tiers, the pre-registered samples it
+      enters, and its rank, quartile and quartile shift within the headline sample, as the
+      persistence analysis computes them through the library (decision 0042). Ranks run
+      from 1, the slowest repricer, and are null outside the headline.
+    columns:
+      - name: cik
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_bank')
+                field: cik
+      - name: in_headline
+        tests: [not_null]
+      - name: calibration_quartile
+        tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4]
+                quote: false
+      - name: test_quartile
+        tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4]
+                quote: false
+      - name: material_deviator
+        description: Two or more quartiles apart between the cycles; null outside the headline.

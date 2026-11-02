@@ -11,16 +11,28 @@ from dataclasses import dataclass
 from datetime import date
 
 import duckdb
+import pandas as pd
 
 from marketscope.cycles import STUDY_CYCLES, RateCycle
 from marketscope.metrics import cumulative_beta
-from marketscope.ranking import Interval, bootstrap_interval, permutation_p_value, spearman
+from marketscope.ranking import (
+    Interval,
+    average_ranks,
+    bootstrap_interval,
+    permutation_p_value,
+    quartiles,
+    spearman,
+)
 
 SEED = 20261010
 PERMUTATIONS = 100_000
 RESAMPLES = 10_000
 SIGNIFICANCE = 0.05
 COVERAGE_FLOOR = 0.80
+
+# Specification 6 reports material deviators: filers two or more quartiles apart between the
+# cycles.
+DEVIATION = 2
 
 CALIBRATION, TEST = STUDY_CYCLES
 
@@ -165,6 +177,82 @@ def eligible(filer: Filer, rules: Rules) -> bool:
         if rules.exclude_material_in_cycle and measured.material_event:
             return False
     return True
+
+
+COMPARISON_COLUMNS: tuple[str, ...] = (
+    "cik",
+    "registrant_name",
+    "rank",
+    "calibration_beta",
+    "test_beta",
+    "calibration_tier",
+    "test_tier",
+    "in_headline",
+    "in_r1",
+    "in_r2",
+    "in_r3",
+    "in_r4",
+    "calibration_rank",
+    "test_rank",
+    "calibration_quartile",
+    "test_quartile",
+    "quartile_shift",
+    "material_deviator",
+)
+
+
+def comparison_frame(filers: list[Filer]) -> pd.DataFrame:
+    """One row per member: its cycle betas, the pre-registered samples it enters, and its
+    rank and quartile within the headline sample, rank 1 the slowest repricer.
+
+    Ranks and quartiles are those the persistence analysis reports and are null outside
+    the headline, since a place in a sample the filer is not in has no meaning.
+    """
+    sample = [filer for filer in filers if eligible(filer, HEADLINE)]
+    calibration = [filer.beta(CALIBRATION) for filer in sample]
+    test = [filer.beta(TEST) for filer in sample]
+    places = {
+        filer.cik: place
+        for filer, *place in zip(
+            sample,
+            average_ranks(calibration),
+            average_ranks(test),
+            quartiles(calibration),
+            quartiles(test),
+            strict=True,
+        )
+    }
+
+    rows: list[tuple[object, ...]] = []
+    for filer in sorted(filers, key=lambda member: member.cik):
+        place = places.get(filer.cik)
+        shift = int(place[3] - place[2]) if place else None
+        rows.append(
+            (
+                filer.cik,
+                filer.registrant_name,
+                filer.rank,
+                filer.cycles[CALIBRATION].beta,
+                filer.cycles[TEST].beta,
+                filer.cycles[CALIBRATION].tier,
+                filer.cycles[TEST].tier,
+                place is not None,
+                *(eligible(filer, rules) for _, rules in VARIANTS.values()),
+                *(place if place else (None, None, None, None)),
+                shift,
+                None if shift is None else abs(shift) >= DEVIATION,
+            )
+        )
+    frame = pd.DataFrame(rows, columns=list(COMPARISON_COLUMNS))
+    return frame.astype(
+        {
+            "rank": "Int64",
+            "calibration_quartile": "Int64",
+            "test_quartile": "Int64",
+            "quartile_shift": "Int64",
+            "material_deviator": "boolean",
+        }
+    )
 
 
 @dataclass(frozen=True)

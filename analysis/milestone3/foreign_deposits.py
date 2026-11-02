@@ -37,7 +37,7 @@ from marketscope import store
 from marketscope.cycles import RateCycle, read_study_cycles
 from marketscope.metrics import cost_of_deposits, cumulative_beta
 from marketscope.panel import previous_quarter_end
-from marketscope.persistence import CALIBRATION, HEADLINE, TEST, eligible, read_filers
+from marketscope.persistence import CALIBRATION, DEVIATION, HEADLINE, TEST, eligible, read_filers
 from marketscope.ranking import average_ranks, quartiles, spearman
 from marketscope.store import DATABASE_PATH
 
@@ -49,9 +49,6 @@ OUTPUT_DIR = Path(__file__).parent / "output"
 # interest-bearing deposits across the calibration cycle. Below that the foreign beta rests
 # on a balance too small to move the total.
 FOREIGN_SHARE_FLOOR = 0.10
-
-# The same rule as the persistence script's material deviators.
-DEVIATION = 2
 
 OFFICES = ("total", "domestic", "foreign")
 
