@@ -156,6 +156,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `mart_bank_overview`, one row per member for the bank explorer: identity and exit,
+  coverage by tier, each cycle's beta with its flags, and the median gap to the member's
+  Call Reports over tier 1 quarters. Across the 35 members that have one, the median is
+  1.4 basis points, and the four largest are the four disagreements of decision 0036.
 - `mart_cross_bank_comparison`, a dbt Python model placing every member in the
   pre-registered samples through `marketscope.persistence` (decision 0042): headline and
   variant flags, ranks, quartiles and material deviators, matching methodology 6.1. The

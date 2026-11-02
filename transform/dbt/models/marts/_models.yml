@@ -217,3 +217,30 @@ models:
                 quote: false
       - name: material_deviator
         description: Two or more quartiles apart between the cycles; null outside the headline.
+
+  - name: mart_bank_overview
+    description: >
+      One row per universe member for the bank explorer: identity and exit, how much of its
+      series resolves and at which tier, its beta and tier in each study cycle with the
+      partial-cycle and material-event flags, and its median absolute gap to its Call
+      Reports over tier 1 quarters, the population methodology 7.4 reports on.
+    columns:
+      - name: cik
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_bank')
+                field: cik
+      - name: cost_quarters
+        tests: [not_null]
+      - name: tier_1_share
+        description: Share of the member's resolved quarters at tier 1.
+      - name: median_regulatory_gap_bp
+        description: >
+          Median absolute difference between the member's cost of deposits and its
+          regulatory group's, in basis points, over tier 1 quarters. Null for a member with
+          no tier 1 quarter or no regulatory group.
+      - name: averaging_basis
+        description: The basis the group's Call Report averages reconcile to, where they do.
