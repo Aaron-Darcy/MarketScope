@@ -1786,3 +1786,35 @@ specification 1, for an institution outside the question.
 pages, and `fct_bank_quarter` with the bank-quarter event flags 0033 moved to it. The open
 items above are listed in methodology sections 6.1, 8 and 10, which a reader of the site's
 methodology page will reach.
+
+---
+
+## 0042 — Mark the pre-registered samples in the warehouse through the persistence library
+
+**Date** 2026-11-02
+**Status** Accepted. Extends 0024 and 0034.
+
+**Context.** The site's comparison pages show where each bank sits in the headline sample,
+its quartile in each cycle, and which robustness variants admit it. Those are decided by
+the sample rules 0034 fixed: tier, coverage, partial cycles, terminal filers and two
+acquisition rules. They are implemented once, in `marketscope.persistence`, which the
+persistence analysis reads. The site reads the warehouse, not the analysis outputs.
+
+**Decision.** `mart_cross_bank_comparison` is a dbt Python model that calls the library: it
+reads the filers as the analysis does and places them with the same functions, so the
+headline flag, the variant flags, ranks and quartiles in the warehouse are the analysis's
+own. The quartile distance that makes a material deviator moves from the two analysis
+scripts into the library beside the rules.
+
+**Alternatives.** Write the rules again in SQL. Two implementations of a pre-registered
+sample can drift, and a page that showed a filer in the headline that the reported result
+left out would contradict the result on the site that presents it. Load the analysis
+output files into the warehouse. That makes the warehouse depend on a script having been
+run after the last build, which nothing checks.
+
+**Consequences.** The mart holds 51 rows, one per member, and places the 22 headline
+filers, the variants' 24, 30, 20 and 23, and the three deviators exactly as methodology 6.1
+reports them. It reads the marts it depends on by name on the session, so they are also
+referenced explicitly for dbt to order the build. First Republic and Signature, recovered
+from Call Reports into R4, are not members and do not appear; the comparison page must
+state them beside the result, as the methodology does.

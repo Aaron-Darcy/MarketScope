@@ -44,6 +44,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- The README and methodology record Milestone 4 as in progress, with the tables the
+  site reads built and the site not. The specification marks the comparison mart as a
+  Python model (decision 0042). The methodology dates the FFIEC archives by the FFIEC's
+  publication rather than by a load.
 - Milestone 3 is closed (decision 0041). The specification's milestone table records
   the result and the checks behind it, and section 4 records that USAA's Call Reports
   are loaded but enter no result. Methodology statements that still described the
@@ -156,6 +160,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- Four tests on the site marts: every headline filer has tier 1 coverage of at least 80
+  percent in each cycle, the remaining coverage test of specification 7.2; the comparison
+  mart's betas equal the fact table's; headline ranks form a complete set and no other
+  filer has one; and the overview counts every resolved bank-quarter once. dbt build: 181
+  pass, 2 warn by design.
+- `mart_bank_overview`, one row per member for the bank explorer: identity and exit,
+  coverage by tier, each cycle's beta with its flags, and the median gap to the member's
+  Call Reports over tier 1 quarters. Across the 35 members that have one, the median is
+  1.4 basis points, and the four largest are the four disagreements of decision 0036.
+- `mart_cross_bank_comparison`, a dbt Python model placing every member in the
+  pre-registered samples through `marketscope.persistence` (decision 0042): headline and
+  variant flags, ranks, quartiles and material deviators, matching methodology 6.1. The
+  deviator threshold moves from the two analysis scripts into the library; their outputs
+  are unchanged.
 - `fct_bank_quarter` carries the Call Report cost of deposits of each filer's regulatory
   group, on 2,551 of its rows, and the group's averaging error on the 823 where its
   averages reconcile and the archives hold the quarter, so the bank explorer can show

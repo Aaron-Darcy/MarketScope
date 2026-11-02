@@ -15,9 +15,11 @@ project measures deposit beta for US bank holding companies directly from XBRL f
 data, calibrates it over the 2015–2019 tightening cycle, and tests whether the resulting
 cross-bank ordering holds during the far faster 2022–2023 cycle.
 
-**Status: Milestone 3 closed on 30 October 2026; Milestone 4, the site, is next.** Cost of
-deposits is resolved for 3,066 bank-quarters across the largest fifty
-deposit-taking US filers and one pinned terminal filer, each at a stated comparability tier,
+**Status: Milestone 4, the site.** Milestone 3 closed on 30 October 2026, and the tables
+the site's first pages read are built: `fct_bank_quarter` and the bank overview and
+cross-bank comparison marts. The Evidence.dev site itself is not. Cost of deposits is
+resolved for 3,066 bank-quarters across the largest fifty deposit-taking US filers and
+one pinned terminal filer, each at a stated comparability tier,
 and `fct_deposit_beta` carries a tiered beta for every member in both study cycles, with a
 flag where a material acquisition changed the deposit base inside the cycle. Every revision
 to a published value is recorded, and so is every merger, exit and failure, each citing the

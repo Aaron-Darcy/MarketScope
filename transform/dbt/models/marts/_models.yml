@@ -185,3 +185,62 @@ models:
         description: >
           The group's endpoint average against its reported average, less one, on its
           basis. Only in quarters the FFIEC archives hold, with the quarter before.
+
+  - name: mart_cross_bank_comparison
+    description: >
+      One row per universe member: its cycle betas and tiers, the pre-registered samples it
+      enters, and its rank, quartile and quartile shift within the headline sample, as the
+      persistence analysis computes them through the library (decision 0042). Ranks run
+      from 1, the slowest repricer, and are null outside the headline.
+    columns:
+      - name: cik
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_bank')
+                field: cik
+      - name: in_headline
+        tests: [not_null]
+      - name: calibration_quartile
+        tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4]
+                quote: false
+      - name: test_quartile
+        tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4]
+                quote: false
+      - name: material_deviator
+        description: Two or more quartiles apart between the cycles; null outside the headline.
+
+  - name: mart_bank_overview
+    description: >
+      One row per universe member for the bank explorer: identity and exit, how much of its
+      series resolves and at which tier, its beta and tier in each study cycle with the
+      partial-cycle and material-event flags, and its median absolute gap to its Call
+      Reports over tier 1 quarters, the population methodology 7.4 reports on.
+    columns:
+      - name: cik
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_bank')
+                field: cik
+      - name: cost_quarters
+        tests: [not_null]
+      - name: tier_1_share
+        description: Share of the member's resolved quarters at tier 1.
+      - name: median_regulatory_gap_bp
+        description: >
+          Median absolute difference between the member's cost of deposits and its
+          regulatory group's, in basis points, over tier 1 quarters. Null for a member with
+          no tier 1 quarter or no regulatory group.
+      - name: averaging_basis
+        description: The basis the group's Call Report averages reconcile to, where they do.
