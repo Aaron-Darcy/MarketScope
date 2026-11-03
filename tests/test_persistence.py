@@ -3,21 +3,31 @@ from __future__ import annotations
 from dataclasses import replace
 from datetime import date
 
+import duckdb
 import pytest
 
+from marketscope import persistence
 from marketscope.cycles import RateCycle
 from marketscope.persistence import (
     CALIBRATION,
     COMPARISON_COLUMNS,
     HEADLINE,
+    RECOVERED,
+    RESULT_COLUMNS,
     TEST,
     VARIANTS,
     CycleBeta,
     Filer,
+    RecoveredBeta,
     comparison_frame,
     eligible,
+    read_recovered,
     recovered_beta,
+    recovered_frame,
+    result_frame,
 )
+from marketscope.ranking import spearman
+from marketscope.regulatory import REFERENCE_MAP
 
 
 def _cycle(**changes: object) -> CycleBeta:
@@ -209,3 +219,111 @@ def test_each_variant_column_follows_the_variant_it_is_named_for() -> None:
     assert [bool(row[column]) for column in variant_columns] == [
         eligible(acquirer, rules) for _, rules in VARIANTS.values()
     ]
+
+
+@pytest.fixture
+def quick_statistics(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(persistence, "PERMUTATIONS", 99)
+    monkeypatch.setattr(persistence, "RESAMPLES", 99)
+
+
+@pytest.mark.usefixtures("quick_statistics")
+def test_the_result_frame_reports_every_sample_in_reporting_order() -> None:
+    headline = [_ranked(cik, 0.1 * cik, 0.1 * cik + 0.05) for cik in range(1, 5)]
+    acquirer = _ranked(5, 0.6, 0.2, acquired=True)
+    recovered = {
+        "Failed Bank": RecoveredBeta(calibration=0.7, test=0.8, test_end=date(2023, 3, 31))
+    }
+
+    frame = result_frame([*headline, acquirer], recovered).set_index("sample")
+
+    assert list(frame.columns) == list(RESULT_COLUMNS[1:])
+    assert list(frame.index) == ["headline", "R1", "R2", "R3", "R4", "R4+recovered"]
+    assert frame["filers"].tolist() == [4, 4, 5, 4, 4, 5]
+    assert frame.loc["headline", "spearman"] == pytest.approx(1.0)
+    assert frame.loc["R2", "spearman"] == pytest.approx(
+        spearman([0.1, 0.2, 0.3, 0.4, 0.6], [0.15, 0.25, 0.35, 0.45, 0.2])
+    )
+    assert frame.loc["R4+recovered", "description"] == (
+        "R4 with Failed Bank recovered from Call Reports"
+    )
+    assert frame["supported"].dtype == bool
+
+
+def test_the_result_frame_refuses_a_recovered_sample_without_its_banks() -> None:
+    with pytest.raises(ValueError, match="recovered sample"):
+        result_frame([_ranked(cik, 0.1 * cik, 0.1 * cik) for cik in range(1, 4)], {})
+
+
+def _regulatory_warehouse(costs: dict[str, dict[date, float]]) -> duckdb.DuckDBPyConnection:
+    connection = duckdb.connect()
+    connection.execute(
+        "create table dim_rate_cycle (cycle_name varchar, start_quarter date, "
+        "end_quarter date, start_rate_fraction double, end_rate_fraction double)"
+    )
+    for cycle in CYCLES.values():
+        connection.execute(
+            "insert into dim_rate_cycle values (?, ?, ?, ?, ?)",
+            [cycle.name, cycle.start, cycle.end, cycle.start_rate, cycle.end_rate],
+        )
+    connection.execute("create table int_rate_cycles (quarter_end date, rate_fraction double)")
+    connection.executemany("insert into int_rate_cycles values (?, ?)", list(POLICY.items()))
+    connection.execute(
+        "create table int_regulatory_deposit_cost "
+        "(group_key varchar, quarter_end date, cost_of_deposits double)"
+    )
+    for key, series in costs.items():
+        connection.executemany(
+            "insert into int_regulatory_deposit_cost values (?, ?, ?)",
+            [(key, quarter, cost) for quarter, cost in series.items()],
+        )
+    return connection
+
+
+QUALIFYING = _costs(
+    (date(2015, 12, 31), 0.005),
+    (date(2016, 3, 31), 0.006),
+    (date(2016, 6, 30), 0.007),
+    (date(2022, 3, 31), 0.002),
+    (date(2022, 6, 30), 0.006),
+    (date(2022, 9, 30), 0.017),
+)
+
+
+def test_each_recovered_bank_is_read_under_its_name() -> None:
+    connection = _regulatory_warehouse(dict.fromkeys(RECOVERED, QUALIFYING))
+
+    recovered = read_recovered(connection)
+
+    assert list(recovered) == [REFERENCE_MAP[key].name for key in RECOVERED]
+    assert all(beta.test_end == date(2022, 9, 30) for beta in recovered.values())
+
+
+def test_a_recovered_bank_that_does_not_qualify_stops_the_read() -> None:
+    """A bank missing from the recovered sample would report a different sample by name."""
+    first, second = RECOVERED
+    shortened = {quarter: cost for quarter, cost in QUALIFYING.items() if quarter.year > 2015}
+    connection = _regulatory_warehouse({first: QUALIFYING, second: shortened})
+
+    with pytest.raises(ValueError, match=REFERENCE_MAP[second].name):
+        read_recovered(connection)
+
+
+def test_each_recovered_bank_has_a_row_with_its_measured_test_end() -> None:
+    frame = recovered_frame(
+        {"Failed Bank": RecoveredBeta(calibration=0.3, test=0.5, test_end=date(2022, 12, 31))}
+    )
+
+    assert frame.to_dict("records") == [
+        {
+            "bank": "Failed Bank",
+            "calibration_beta": 0.3,
+            "test_beta": 0.5,
+            "test_end": date(2022, 12, 31),
+        }
+    ]
+
+
+def test_the_recovered_frame_refuses_to_be_empty() -> None:
+    with pytest.raises(ValueError, match="recovered sample"):
+        recovered_frame({})

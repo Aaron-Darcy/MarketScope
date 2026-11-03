@@ -160,6 +160,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `mart_persistence_result`, a dbt Python model with the Spearman correlation, permutation
+  p-value and bootstrap interval of the headline, each robustness variant and R4 with
+  First Republic and Signature, computed through `marketscope.persistence` (decision
+  0043). It matches methodology 6.1 to the reported digit, and a test holds each sample's
+  size to the comparison mart. Reading the recovered banks moves from the analysis script
+  into the library; the script's outputs are unchanged. `mart_recovered_beta` carries
+  First Republic's and Signature's cycle betas from their Call Reports for the comparison
+  page. dbt build: 194 pass, 2 warn by design.
 - Four tests on the site marts: every headline filer has tier 1 coverage of at least 80
   percent in each cycle, the remaining coverage test of specification 7.2; the comparison
   mart's betas equal the fact table's; headline ranks form a complete set and no other

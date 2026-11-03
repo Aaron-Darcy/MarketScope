@@ -17,11 +17,9 @@ import logging
 import sys
 from pathlib import Path
 
-import duckdb
 import pandas as pd
 
 from marketscope import store
-from marketscope.cycles import read_policy_rate, read_study_cycles
 from marketscope.persistence import (
     CALIBRATION,
     DEVIATION,
@@ -29,7 +27,6 @@ from marketscope.persistence import (
     PERMUTATIONS,
     RESAMPLES,
     SEED,
-    SIGNIFICANCE,
     TEST,
     VARIANTS,
     Filer,
@@ -39,7 +36,8 @@ from marketscope.persistence import (
     assess_pairs,
     eligible,
     read_filers,
-    recovered_beta,
+    read_recovered,
+    supported,
 )
 from marketscope.ranking import (
     average_ranks,
@@ -48,17 +46,11 @@ from marketscope.ranking import (
     quartiles,
     transition_matrix,
 )
-from marketscope.regulatory import REFERENCE_MAP
 from marketscope.store import DATABASE_PATH
 
 logger = logging.getLogger(__name__)
 
 OUTPUT_DIR = Path(__file__).parent / "output"
-
-# Decision 0034 adds these two to R4 once recovered from regulatory data. Neither filed with
-# the SEC, so their betas come from Call Reports, which section 7.5 of the methodology shows
-# order banks as the XBRL figures do.
-RECOVERED: tuple[str, ...] = ("BANK:59017", "BANK:57053")
 
 
 def filer_table(sample: list[Filer]) -> pd.DataFrame:
@@ -80,7 +72,6 @@ def filer_table(sample: list[Filer]) -> pd.DataFrame:
 
 
 def summarise(result: Result, table: pd.DataFrame) -> str:
-    supported = result.spearman > 0 and result.p_value < SIGNIFICANCE
     matrix = transition_matrix(list(table["calibration_quartile"]), list(table["test_quartile"]))
     same = sum(matrix[i][i] for i in range(len(matrix)))
     fit = ols(list(table["calibration_beta"]), list(table["test_beta"]))
@@ -104,7 +95,7 @@ def summarise(result: Result, table: pd.DataFrame) -> str:
         "Persistence "
         + (
             "supported: the correlation is positive with p below 0.05."
-            if supported
+            if supported(result)
             else "not shown: the correlation does not clear p below 0.05. At this sample "
             "size that is not evidence of its absence."
         ),
@@ -207,23 +198,6 @@ def summarise_recovered(survivors: list[Filer], recovered: dict[str, RecoveredBe
             f"test to {beta.test_end} {beta.test:.3f} (rank {test_ranks[index]:g})"
         )
     return "\n".join(lines)
-
-
-def read_recovered(connection: duckdb.DuckDBPyConnection) -> dict[str, RecoveredBeta]:
-    cycles = read_study_cycles(connection)
-    policy = read_policy_rate(connection)
-    recovered: dict[str, RecoveredBeta] = {}
-    for key in RECOVERED:
-        rows = connection.execute(
-            "select quarter_end, cost_of_deposits from int_regulatory_deposit_cost "
-            "where group_key = ?",
-            [key],
-        ).fetchall()
-        beta = recovered_beta(dict(rows), policy, cycles)
-        if beta is None:
-            raise ValueError(f"{REFERENCE_MAP[key].name} does not qualify for R4")
-        recovered[REFERENCE_MAP[key].name] = beta
-    return recovered
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -218,6 +218,45 @@ models:
       - name: material_deviator
         description: Two or more quartiles apart between the cycles; null outside the headline.
 
+  - name: mart_persistence_result
+    description: >
+      One row per pre-registered sample: the headline, robustness variants R1 to R4, and R4
+      with First Republic and Signature recovered from Call Reports. Each carries the
+      Spearman correlation, one-sided permutation p-value and percentile bootstrap interval
+      on the seed of specification 6.1, computed through the library the persistence
+      analysis uses (decision 0043).
+    columns:
+      - name: sample
+        tests:
+          - unique
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [headline, R1, R2, R3, R4, R4+recovered]
+      - name: filers
+        tests: [not_null]
+      - name: spearman
+        tests: [not_null]
+      - name: p_value
+        tests: [not_null]
+      - name: undefined_resamples
+        description: Bootstrap resamples with no defined correlation, left out of the interval.
+      - name: supported
+        description: Positive correlation with p below 0.05, the reading 6.1 fixes in advance.
+
+  - name: mart_recovered_beta
+    description: >
+      One row per failed bank EDGAR does not hold, First Republic and Signature: its cycle
+      betas from its own Call Reports and the quarter its test beta is measured to, as the
+      survivorship comparison of methodology 6.1 uses them (decision 0043).
+    columns:
+      - name: bank
+        tests: [unique, not_null]
+      - name: calibration_beta
+        tests: [not_null]
+      - name: test_beta
+        tests: [not_null]
+
   - name: mart_bank_overview
     description: >
       One row per universe member for the bank explorer: identity and exit, how much of its

@@ -1818,3 +1818,37 @@ reports them. It reads the marts it depends on by name on the session, so they a
 referenced explicitly for dbt to order the build. First Republic and Signature, recovered
 from Call Reports into R4, are not members and do not appear; the comparison page must
 state them beside the result, as the methodology does.
+
+---
+
+## 0043 — State the persistence result on the site from the warehouse
+
+**Date** 2026-11-02
+**Status** Accepted. Extends 0042.
+
+**Context.** The site's overview leads with the headline correlation, its p-value and
+interval, the four robustness variants and the survivorship comparison with First Republic
+and Signature. The persistence analysis computes them and writes them to a text report.
+0042 put the sample each filer enters into the warehouse so the site and the analysis
+cannot disagree about membership; the figures computed on those samples were still only in
+the report.
+
+**Decision.** `mart_persistence_result` is a dbt Python model with one row per sample: the
+headline, R1 to R4, and R4 with the two recovered banks. It computes each through
+`marketscope.persistence` on the pre-registered seed, permutation count and resample count.
+Reading the two recovered banks moves from the analysis script into the library beside the
+sample rules, as the deviator threshold did in 0042. A dbt test holds each sample's size to
+the filers the comparison mart admits to it. `mart_recovered_beta` carries First
+Republic's and Signature's cycle betas, which 0042 requires the comparison page to state
+and which no other mart holds, since neither bank is a member.
+
+**Alternatives.** Write the figures into the page text. They are fixed by a pre-registered
+plan, but a page that states +0.59 beside a comparison table rebuilt on a later load would
+not show the two had parted. Compute the correlation in the page's SQL from the comparison
+mart's ranks. That reproduces the statistic but not the permutation test or the bootstrap
+interval, which would then come from somewhere else.
+
+**Consequences.** The mart reproduces methodology 6.1 to the last digit reported: +0.590,
+p 0.0020, +0.154 to +0.836 across 22 filers, and +0.640, p 0.0005, across 25 with the
+recovered banks. It adds about 15 seconds to a build, nearly all of it the 600,000
+permutations. The analysis script's outputs are unchanged.
