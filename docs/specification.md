@@ -392,6 +392,10 @@ for a period, so one load holds the full revision history EDGAR publishes, and a
 on the raw fact table would add only changes to the endpoint's own content between loads.
 That snapshot is deferred until a scheduled refresh shows it is needed. See decision 0028.
 
+The site does not read the warehouse. The tables it reads are exported to Parquet in
+`data/site/` and committed, so a public build needs nothing that cannot be checked out. See
+decision 0044.
+
 Sources carry freshness checks. Macros cover tag-fallback resolution and cycle-window
 logic. Generated dbt documentation is published alongside the site.
 
@@ -505,6 +509,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-11-02 | Section 7.1 records that the site builds from a committed Parquet export of the tables it reads rather than from the warehouse. See decision 0044. |
 | 2026-11-02 | `mart_persistence_result` and `mart_recovered_beta` added to 7.1: the headline, each robustness variant and the survivorship comparison as the site states them, and the two failed banks the comparison page shows, computed through the persistence library. See decision 0043. |
 | 2026-11-02 | `mart_cross_bank_comparison` marked in 7.1 as a dbt Python model: it places members in the pre-registered samples through the persistence library rather than a second implementation of the rules in SQL. See decision 0042. |
 | 2026-10-30 | Milestone 3 closed: the headline is pre-registered, robust to its variants and to survivorship, and validated against Call Reports for both the tag mapping and endpoint averaging. Section 4 records that First Republic and Signature are recovered into the survivorship comparison and USAA enters no result. See decision 0041. |

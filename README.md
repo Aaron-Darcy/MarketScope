@@ -121,6 +121,7 @@ src/marketscope/       ingestion clients, universe construction, DuckDB load
 analysis/feasibility/  Milestone 0 profiling and validation
 analysis/universe/     universe construction and EDGAR coverage audit
 data/seeds/            the committed universe
+data/site/             the tables the site reads, exported from the warehouse
 transform/dbt/         warehouse models
 site/                  Evidence.dev application (from Milestone 4)
 docs/                  specification, methodology, decision record
@@ -167,6 +168,13 @@ Size what EDGAR cannot reach, against FDIC data:
 
 ```
 python analysis/universe/reference_audit.py
+```
+
+The site builds from an export of the tables it reads, committed under `data/site/`, not
+from the warehouse. Refresh it after a build whose results should reach the site:
+
+```
+python -m marketscope.site_data
 ```
 
 Responses are cached under `data/cache`, so repeated runs during development do not

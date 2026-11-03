@@ -1852,3 +1852,40 @@ interval, which would then come from somewhere else.
 p 0.0020, +0.154 to +0.836 across 22 filers, and +0.640, p 0.0005, across 25 with the
 recovered banks. It adds about 15 seconds to a build, nearly all of it the 600,000
 permutations. The analysis script's outputs are unchanged.
+
+---
+
+## 0044 — Build the site from a committed Parquet export of the tables it reads
+
+**Date** 2026-11-02
+**Status** Accepted
+
+**Context.** Specification 8 calls for a static site at no running cost, and Milestone 4
+exits when it deploys publicly. A static build needs its data when it runs. The warehouse
+is gitignored and cannot be rebuilt unattended: the FFIEC bulk
+archives are downloaded by hand (0038), and the SEC load takes a contact-bearing user agent
+that a public workflow would have to hold as a secret.
+
+**Decision.** `python -m marketscope.site_data` writes the nine tables the site reads to
+`data/site/` as Parquet, one file per table, rows in key order, and the files are
+committed. The export refuses an empty table or a repeated key, checks every written file
+against its table's columns, types and row count, and replaces the published set only once
+every file has passed. The site builds from these files and nothing else.
+
+**Alternatives.** CSV, which a diff can be read in. Tried against the warehouse: reading
+the files back by type inference turned `dim_bank.sic` into an integer and the 8-K item
+`2.01` into a float, and columns such as the metric tier survive only because of the values
+they happen to hold today. Parquet carries the types with the data. Commit the warehouse
+itself: an 80 megabyte binary, rewritten by every load, for 160 kilobytes of published
+tables. Rebuild
+the warehouse in CI: blocked by the hand-downloaded archives, and a deploy would then
+depend on the SEC, FRED and FDIC all answering. Build the site locally and push only its
+output: the published pages would then have no committed source a reader could rebuild
+them from.
+
+**Consequences.** A change to a published figure arrives as a commit of the export, so the
+site cannot move without a reviewable change to the repository. Parquet diffs are not
+readable, so that commit's message has to say what moved; the export prints row counts to
+help. The export has to be rerun after every `dbt build` that should reach the site, and
+nothing yet checks that it was. Milestone 6's scheduled refresh is where that check
+belongs.

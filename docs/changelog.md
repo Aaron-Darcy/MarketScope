@@ -160,6 +160,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `python -m marketscope.site_data`, which exports the nine tables the site reads to
+  Parquet in `data/site/`, committed so the site can be built without the warehouse
+  (decision 0044). It refuses an empty table or a repeated key, checks each file against
+  its table's columns, types and row count, and replaces the published files only once all
+  have passed. An unchanged warehouse reproduces the same bytes.
 - `mart_persistence_result`, a dbt Python model with the Spearman correlation, permutation
   p-value and bootstrap interval of the headline, each robustness variant and R4 with
   First Republic and Signature, computed through `marketscope.persistence` (decision
