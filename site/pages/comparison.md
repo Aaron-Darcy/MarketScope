@@ -3,68 +3,172 @@ title: Cross-bank comparison
 sidebar_position: 3
 ---
 
-```sql headline
-select * from marketscope.mart_persistence_result where sample = 'headline'
-```
+<script>
+    import { BLUE, ORANGE, AQUA, GREY, INK, MUTED, GRID } from '../../components/palette.js';
+
+    const placement = (shift) =>
+        Math.abs(shift) >= 2 ? 'moved' : shift === 0 ? 'held' : 'shifted';
+    const colour = { held: BLUE, shifted: GREY, moved: ORANGE };
+
+    $: banks = [...ranking];
+    $: slopeConfig = {
+        grid: { left: 170, right: 170, top: 36, bottom: 24 },
+        tooltip: {
+            trigger: 'item',
+            formatter: (p) => {
+                const b = banks[p.seriesIndex];
+                return `<b>${b.display_name}</b><br/>2015–19: rank ${b.calibration_rank} of ${banks.length}, beta ${b.calibration_beta.toFixed(3)}<br/>2022–23: rank ${b.test_rank} of ${banks.length}, beta ${b.test_beta.toFixed(3)}`;
+            }
+        },
+        xAxis: {
+            type: 'category',
+            data: ['2015–2019 cycle', '2022–2023 cycle'],
+            boundaryGap: false,
+            position: 'top',
+            axisLabel: { color: INK, fontSize: 13, fontWeight: 600 },
+            axisLine: { show: false },
+            axisTick: { show: false }
+        },
+        yAxis: { type: 'value', min: 0.5, max: banks.length + 0.5, show: false },
+        series: banks.map((b) => {
+            const kind = placement(b.quartile_shift);
+            return {
+                type: 'line',
+                data: [b.calibration_rank, b.test_rank],
+                symbol: 'circle',
+                symbolSize: 8,
+                lineStyle: { color: colour[kind], width: kind === 'shifted' ? 1.5 : 2.5 },
+                itemStyle: { color: colour[kind], borderColor: '#fff', borderWidth: 1.5 },
+                z: kind === 'shifted' ? 1 : 2,
+                label: {
+                    show: true,
+                    position: 'left',
+                    formatter: (p) => (p.dataIndex === 0 ? b.display_name : ''),
+                    color: kind === 'shifted' ? MUTED : INK,
+                    fontSize: 11
+                },
+                endLabel: {
+                    show: true,
+                    formatter: b.display_name,
+                    color: kind === 'shifted' ? MUTED : INK,
+                    fontSize: 11
+                }
+            };
+        })
+    };
+
+    $: pairs = [...dumbbell];
+    $: dumbbellConfig = {
+        grid: { left: 200, right: 32, top: 40, bottom: 40 },
+        legend: {
+            top: 0,
+            icon: 'circle',
+            textStyle: { color: MUTED },
+            data: ['2015–2019 beta', '2022–2023 beta']
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: (p) => {
+                const b = pairs[p.dataIndex];
+                return `<b>${b.display_name}</b>${b.note ? '<br/>' + b.note : ''}<br/>2015–19 beta ${b.calibration_beta.toFixed(3)}<br/>2022–23 beta ${b.test_beta.toFixed(3)}`;
+            }
+        },
+        xAxis: {
+            min: 0,
+            max: 1,
+            name: 'Deposit beta: the share of the policy rate rise passed on to depositors',
+            nameLocation: 'middle',
+            nameGap: 26,
+            nameTextStyle: { color: MUTED },
+            axisLabel: { color: MUTED },
+            splitLine: { lineStyle: { color: GRID } }
+        },
+        yAxis: {
+            type: 'category',
+            data: pairs.map((b) => b.display_name),
+            inverse: true,
+            axisTick: { show: false },
+            axisLine: { show: false },
+            axisLabel: {
+                formatter: (value, i) =>
+                    pairs[i].in_headline ? `{in|${value}}` : `{out|${value}}`,
+                rich: {
+                    in: { color: INK, fontSize: 11 },
+                    out: { color: MUTED, fontSize: 11, fontStyle: 'italic' }
+                }
+            }
+        },
+        series: [
+            {
+                type: 'custom',
+                silent: true,
+                renderItem: (params, api) => {
+                    const from = api.coord([api.value(0), api.value(2)]);
+                    const to = api.coord([api.value(1), api.value(2)]);
+                    return {
+                        type: 'line',
+                        shape: { x1: from[0], y1: from[1], x2: to[0], y2: to[1] },
+                        style: { stroke: GREY, lineWidth: 2 }
+                    };
+                },
+                encode: { x: [0, 1], y: 2 },
+                data: pairs.map((b, i) => [b.calibration_beta, b.test_beta, i]),
+                z: 1
+            },
+            {
+                name: '2015–2019 beta',
+                type: 'scatter',
+                symbolSize: 10,
+                itemStyle: { color: BLUE, borderColor: '#fff', borderWidth: 1.5 },
+                data: pairs.map((b, i) => [b.calibration_beta, i]),
+                z: 2
+            },
+            {
+                name: '2022–2023 beta',
+                type: 'scatter',
+                symbolSize: 10,
+                itemStyle: { color: ORANGE, borderColor: '#fff', borderWidth: 1.5 },
+                data: pairs.map((b, i) => [b.test_beta, i]),
+                z: 2
+            }
+        ]
+    };
+</script>
 
 ```sql ranking
 select
-    registrant_name,
-    calibration_beta,
-    calibration_rank,
-    calibration_quartile,
-    test_beta,
-    test_rank,
-    test_quartile,
-    quartile_shift,
-    material_deviator,
-    '/banks/' || cast(cast(cik as bigint) as varchar) as bank_link
-from marketscope.mart_cross_bank_comparison
-where in_headline
-order by calibration_rank
+    banks.display_name,
+    comparison.calibration_beta,
+    comparison.test_beta,
+    comparison.calibration_rank,
+    comparison.test_rank,
+    comparison.quartile_shift
+from marketscope.mart_cross_bank_comparison as comparison
+join marketscope.dim_bank as banks using (cik)
+where comparison.in_headline
+order by comparison.calibration_rank
 ```
 
-```sql scatter
+```sql dumbbell
 select
-    registrant_name,
-    calibration_beta,
-    test_beta,
-    case
-        when in_headline then 'Headline sample'
-        else 'Outside the headline'
-    end as sample
-from marketscope.mart_cross_bank_comparison
-where calibration_beta is not null and test_beta is not null
+    banks.display_name,
+    comparison.calibration_beta,
+    comparison.test_beta,
+    comparison.in_headline,
+    case when not comparison.in_headline then 'Outside the headline sample' end as note
+from marketscope.mart_cross_bank_comparison as comparison
+join marketscope.dim_bank as banks using (cik)
+where comparison.calibration_beta is not null and comparison.test_beta is not null
 union all
 select
-    bank || ' (Call Reports)',
+    bank || ' (failed)',
     calibration_beta,
     test_beta,
-    'Failed, not in EDGAR'
+    false,
+    'Failed; never filed with the SEC. Betas from its Call Reports, test cycle to '
+        || strftime(test_end, '%Y-%m-%d')
 from marketscope.mart_recovered_beta
-order by sample
-```
-
-```sql distribution
-with betas as (
-    select 'Calibration, 2015–2019' as cycle, calibration_beta as beta
-    from marketscope.mart_cross_bank_comparison
-    where in_headline
-    union all
-    select 'Test, 2022–2023', test_beta
-    from marketscope.mart_cross_bank_comparison
-    where in_headline
-)
-select
-    cycle,
-    min(beta) as low,
-    quantile_cont(beta, 0.25) as lower_quartile,
-    median(beta) as median_beta,
-    quantile_cont(beta, 0.75) as upper_quartile,
-    max(beta) as high
-from betas
-group by cycle
-order by cycle
+order by test_beta desc
 ```
 
 ```sql transitions
@@ -74,153 +178,123 @@ with grid as (
     cross join range(1, 5) as test(q)
 )
 select
-    'Calibration Q' || grid.calibration_quartile as calibration,
-    'Test Q' || grid.test_quartile as test,
-    count(comparison.cik) as filers
+    case grid.calibration_quartile
+        when 1 then '2015–19: slowest quarter'
+        when 4 then '2015–19: fastest quarter'
+        else '2015–19: Q' || cast(grid.calibration_quartile as integer)
+    end as calibration,
+    case grid.test_quartile
+        when 1 then '2022–23: slowest'
+        when 4 then '2022–23: fastest'
+        else '2022–23: Q' || cast(grid.test_quartile as integer)
+    end as test,
+    grid.calibration_quartile,
+    grid.test_quartile,
+    count(comparison.cik) as banks
 from grid
 left join marketscope.mart_cross_bank_comparison as comparison
     on comparison.in_headline
     and comparison.calibration_quartile = grid.calibration_quartile
     and comparison.test_quartile = grid.test_quartile
-group by grid.calibration_quartile, grid.test_quartile
-order by grid.calibration_quartile, grid.test_quartile
+group by all
+order by grid.calibration_quartile desc, grid.test_quartile
 ```
 
-```sql same_quartile
+```sql summary
 select
-    count(*) filter (where quartile_shift = 0) as filers,
-    count(*) filter (where quartile_shift = 0) / count(*) as share
+    count(*) as banks,
+    count(*) filter (where quartile_shift = 0) as held,
+    count(*) filter (where abs(quartile_shift) >= 2) as moved
 from marketscope.mart_cross_bank_comparison
 where in_headline
 ```
 
 ```sql membership
 select
-    registrant_name,
-    calibration_beta,
-    calibration_tier,
-    test_beta,
-    test_tier,
-    in_headline,
-    in_r1,
-    in_r2,
-    in_r3,
-    in_r4,
-    '/banks/' || cast(cast(cik as bigint) as varchar) as bank_link
-from marketscope.mart_cross_bank_comparison
-order by in_headline desc, registrant_name
+    banks.display_name,
+    printf('%.3f', comparison.calibration_beta) as calibration_beta,
+    comparison.calibration_tier,
+    printf('%.3f', comparison.test_beta) as test_beta,
+    comparison.test_tier,
+    case when comparison.in_headline then '●' else '' end as headline,
+    case when comparison.in_r1 then '●' else '' end as r1,
+    case when comparison.in_r2 then '●' else '' end as r2,
+    case when comparison.in_r3 then '●' else '' end as r3,
+    case when comparison.in_r4 then '●' else '' end as r4,
+    '/banks/' || cast(cast(comparison.cik as bigint) as varchar) as bank_link
+from marketscope.mart_cross_bank_comparison as comparison
+join marketscope.dim_bank as banks using (cik)
+order by comparison.in_headline desc, banks.display_name
 ```
 
 ```sql variants
-select sample, description, filers
+select sample as variant, description as change_to_the_sample, filers as banks
 from marketscope.mart_persistence_result
 where sample like 'R%'
 order by sample
 ```
 
-```sql recovered
-select bank, calibration_beta, test_beta, test_end
-from marketscope.mart_recovered_beta
-order by bank
-```
+Where each bank sits among its peers, cycle by cycle. Of the {summary[0].banks} banks in the
+headline sample, **{summary[0].held} kept exactly the same quartile** and only
+**{summary[0].moved} moved two quartiles or more**.
 
-Where each bank sits among its peers in each cycle. Ranks and quartiles are within the
-<Value data={headline} column=filers />-filer headline sample, rank 1 the slowest
-repricer, quartile 1 the slowest quarter.
+## Who kept their place
 
-## Cycle on cycle
+Each line is one bank, ranked from the slowest repricer at the bottom to the fastest at the
+top. A flat line kept its rank. Blue banks stayed in the same quartile, orange ones moved
+two quartiles or more, grey ones moved one.
 
-Each bank's beta in one cycle against the next. Levels rise between the cycles, as they were
-expected to in a faster and larger tightening, so the question is not whether a bank's beta
-held but whether its place in the order did.
+<ECharts config={slopeConfig} height="640px" />
 
-<ScatterPlot
-    data={scatter}
-    x=calibration_beta
-    y=test_beta
-    series=sample
-    tooltipTitle=registrant_name
-    xAxisTitle="Calibration beta"
-    yAxisTitle="Test beta"
-    xFmt='0.00'
-    yFmt='0.00'
-    chartAreaHeight=360
-/>
+## Every bank, both cycles
 
-First Republic and Signature never filed with the SEC. Their betas come from their own Call
-Reports by the same arithmetic, and their test betas end at the last quarter each reported.
+Each bank's beta in the calibration cycle (blue) and the test cycle (orange). Every bank
+moved right, because the second cycle was faster and larger; what persists is the order.
+Italic names are outside the headline sample: most for a material acquisition inside a
+cycle, the rest for a tier 2 or 3 beta or a cycle cut short, and two are failed banks
+recovered from their Call Reports.
 
-## Distributions
-
-The headline sample's betas in each cycle: lowest, quartiles, median and highest.
-
-<BoxPlot
-    data={distribution}
-    name=cycle
-    min=low
-    intervalBottom=lower_quartile
-    midpoint=median_beta
-    intervalTop=upper_quartile
-    max=high
-    yFmt='0.00'
-/>
+<ECharts config={dumbbellConfig} height="860px" />
 
 ## Quartile transitions
 
-<Value data={same_quartile} column=filers /> of the
-<Value data={headline} column=filers /> filers sit in the same quartile in both cycles,
-<Value data={same_quartile} column=share fmt=pct0 />, against a quarter by chance.
+Read along a row: where the banks of one 2015–2019 quartile ended up in 2022–2023. The
+diagonal is a bank that kept its quartile; by chance alone a quarter would.
 
-<Heatmap data={transitions} x=test y=calibration value=filers valueFmt=num0 />
-
-## Rankings
-
-<DataTable data={ranking} link=bank_link rows=all>
-    <Column id=registrant_name title="Filer" />
-    <Column id=calibration_beta title="Calibration beta" fmt='0.000' />
-    <Column id=calibration_rank title="Rank" fmt=num1 />
-    <Column id=calibration_quartile title="Quartile" />
-    <Column id=test_beta title="Test beta" fmt='0.000' />
-    <Column id=test_rank title="Rank" fmt=num1 />
-    <Column id=test_quartile title="Quartile" />
-    <Column id=quartile_shift title="Quartile shift" />
-    <Column id=material_deviator title="Material deviator" />
-</DataTable>
-
-A material deviator is two or more quartiles apart between the cycles. The
-[persistence case study](/persistence) states a hypothesis for each.
+<Heatmap
+    data={transitions}
+    x=test
+    y=calibration
+    value=banks
+    xSort=test_quartile
+    ySort=calibration_quartile
+    ySortOrder=desc
+    valueFmt=num0
+    colorScale={['#eef4fc', '#104281']}
+    cellHeight=52
+/>
 
 ## Who enters which sample
 
-The headline admits a ranked filer with a tier 1 beta in both cycles, tier 1 cost of
-deposits in at least 80 percent of each cycle's quarters, no partial cycle, and no material
-acquisition inside either cycle. Each robustness variant turns one of those rules:
+The headline admits a ranked bank with a tier 1 beta in both cycles, tier 1 cost of
+deposits in at least 80 percent of each cycle's quarters, no partial cycle and no material
+acquisition inside either cycle. Each robustness variant turns one of those rules.
 
 <DataTable data={variants}>
-    <Column id=sample title="Variant" />
-    <Column id=description title="Change to the sample" />
-    <Column id=filers title="Filers" />
+    <Column id=variant title="Variant" />
+    <Column id=change_to_the_sample title="Change to the sample" />
+    <Column id=banks title="Banks" />
 </DataTable>
 
-<DataTable data={membership} link=bank_link search=true rows=all>
-    <Column id=registrant_name title="Filer" />
-    <Column id=calibration_beta title="Calibration beta" fmt='0.000' />
-    <Column id=calibration_tier title="Tier" />
-    <Column id=test_beta title="Test beta" fmt='0.000' />
-    <Column id=test_tier title="Tier" />
-    <Column id=in_headline title="Headline" />
-    <Column id=in_r1 title="R1" />
-    <Column id=in_r2 title="R2" />
-    <Column id=in_r3 title="R3" />
-    <Column id=in_r4 title="R4" />
-</DataTable>
-
-Recovered from Call Reports into the survivorship comparison, and members of no sample
-above:
-
-<DataTable data={recovered}>
-    <Column id=bank title="Bank" />
-    <Column id=calibration_beta title="Calibration beta" fmt='0.000' />
-    <Column id=test_beta title="Test beta" fmt='0.000' />
-    <Column id=test_end title="Test measured to" fmt='yyyy-mm-dd' />
+<DataTable data={membership} link=bank_link search=true rows=15>
+    <Column id=display_name title="Bank" />
+    <Column id=calibration_beta title="2015–19 beta" align=right />
+    <Column id=calibration_tier title="Tier" align=center />
+    <Column id=test_beta title="2022–23 beta" align=right />
+    <Column id=test_tier title="Tier" align=center />
+    <Column id=headline title="Headline" align=center />
+    <Column id=r1 title="R1" align=center />
+    <Column id=r2 title="R2" align=center />
+    <Column id=r3 title="R3" align=center />
+    <Column id=r4 title="R4" align=center />
 </DataTable>

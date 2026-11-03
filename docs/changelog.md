@@ -170,7 +170,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
   sample membership; and the persistence case study. Every figure is read from the export,
   including the Call Report agreement, which the pages compute from `fct_bank_quarter`
   and which matches methodology 7.4. A test holds the site's source queries to the
-  exported tables.
+  exported tables. Each page leads with charts: a headline panel, the cycle-on-cycle
+  scatter, an interval plot of every pre-registered sample, a rank slope chart, a dumbbell
+  of both cycles' betas, the survivorship scatter, XBRL against Call Report cost of
+  deposits, and per bank its peer position and tier history. Charts Evidence's components
+  cannot draw use its ECharts escape hatch, on a palette checked for colour-blind
+  separation. Banks are labelled by a display name derived from the SEC registrant name.
 - `python -m marketscope.site_data`, which exports the nine tables the site reads to
   Parquet in `data/site/`, committed so the site can be built without the warehouse
   (decision 0044). It refuses an empty table or a repeated key, checks each file against

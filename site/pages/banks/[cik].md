@@ -1,40 +1,154 @@
+<script>
+    import { BLUE, ORANGE, GREY, INK, MUTED, GRID, TIERS } from '../../../components/palette.js';
+
+    $: dots = [...peers];
+    $: stripConfig = {
+        grid: { left: 110, right: 24, top: 8, bottom: 48 },
+        tooltip: {
+            trigger: 'item',
+            formatter: (p) => `<b>${p.data[2]}</b><br/>beta ${p.data[0].toFixed(3)}`
+        },
+        xAxis: {
+            min: 0,
+            max: 1,
+            name: 'Deposit beta',
+            nameLocation: 'middle',
+            nameGap: 28,
+            nameTextStyle: { color: MUTED },
+            axisLabel: { color: MUTED },
+            splitLine: { lineStyle: { color: GRID } }
+        },
+        yAxis: {
+            min: -0.5,
+            max: 1.5,
+            interval: 0.5,
+            axisLabel: {
+                color: INK,
+                fontSize: 12,
+                formatter: (v) => (v === 0 ? '2015–2019' : v === 1 ? '2022–2023' : '')
+            },
+            splitLine: { show: false },
+            axisLine: { show: false },
+            axisTick: { show: false }
+        },
+        series: [
+            {
+                type: 'scatter',
+                symbolSize: 9,
+                itemStyle: { color: GREY, opacity: 0.8 },
+                data: dots.filter((d) => !d.is_bank).map((d) => [d.deposit_beta, d.position, d.display_name]),
+                z: 1
+            },
+            {
+                type: 'scatter',
+                symbolSize: 18,
+                itemStyle: { color: ORANGE, borderColor: '#fff', borderWidth: 2 },
+                data: dots.filter((d) => d.is_bank).map((d) => [d.deposit_beta, d.position, d.display_name]),
+                label: {
+                    show: true,
+                    position: 'top',
+                    distance: 6,
+                    formatter: (p) => p.data[0].toFixed(2),
+                    color: INK,
+                    fontWeight: 600
+                },
+                z: 2
+            }
+        ]
+    };
+</script>
+
 ```sql bank
 select
     overview.*,
-    members.state_of_incorporation,
-    members.first_filed_period,
-    members.pinned_reason,
-    members.acquisitions,
-    members.material_acquisitions,
-    'Stopped filing after its report for the period ending '
-        || strftime(overview.last_filed_period, '%Y-%m-%d') || '. '
-        || case overview.exit_type
-            when 'exit_merger' then 'Merged into ' || overview.exit_counterparty || ' on '
-            when 'failure' then 'Failed on '
-            when 'exit_deregistration' then 'Deregistered on '
-        end
-        || strftime(overview.exit_date, '%Y-%m-%d') || '.' as exit_text
+    banks.display_name,
+    banks.pinned_reason,
+    case
+        when overview.rank is not null
+            then 'Ranked ' || cast(overview.rank as integer) || ' of the largest fifty by peak total assets'
+        else 'Pinned beside the ranked fifty'
+    end as rank_text,
+    case overview.exit_type
+        when 'exit_merger'
+            then 'Merged into ' || overview.exit_counterparty || ' on ' || strftime(overview.exit_date, '%-d %B %Y')
+        when 'failure' then 'Failed on ' || strftime(overview.exit_date, '%-d %B %Y')
+        when 'exit_deregistration' then 'Deregistered on ' || strftime(overview.exit_date, '%-d %B %Y')
+        else 'Still filing'
+    end as status_text,
+    coalesce(printf('%.2f', overview.calibration_beta), '–') as calibration_text,
+    coalesce(printf('%.2f', overview.test_beta), '–') as test_text,
+    printf('%.0f%%', overview.tier_1_share * 100) as tier_1_text,
+    coalesce(printf('%.1f bp', overview.median_regulatory_gap_bp), '–') as gap_text,
+    strftime(overview.first_cost_quarter, '%Y') as first_year,
+    strftime(overview.last_cost_quarter, '%Y') as last_year
 from marketscope.mart_bank_overview as overview
-join marketscope.dim_bank as members using (cik)
+join marketscope.dim_bank as banks using (cik)
 where overview.cik = ${params.cik}
 ```
 
+```sql peers
+with betas as (
+    select
+        betas.cik,
+        banks.display_name,
+        betas.cycle_name,
+        betas.deposit_beta,
+        case betas.cycle_name when 'calibration' then 0 else 1 end as cycle_position
+    from marketscope.fct_deposit_beta as betas
+    join marketscope.dim_bank as banks using (cik)
+    where betas.deposit_beta is not null
+)
+select
+    display_name,
+    deposit_beta,
+    cik = ${params.cik} as is_bank,
+    cycle_position + case when cik = ${params.cik} then 0 else ((cik * 7919) % 41 - 20) / 80.0 end
+        as position
+from betas
+```
+
+```sql peer_rank
+with own as (
+    select cycle_name, deposit_beta
+    from marketscope.fct_deposit_beta
+    where cik = ${params.cik} and deposit_beta is not null
+)
+select
+    'It passed on a larger share of the rate rise than '
+        || string_agg(
+            slower || ' of ' || others || ' other banks in '
+                || case cycle_name when 'calibration' then '2015–2019' else '2022–2023' end,
+            ', and than ' order by cycle_name
+        ) || '.' as sentence
+from (
+    select own.cycle_name, count(*) filter (where peers.deposit_beta < own.deposit_beta) as slower,
+        count(*) - 1 as others
+    from own
+    join marketscope.fct_deposit_beta as peers
+        on peers.cycle_name = own.cycle_name and peers.deposit_beta is not null
+    group by own.cycle_name
+)
+```
+
 ```sql cycles
-select cycle_name, start_quarter, end_quarter
+select
+    case cycle_name when 'calibration' then 'Calibration' else 'Test' end as label,
+    start_quarter,
+    end_quarter
 from marketscope.dim_rate_cycle
 where cycle_name is not null
 ```
 
 ```sql cost_against_policy
-select quarter_end, 'Cost of deposits, XBRL' as measure, cost_of_deposits as rate
+select quarter_end, 'This bank, from its SEC filings' as measure, cost_of_deposits as rate
 from marketscope.fct_bank_quarter
 where cik = ${params.cik} and cost_of_deposits is not null
 union all
-select quarter_end, 'Cost of deposits, Call Reports', regulatory_cost_of_deposits
+select quarter_end, 'This bank, from its Call Reports', regulatory_cost_of_deposits
 from marketscope.fct_bank_quarter
 where cik = ${params.cik} and regulatory_cost_of_deposits is not null
 union all
-select quarter_end, 'Federal funds, quarterly average', policy_rate_fraction
+select quarter_end, 'Federal funds rate', policy_rate_fraction
 from marketscope.fct_bank_quarter
 where cik = ${params.cik} and policy_rate_fraction is not null
 order by quarter_end
@@ -42,18 +156,19 @@ order by quarter_end
 
 ```sql betas
 select
-    cycle_name,
-    start_quarter,
-    measured_end_quarter,
-    partial_cycle,
+    case cycle_name when 'calibration' then '2015–2019' else '2022–2023' end as cycle,
+    strftime(start_quarter, '%Y') || 'Q' || quarter(start_quarter) as from_quarter,
+    strftime(measured_end_quarter, '%Y') || 'Q' || quarter(measured_end_quarter) as to_quarter,
     metric_tier,
     start_cost_of_deposits,
     end_cost_of_deposits,
     end_rate_fraction - start_rate_fraction as policy_move,
     deposit_beta,
-    tier_1_quarters,
-    cycle_quarters,
-    material_event_in_cycle
+    concat_ws(', ',
+        case when partial_cycle then 'cycle cut short' end,
+        case when material_event_in_cycle then 'material acquisition' end,
+        case when tier_changes_in_cycle then 'tier changes' end
+    ) as flags
 from marketscope.fct_deposit_beta
 where cik = ${params.cik}
 order by start_quarter
@@ -88,166 +203,157 @@ order by quarter_end
 
 ```sql events
 select
-    event_date,
+    strftime(event_date, '%Y-%m-%d') as date,
     case event_type
         when 'acquisition' then 'Acquisition'
         when 'reverse_acquisition' then 'Reverse acquisition'
         when 'exit_merger' then 'Merged out'
         when 'exit_deregistration' then 'Deregistered'
         when 'failure' then 'Failure'
-    end as event_type,
+    end as event,
     counterparty,
     deposit_step,
-    material,
+    case when material then '●' else '' end as material,
     evidence_form,
-    evidence_accession,
-    note
+    'https://www.sec.gov/Archives/edgar/data/' || cast(cast(cik as bigint) as varchar) || '/'
+        || replace(evidence_accession, '-', '') || '/' as filing_link
 from marketscope.bank_entity_events
 where cik = ${params.cik}
 order by event_date
 ```
 
-```sql quarters
-select
-    quarter_end,
-    cost_of_deposits,
-    metric_tier,
-    expense_provenance,
-    balance_provenance,
-    avg_method,
-    q4_derived,
-    regulatory_cost_of_deposits,
-    total_deposits,
-    event_type
-from marketscope.fct_bank_quarter
-where cik = ${params.cik}
-order by quarter_end desc
-```
-
 {#if bank.length === 0}
 
-No filer in the universe has CIK {params.cik}. [Return to the bank explorer](/banks).
+No bank in the universe has CIK {params.cik}. [Return to the bank explorer](/banks).
 
 {:else}
 
-# {bank[0].registrant_name}
+<div style="background: linear-gradient(135deg, #0d366b 0%, #1c5cab 60%, #2a78d6 100%); color: #fff; border-radius: 14px; padding: 26px 32px; margin: 8px 0 24px;">
+  <div style="font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8;">{bank[0].rank_text}</div>
+  <div style="font-size: 38px; font-weight: 700; margin: 4px 0 2px;">{bank[0].display_name}</div>
+  <div style="font-size: 15px; opacity: 0.9;">{bank[0].status_text} · {bank[0].sic_description} · SEC CIK {bank[0].cik}</div>
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 22px;">
+    <div style="background: rgba(255,255,255,0.12); border-radius: 10px; padding: 12px 16px;">
+      <div style="font-size: 30px; font-weight: 700;">{bank[0].calibration_text}</div>
+      <div style="font-size: 13px; opacity: 0.85;">deposit beta, 2015–2019</div>
+    </div>
+    <div style="background: rgba(255,255,255,0.12); border-radius: 10px; padding: 12px 16px;">
+      <div style="font-size: 30px; font-weight: 700;">{bank[0].test_text}</div>
+      <div style="font-size: 13px; opacity: 0.85;">deposit beta, 2022–2023</div>
+    </div>
+    <div style="background: rgba(255,255,255,0.12); border-radius: 10px; padding: 12px 16px;">
+      <div style="font-size: 30px; font-weight: 700;">{bank[0].tier_1_text}</div>
+      <div style="font-size: 13px; opacity: 0.85;">of {bank[0].cost_quarters} quarters at tier 1, {bank[0].first_year}–{bank[0].last_year}</div>
+    </div>
+    <div style="background: rgba(255,255,255,0.12); border-radius: 10px; padding: 12px 16px;">
+      <div style="font-size: 30px; font-weight: 700;">{bank[0].gap_text}</div>
+      <div style="font-size: 13px; opacity: 0.85;">median gap to its Call Reports</div>
+    </div>
+  </div>
+</div>
 
-{#if bank[0].rank}
+{#if bank[0].pinned_reason}
 
-Ranked {bank[0].rank} of the largest fifty by peak total assets. {bank[0].sic_description}.
-SEC CIK {bank[0].cik}.
-
-{:else}
-
-Pinned beside the ranked fifty. {bank[0].sic_description}. SEC CIK {bank[0].cik}.
 {bank[0].pinned_reason}
 
 {/if}
 
-{#if bank[0].exit_type}
+## What it paid depositors, against the Fed
 
-{bank[0].exit_text}
+Interest expense on deposits, annualised, over the average deposit base, from the bank's
+SEC filings and, as a check, from its own Call Reports; where the two agree they draw as
+one line. Shaded: the two tightening cycles.
 
-{/if}
-
-<Grid cols=4>
-<BigValue data={bank} value=calibration_beta title="Calibration beta, 2015–2019" fmt='0.000' />
-<BigValue data={bank} value=test_beta title="Test beta, 2022–2023" fmt='0.000' />
-<BigValue data={bank} value=tier_1_share title="Quarters at tier 1" fmt=pct0 />
-<BigValue data={bank} value=median_regulatory_gap_bp title="Median gap to Call Reports, bp" fmt='0.0' />
-</Grid>
-
-## Cost of deposits against the policy rate
-
-Interest expense on deposits, annualised, over the mean of the opening and closing deposit
-base its tier names, beside the same arithmetic on the Call Reports of the bank's insured
-institutions and the federal funds rate. Shaded: the two study cycles.
-
-<LineChart data={cost_against_policy} x=quarter_end y=rate series=measure yFmt=pct2 chartAreaHeight=280>
-    <ReferenceArea data={cycles} xMin=start_quarter xMax=end_quarter label=cycle_name />
+<LineChart
+    data={cost_against_policy}
+    x=quarter_end
+    y=rate
+    series=measure
+    yFmt=pct1
+    seriesOrder={['Federal funds rate', 'This bank, from its Call Reports', 'This bank, from its SEC filings']}
+    seriesColors={{
+        'This bank, from its SEC filings': '#2a78d6',
+        'This bank, from its Call Reports': '#eb6834',
+        'Federal funds rate': '#b4b2ab'
+    }}
+    chartAreaHeight=300
+>
+    <ReferenceArea data={cycles} xMin=start_quarter xMax=end_quarter label=label color=#2a78d6 />
 </LineChart>
 
-## Beta by cycle
+## Where it sits among its peers
 
-A cycle's beta is the change in cost of deposits from its first quarter to its last,
-divided by the change in the policy rate over the same quarters. Partial cycles end at the
-filer's last resolved quarter.
+Every bank's deposit beta in each cycle (grey), with this one highlighted.
+{peer_rank[0]?.sentence}
+
+<ECharts config={stripConfig} height="220px" />
 
 <DataTable data={betas}>
-    <Column id=cycle_name title="Cycle" />
-    <Column id=start_quarter title="From" fmt='yyyy-mm-dd' />
-    <Column id=measured_end_quarter title="Measured to" fmt='yyyy-mm-dd' />
-    <Column id=partial_cycle title="Partial" />
-    <Column id=metric_tier title="Tier" />
+    <Column id=cycle title="Cycle" />
+    <Column id=from_quarter title="From" />
+    <Column id=to_quarter title="Measured to" />
+    <Column id=metric_tier title="Tier" align=center />
     <Column id=start_cost_of_deposits title="Cost at start" fmt=pct2 />
     <Column id=end_cost_of_deposits title="Cost at end" fmt=pct2 />
-    <Column id=policy_move title="Policy move" fmt=pct2 />
+    <Column id=policy_move title="Fed move" fmt=pct2 />
     <Column id=deposit_beta title="Beta" fmt='0.000' />
-    <Column id=tier_1_quarters title="Tier 1 quarters" />
-    <Column id=cycle_quarters title="Of" />
-    <Column id=material_event_in_cycle title="Material acquisition" />
+    <Column id=flags title="Notes" />
 </DataTable>
 
-## Metric tier and coverage
+## Comparability tier, quarter by quarter
 
-Each quarter's comparability tier. Tier 1 divides interest expense on deposits by
-interest-bearing deposits; tier 2 divides it by total deposits, where no interest-bearing
-base resolves; tier 3 reconstructs the expense from its components over the best base
-available; tier X is a reconstruction that failed the completeness check and enters no
-beta. A quarter with a balance but no cost is shown as balance
-only. <Value data={bank} column=cost_quarters /> quarters resolve a cost, from
-<Value data={bank} column=first_cost_quarter fmt='yyyy-mm-dd' /> to
-<Value data={bank} column=last_cost_quarter fmt='yyyy-mm-dd' />.
-
-<BarChart data={tiers} x=quarter_end y=quarters series=tier type=stacked yAxisLabels=false yGridlines=false chartAreaHeight=80 />
+<BarChart
+    data={tiers}
+    x=quarter_end
+    y=quarters
+    series=tier
+    type=stacked
+    seriesColors={TIERS}
+    yAxisLabels=false
+    yGridlines=false
+    chartAreaHeight=70
+/>
 
 ## Deposits
 
 {#if deposits.length > 0}
 
-<AreaChart data={deposits} x=quarter_end y=deposits series=kind yFmt=usd1b />
+<AreaChart
+    data={deposits}
+    x=quarter_end
+    y=deposits
+    series=kind
+    yFmt=usd0b
+    seriesColors={{ 'Interest-bearing': '#2a78d6', 'Non-interest-bearing': '#86b6ef' }}
+    chartAreaHeight=240
+/>
 
 {:else}
 
-This filer tags neither an interest-bearing nor a non-interest-bearing deposit balance.
+This bank tags neither an interest-bearing nor a non-interest-bearing deposit balance.
 
 {/if}
 
 ## Mergers, exits and failures
 
 {#if events.length > 0}
-Each event cites the filing that reports it. A deposit step of a tenth or more in the
-quarter an acquisition completes makes it material.
+
+Each links to the filing that reports it. An acquisition is material when it moves the
+deposit base by a tenth or more in the quarter it completes.
 
 <DataTable data={events}>
-    <Column id=event_date title="Date" fmt='yyyy-mm-dd' />
-    <Column id=event_type title="Event" />
+    <Column id=date title="Date" />
+    <Column id=event title="Event" />
     <Column id=counterparty title="Counterparty" />
     <Column id=deposit_step title="Deposit step" fmt=pct1 />
-    <Column id=material title="Material" />
-    <Column id=evidence_form title="Form" />
-    <Column id=evidence_accession title="Accession" />
-    <Column id=note title="Note" wrap=true />
+    <Column id=material title="Material" align=center />
+    <Column id=filing_link title="Filing" contentType=link linkLabel=evidence_form openInNewTab=true />
 </DataTable>
+
 {:else}
-No merger, exit or failure is recorded for this filer.
+
+No merger, exit or failure is recorded for this bank.
+
 {/if}
-
-<Details title="Every quarter">
-
-<DataTable data={quarters} rows=20>
-    <Column id=quarter_end title="Quarter" fmt='yyyy-mm-dd' />
-    <Column id=cost_of_deposits title="Cost of deposits" fmt=pct2 />
-    <Column id=metric_tier title="Tier" />
-    <Column id=expense_provenance title="Expense from" />
-    <Column id=balance_provenance title="Balance from" />
-    <Column id=avg_method title="Averaging" />
-    <Column id=q4_derived title="Q4 derived" />
-    <Column id=regulatory_cost_of_deposits title="Call Reports" fmt=pct2 />
-    <Column id=total_deposits title="Total deposits" fmt=usd1b />
-    <Column id=event_type title="Event" />
-</DataTable>
-
-</Details>
 
 {/if}

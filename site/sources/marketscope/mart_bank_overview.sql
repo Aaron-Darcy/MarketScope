@@ -1,1 +1,1 @@
-select * from read_parquet('../data/site/mart_bank_overview.parquet')
+select * from read_parquet('mart_bank_overview.parquet')

@@ -1,1 +1,1 @@
-select * from read_parquet('../data/site/fct_deposit_beta.parquet')
+select * from read_parquet('fct_deposit_beta.parquet')

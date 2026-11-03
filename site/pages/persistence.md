@@ -3,20 +3,247 @@ title: Deposit beta persistence
 sidebar_position: 4
 ---
 
+<script>
+    import { BLUE, ORANGE, AQUA, GREY, INK, MUTED, GRID } from '../../components/palette.js';
+
+    const axis = (name, extra = {}) => ({
+        name,
+        nameLocation: 'middle',
+        nameGap: 34,
+        nameTextStyle: { color: MUTED, fontSize: 12 },
+        axisLabel: { color: MUTED },
+        splitLine: { lineStyle: { color: GRID } },
+        ...extra
+    });
+    const diagonal = (low, high) => ({
+        type: 'line',
+        data: [[low, low], [high, high]],
+        symbol: 'none',
+        silent: true,
+        lineStyle: { color: GREY, width: 1 },
+        z: 1
+    });
+
+    $: ranked = [...ranks];
+    $: n = ranked.length;
+    $: rankConfig = {
+        grid: { left: 56, right: 24, top: 16, bottom: 72 },
+        tooltip: {
+            trigger: 'item',
+            formatter: (p) =>
+                p.data && p.data[2]
+                    ? `<b>${p.data[2]}</b><br/>rank ${p.data[0]} in 2015–19, ${p.data[1]} in 2022–23`
+                    : ''
+        },
+        legend: {
+            bottom: 0,
+            icon: 'circle',
+            textStyle: { color: MUTED },
+            data: ['Same quartile', 'One quartile apart', 'Two or more apart']
+        },
+        xAxis: axis('Rank in 2015–2019, 1 the slowest', { min: 0, max: n + 1 }),
+        yAxis: axis('Rank in 2022–2023', { min: 0, max: n + 1, nameGap: 30 }),
+        series: [
+            diagonal(0, n + 1),
+            ...[
+                ['Same quartile', 0, BLUE],
+                ['One quartile apart', 1, GREY],
+                ['Two or more apart', 2, ORANGE]
+            ].map(([name, shift, color]) => ({
+                name,
+                type: 'scatter',
+                symbolSize: 12,
+                itemStyle: { color, borderColor: '#fff', borderWidth: 2 },
+                data: ranked
+                    .filter((r) => Math.min(Math.abs(r.quartile_shift), 2) === shift)
+                    .map((r) => [r.calibration_rank, r.test_rank, r.display_name]),
+                label: {
+                    show: shift === 2,
+                    formatter: (p) => p.data[2],
+                    position: 'right',
+                    color: INK,
+                    fontSize: 12,
+                    fontWeight: 600
+                }
+            }))
+        ]
+    };
+
+    $: forest = [...samples];
+    $: forestConfig = {
+        grid: { left: 250, right: 32, top: 12, bottom: 44 },
+        tooltip: {
+            trigger: 'item',
+            formatter: (p) => {
+                const s = forest[p.dataIndex];
+                return `<b>${s.sample_label}</b><br/>${s.description}<br/>${s.filers} banks · Spearman ${s.spearman_text}<br/>95% interval ${s.interval_text} · p ${s.p_text}`;
+            }
+        },
+        xAxis: axis('Rank correlation and 95% interval; zero is no relationship', {
+            min: -0.2,
+            max: 1,
+            nameGap: 26
+        }),
+        yAxis: {
+            type: 'category',
+            inverse: true,
+            data: forest.map((s) => `${s.sample_label}  (${s.filers})`),
+            axisLabel: { color: INK, fontSize: 12 },
+            axisTick: { show: false },
+            axisLine: { show: false }
+        },
+        series: [
+            {
+                type: 'custom',
+                silent: true,
+                renderItem: (params, api) => {
+                    const low = api.coord([api.value(0), api.value(2)]);
+                    const high = api.coord([api.value(1), api.value(2)]);
+                    return {
+                        type: 'line',
+                        shape: { x1: low[0], y1: low[1], x2: high[0], y2: high[1] },
+                        style: { stroke: params.dataIndex === 0 ? BLUE : GREY, lineWidth: 3, lineCap: 'round' }
+                    };
+                },
+                encode: { x: [0, 1], y: 2 },
+                data: forest.map((s, i) => [s.interval_low, s.interval_high, i]),
+                z: 1
+            },
+            {
+                type: 'scatter',
+                symbolSize: 13,
+                data: forest.map((s, i) => ({
+                    value: [s.spearman, i],
+                    itemStyle: { color: i === 0 ? BLUE : AQUA, borderColor: '#fff', borderWidth: 2 }
+                })),
+                label: {
+                    show: true,
+                    position: 'top',
+                    formatter: (p) => forest[p.dataIndex].spearman_text,
+                    color: INK,
+                    fontSize: 11
+                },
+                markLine: {
+                    silent: true,
+                    symbol: 'none',
+                    label: { show: false },
+                    lineStyle: { color: MUTED, type: 'solid', width: 1 },
+                    data: [{ xAxis: 0 }]
+                },
+                z: 2
+            }
+        ]
+    };
+
+    $: survivors = [...survivorship];
+    $: survivorConfig = {
+        grid: { left: 56, right: 24, top: 16, bottom: 72 },
+        tooltip: {
+            trigger: 'item',
+            formatter: (p) =>
+                p.data && p.data[2]
+                    ? `<b>${p.data[2]}</b><br/>2015–19 beta ${p.data[0].toFixed(3)}<br/>2022–23 beta ${p.data[1].toFixed(3)}${p.data[3] ? '<br/>' + p.data[3] : ''}`
+                    : ''
+        },
+        legend: {
+            bottom: 0,
+            icon: 'circle',
+            textStyle: { color: MUTED },
+            data: ['Kept filing', 'Failed']
+        },
+        xAxis: axis('Deposit beta, 2015–2019', { min: 0.1, max: 0.9 }),
+        yAxis: axis('Deposit beta, 2022–2023', { min: 0.1, max: 0.9, nameGap: 40 }),
+        series: [
+            diagonal(0.1, 0.9),
+            {
+                name: 'Kept filing',
+                type: 'scatter',
+                symbolSize: 11,
+                itemStyle: { color: BLUE, opacity: 0.75, borderColor: '#fff', borderWidth: 1.5 },
+                data: survivors.filter((s) => !s.failed).map((s) => [s.calibration_beta, s.test_beta, s.display_name, s.note])
+            },
+            {
+                name: 'Failed',
+                type: 'scatter',
+                symbolSize: 15,
+                itemStyle: { color: ORANGE, borderColor: '#fff', borderWidth: 2 },
+                data: survivors.filter((s) => s.failed).map((s) => [s.calibration_beta, s.test_beta, s.display_name, s.note]),
+                label: {
+                    show: true,
+                    formatter: (p) => p.data[2],
+                    position: 'right',
+                    distance: 8,
+                    color: INK,
+                    fontSize: 12,
+                    fontWeight: 600
+                }
+            }
+        ]
+    };
+
+    $: checks = [...validation_points];
+    $: validationConfig = {
+        grid: { left: 64, right: 24, top: 16, bottom: 56 },
+        tooltip: {
+            trigger: 'item',
+            formatter: (p) =>
+                p.data && p.data[2]
+                    ? `<b>${p.data[2]}</b> ${p.data[3]}<br/>XBRL ${(p.data[0] * 100).toFixed(2)}%<br/>Call Reports ${(p.data[1] * 100).toFixed(2)}%`
+                    : ''
+        },
+        xAxis: axis('Cost of deposits from SEC XBRL filings', {
+            min: 0,
+            max: 0.05,
+            axisLabel: { color: MUTED, formatter: (v) => `${(v * 100).toFixed(0)}%` }
+        }),
+        yAxis: axis('Cost of deposits from Call Reports', {
+            min: 0,
+            max: 0.05,
+            nameGap: 44,
+            axisLabel: { color: MUTED, formatter: (v) => `${(v * 100).toFixed(0)}%` }
+        }),
+        series: [
+            diagonal(0, 0.05),
+            {
+                type: 'scatter',
+                symbolSize: 6,
+                large: true,
+                itemStyle: { color: BLUE, opacity: 0.45 },
+                data: checks.map((c) => [c.cost_of_deposits, c.regulatory_cost_of_deposits, c.display_name, c.quarter_label])
+            }
+        ]
+    };
+</script>
+
 ```sql headline
-select * from marketscope.mart_persistence_result where sample = 'headline'
+select
+    filers,
+    printf('%+.2f', spearman) as spearman_text,
+    printf('%.3f', p_value) as p_text,
+    printf('%+.2f', interval_low) as low_text,
+    printf('%+.2f', interval_high) as high_text,
+    supported
+from marketscope.mart_persistence_result
+where sample = 'headline'
+```
+
+```sql policy
+select distinct quarter_end, policy_rate_fraction as rate
+from marketscope.fct_bank_quarter
+where policy_rate_fraction is not null
+order by quarter_end
 ```
 
 ```sql cycles
 select
-    cycle_name,
+    case cycle_name when 'calibration' then 'Calibration cycle' else 'Test cycle' end as label,
     start_quarter,
     end_quarter,
-    start_rate_fraction,
-    end_rate_fraction,
-    move_fraction,
-    months,
-    move_fraction / months * 12 as move_per_year
+    strftime(start_quarter, '%Y') || 'Q' || quarter(start_quarter) as start_text,
+    strftime(end_quarter, '%Y') || 'Q' || quarter(end_quarter) as end_text,
+    printf('%.2f%%', start_rate_fraction * 100) as start_rate_text,
+    printf('%.2f%%', end_rate_fraction * 100) as end_rate_text,
+    months
 from marketscope.dim_rate_cycle
 where cycle_name is not null
 order by start_quarter
@@ -24,35 +251,22 @@ order by start_quarter
 
 ```sql ranks
 select
-    registrant_name,
-    calibration_rank,
-    test_rank,
-    case when material_deviator then 'Material deviator' else 'Within one quartile' end as placement
-from marketscope.mart_cross_bank_comparison
-where in_headline
-order by placement
-```
-
-```sql fastest
-with sample as (
-    select count(*) as filers from marketscope.mart_cross_bank_comparison where in_headline
-)
-select
-    count(*) filter (where calibration_rank > filers - 6) as fastest_calibration,
-    count(*) filter (where calibration_rank > filers - 6 and test_rank > filers - 6)
-        as stayed_fastest
-from marketscope.mart_cross_bank_comparison, sample
-where in_headline
+    banks.display_name,
+    comparison.calibration_rank,
+    comparison.test_rank,
+    comparison.quartile_shift
+from marketscope.mart_cross_bank_comparison as comparison
+join marketscope.dim_bank as banks using (cik)
+where comparison.in_headline
 ```
 
 ```sql secondary
 select
-    corr(test_beta, calibration_beta) as pearson,
-    regr_slope(test_beta, calibration_beta) as slope,
-    regr_intercept(test_beta, calibration_beta) as intercept,
-    regr_r2(test_beta, calibration_beta) as r_squared,
-    median(calibration_beta) as median_calibration,
-    median(test_beta) as median_test
+    printf('%+.2f', corr(test_beta, calibration_beta)) as pearson_text,
+    printf('%.2f', regr_slope(test_beta, calibration_beta)) as slope_text,
+    printf('%.2f', regr_r2(test_beta, calibration_beta)) as r2_text,
+    printf('%.2f', median(calibration_beta)) as median_calibration_text,
+    printf('%.2f', median(test_beta)) as median_test_text
 from marketscope.mart_cross_bank_comparison
 where in_headline
 ```
@@ -60,204 +274,230 @@ where in_headline
 ```sql samples
 select
     case sample
-        when 'headline' then 'Headline'
-        when 'R4+recovered' then 'R4 with recovered banks'
-        else sample
+        when 'headline' then 'Headline: survivors only'
+        when 'R1' then 'R1: tiers 1 and 2'
+        when 'R2' then 'R2: acquirers inside a cycle'
+        when 'R3' then 'R3: acquirers between cycles out'
+        when 'R4' then 'R4: SVB added'
+        when 'R4+recovered' then 'R4 + First Republic, Signature'
     end as sample_label,
     description,
     filers,
     spearman,
-    p_value,
     interval_low,
     interval_high,
-    supported
+    printf('%+.3f', spearman) as spearman_text,
+    printf('%+.3f to %+.3f', interval_low, interval_high) as interval_text,
+    printf('%.4f', p_value) as p_text
 from marketscope.mart_persistence_result
-order by case sample when 'headline' then 0 else 1 end, sample
+order by case sample when 'headline' then 0 when 'R4+recovered' then 6 else 1 end, sample
+```
+
+```sql recovered_result
+select
+    filers,
+    printf('%+.2f', spearman) as spearman_text
+from marketscope.mart_persistence_result
+where sample = 'R4+recovered'
+```
+
+```sql survivorship
+select
+    banks.display_name,
+    comparison.calibration_beta,
+    comparison.test_beta,
+    coalesce(banks.exit_type = 'failure', false) as failed,
+    case
+        when banks.exit_type = 'failure'
+            then 'Test beta to its last filing, ' || strftime(banks.last_filed_period, '%Y-%m-%d')
+    end as note
+from marketscope.mart_cross_bank_comparison as comparison
+join marketscope.dim_bank as banks using (cik)
+where comparison.in_r4
+union all
+select
+    bank,
+    calibration_beta,
+    test_beta,
+    true,
+    'From its Call Reports; test beta to ' || strftime(test_end, '%Y-%m-%d')
+from marketscope.mart_recovered_beta
 ```
 
 ```sql deviators
 select
-    registrant_name,
-    calibration_beta,
-    calibration_quartile,
-    test_beta,
-    test_quartile,
-    '/banks/' || cast(cast(cik as bigint) as varchar) as bank_link
-from marketscope.mart_cross_bank_comparison
-where material_deviator
-order by quartile_shift desc
+    banks.display_name,
+    printf('%.3f', comparison.calibration_beta) as calibration_beta,
+    'Q' || cast(comparison.calibration_quartile as integer) as calibration_quartile,
+    printf('%.3f', comparison.test_beta) as test_beta,
+    'Q' || cast(comparison.test_quartile as integer) as test_quartile,
+    '/banks/' || cast(cast(comparison.cik as bigint) as varchar) as bank_link
+from marketscope.mart_cross_bank_comparison as comparison
+join marketscope.dim_bank as banks using (cik)
+where comparison.material_deviator
+order by comparison.quartile_shift desc
+```
+
+```sql validation_points
+select
+    banks.display_name,
+    strftime(facts.quarter_end, '%Y') || 'Q' || quarter(facts.quarter_end) as quarter_label,
+    facts.cost_of_deposits,
+    facts.regulatory_cost_of_deposits
+from marketscope.fct_bank_quarter as facts
+join marketscope.dim_bank as banks using (cik)
+where facts.metric_tier = '1'
+  and facts.cost_of_deposits is not null
+  and facts.regulatory_cost_of_deposits is not null
 ```
 
 ```sql validation
 select
-    count(*) as pairs,
-    count(distinct cik) as filers,
-    median(abs(cost_of_deposits - regulatory_cost_of_deposits)) * 10000 as median_gap_bp,
-    avg(case when abs(cost_of_deposits - regulatory_cost_of_deposits) <= 0.001 then 1 else 0 end)
-        as within_10bp
+    format('{:,}', count(*)) as pairs_text,
+    count(distinct cik) as banks,
+    printf('%.1f', median(abs(cost_of_deposits - regulatory_cost_of_deposits)) * 10000)
+        as median_gap_text,
+    printf('%.0f%%', 100 * avg(case when abs(cost_of_deposits - regulatory_cost_of_deposits) <= 0.001 then 1 else 0 end))
+        as within_text
 from marketscope.fct_bank_quarter
 where metric_tier = '1'
   and cost_of_deposits is not null
   and regulatory_cost_of_deposits is not null
 ```
 
-## The question
+When the Federal Reserve raises rates, each bank decides how much of the rise to pass on to
+its depositors. A bank that passes on little keeps its funding cheap; one that passes on a
+lot pays to keep its deposits. The share it passes on over a cycle is its **deposit beta**.
+This study asks whether that is a property of the bank: whether the banks that repriced
+fastest in one tightening cycle did so again in the next.
 
-When the Federal Reserve raises rates, a bank decides how much of the rise to pass on to
-its depositors. The share it passes on over a tightening cycle is its deposit beta. A bank
-that passes on little keeps its funding cheap and its margin wide; one that passes on a lot
-pays to keep its deposits. The question here is whether that behaviour is a property of the
-bank: whether a bank that repriced faster than its peers in one cycle did so again in the
-next.
+## Two cycles, one fast and one slow
 
-The two cycles are very different, which is what makes them a test:
+<LineChart
+    data={policy}
+    x=quarter_end
+    y=rate
+    yFmt=pct1
+    yAxisTitle="Federal funds, quarterly average"
+    colorPalette={['#2a78d6']}
+    chartAreaHeight=220
+>
+    <ReferenceArea data={cycles} xMin=start_quarter xMax=end_quarter label=label color=#eb6834 />
+</LineChart>
 
-<DataTable data={cycles}>
-    <Column id=cycle_name title="Cycle" />
-    <Column id=start_quarter title="From" fmt='yyyy-mm-dd' />
-    <Column id=end_quarter title="To" fmt='yyyy-mm-dd' />
-    <Column id=start_rate_fraction title="Policy rate at start" fmt=pct2 />
-    <Column id=end_rate_fraction title="At end" fmt=pct2 />
-    <Column id=months title="Months" />
-    <Column id=move_per_year title="Rise per year" fmt=pct2 />
-</DataTable>
-
-Betas run higher in a faster and larger cycle, so levels are not expected to carry over and
-are not compared. The test is of the ordering, by rank correlation, which a level shift
-does not move.
+The calibration cycle ran from {cycles[0].start_text} to {cycles[0].end_text}, taking the
+policy rate from {cycles[0].start_rate_text} to {cycles[0].end_rate_text} over
+{cycles[0].months} months. The test cycle ran from {cycles[1].start_text} to
+{cycles[1].end_text}, from {cycles[1].start_rate_text} to {cycles[1].end_rate_text} in
+{cycles[1].months}. Betas run higher in a cycle like the second, so levels are not
+compared. The test is of the **ordering**, by rank correlation, which a level shift does not
+move.
 
 ## The plan, fixed before the result
 
-The sample, statistic, test, interval and robustness variants were written down on 10
-October 2026, before any cross-cycle figure had been computed
-([decision 0034](https://github.com/Aaron-Darcy/MarketScope/blob/main/docs/decisions.md)).
+Written down on 10 October 2026, before any cross-cycle figure was computed
+([decision 0034](https://github.com/Aaron-Darcy/MarketScope/blob/main/docs/decisions.md)):
 
-- **Sample.** A filer in the ranked fifty with a tier 1 beta in both cycles, tier 1 cost of
-  deposits in at least 80 percent of each cycle's quarters, no partial cycle, and no
-  material acquisition inside either cycle. No filer is excluded for the value of its beta.
-- **Statistic.** The Spearman correlation between calibration-cycle and test-cycle betas.
-- **Test.** One-sided permutation test of a positive correlation, 100,000 permutations,
-  with a 95 percent percentile bootstrap interval from 10,000 resamples, seed 20261010.
-- **Reading.** Persistence is supported if the correlation is positive with p below 0.05.
-  A result that misses the bar is reported as not shown, not as absent.
+<Grid cols=2>
+<div>
+
+**Sample.** Ranked banks with a tier 1 beta in both cycles, tier 1 cost of deposits in at
+least 80 percent of each cycle's quarters, no partial cycle and no material acquisition
+inside either cycle. No bank is excluded for the value of its beta.
+
+</div>
+<div>
+
+**Test.** Spearman correlation, judged by a one-sided permutation test (100,000
+permutations) with a 95 percent bootstrap interval (10,000 resamples), seed 20261010.
+Persistence is supported if the correlation is positive with p below 0.05.
+
+</div>
+</Grid>
 
 ## The result
 
-<Grid cols=4>
-<BigValue data={headline} value=filers title="Filers" />
-<BigValue data={headline} value=spearman title="Spearman" fmt='+0.000' />
-<BigValue data={headline} value=p_value title="One-sided p" fmt='0.0000' />
-<BigValue data={headline} value=interval_low title="95% interval from" fmt='+0.000' />
-</Grid>
+<div style="background: linear-gradient(135deg, #0d366b 0%, #1c5cab 60%, #2a78d6 100%); color: #fff; border-radius: 14px; padding: 26px 32px; margin: 20px 0; display: flex; flex-wrap: wrap; gap: 28px; align-items: center;">
+  <div style="font-size: 64px; font-weight: 700; line-height: 1;">{headline[0].spearman_text}</div>
+  <div style="flex: 1 1 320px; font-size: 16px; line-height: 1.5;">
+    Spearman correlation across {headline[0].filers} banks, one-sided p {headline[0].p_text},
+    95% interval {headline[0].low_text} to {headline[0].high_text}.
+    {#if headline[0].supported}<b>Persistence is supported</b> by the rule fixed in advance.{:else}<b>Persistence is not shown</b> by the rule fixed in advance.{/if}
+  </div>
+</div>
 
-The interval runs from <Value data={headline} column=interval_low fmt='+0.000' /> to
-<Value data={headline} column=interval_high fmt='+0.000' />.
+Each dot is a bank, placed by its rank in each cycle. A bank on the diagonal kept its exact
+place. The fast end holds best: the cluster at the top right is the same banks in both
+cycles, several of them direct banks with no branch network. The slow end is looser.
 
-{#if headline[0].supported}
+<ECharts config={rankConfig} height="460px" />
 
-By the rule fixed in advance, persistence is supported: a bank that passed more of the
-2015–2019 tightening through to its depositors than its peers tended to pass more of the
-2022–2023 tightening through as well.
+Secondary, and not the result, since levels are not expected to transfer: Pearson
+{secondary[0].pearson_text}, and a least-squares fit of test beta on calibration beta with
+slope {secondary[0].slope_text} and R² {secondary[0].r2_text}. The median beta rose from
+{secondary[0].median_calibration_text} to {secondary[0].median_test_text}.
 
-{:else}
+## Robust to every registered variant
 
-By the rule fixed in advance, persistence is not shown. At this sample size that is not
-evidence of its absence.
+<ECharts config={forestConfig} height="300px" />
 
-{/if}
+## Survivorship strengthens it
 
-<ScatterPlot
-    data={ranks}
-    x=calibration_rank
-    y=test_rank
-    series=placement
-    tooltipTitle=registrant_name
-    xAxisTitle="Calibration rank, 1 the slowest"
-    yAxisTitle="Test rank"
-    chartAreaHeight=360
-/>
+A sample of banks that kept filing is survivors by construction. Silicon Valley Bank stopped
+filing inside the test cycle; First Republic and Signature never filed with the SEC, so
+their betas are recovered from their own Call Reports. Adding all three takes the
+correlation to {recovered_result[0].spearman_text} across {recovered_result[0].filers}
+banks. Leaving out the failed banks, as an EDGAR-only study must, slightly understates the
+persistence.
 
-The persistence is strongest at the fast end: <Value data={fastest} column=stayed_fastest /> of the <Value data={fastest} column=fastest_calibration /> fastest repricers of the calibration
-cycle were among the six fastest of the test cycle. The slow end of the ordering is less
-stable. The [comparison page](/comparison) shows every bank's place and the full quartile
-transition matrix.
+<ECharts config={survivorConfig} height="440px" />
 
-Secondary, and not the result, since levels are not expected to transfer: the Pearson
-correlation is <Value data={secondary} column=pearson fmt='+0.000' />, and a least-squares
-fit of test beta on calibration beta has slope
-<Value data={secondary} column=slope fmt='0.000' /> and R²
-<Value data={secondary} column=r_squared fmt='0.000' />. The median beta rose from
-<Value data={secondary} column=median_calibration fmt='0.000' /> to
-<Value data={secondary} column=median_test fmt='0.000' />.
+## Three banks that moved
 
-## Robustness and survivorship
-
-Each variant was registered beside the headline and none replaces it. R4 and its extension
-are the survivorship comparison: the headline is survivors by construction, since a bank
-that stopped filing inside the test cycle has only a partial beta.
-
-<DataTable data={samples}>
-    <Column id=sample_label title="Sample" />
-    <Column id=description title="Change to the sample" wrap=true />
-    <Column id=filers title="Filers" />
-    <Column id=spearman title="Spearman" fmt='+0.000' />
-    <Column id=p_value title="p" fmt='0.0000' />
-    <Column id=interval_low title="95% interval, low" fmt='+0.000' />
-    <Column id=interval_high title="High" fmt='+0.000' />
-    <Column id=supported title="Supported" />
-</DataTable>
-
-Silicon Valley Bank enters R4 on a test beta measured to its last filed quarter. First
-Republic and Signature never filed with the SEC, so their betas come from their own Call
-Reports by the same arithmetic. Adding the failed banks strengthens the correlation, which
-is the direction survivorship bias was expected to run: an EDGAR-only sample slightly
-understates the persistence. Two of the betas in that comparison come from Call Reports and
-the rest from XBRL; the two sources order banks almost identically within each cycle
-([methodology 7.5](https://github.com/Aaron-Darcy/MarketScope/blob/main/docs/methodology.md#75-error-attribution)).
-
-## Material deviators
-
-Filers two or more quartiles apart between the cycles:
+Two or more quartiles apart between the cycles:
 
 <DataTable data={deviators} link=bank_link>
-    <Column id=registrant_name title="Filer" />
-    <Column id=calibration_beta title="Calibration beta" fmt='0.000' />
-    <Column id=calibration_quartile title="Quartile" />
-    <Column id=test_beta title="Test beta" fmt='0.000' />
-    <Column id=test_quartile title="Quartile" />
+    <Column id=display_name title="Bank" />
+    <Column id=calibration_beta title="2015–19 beta" align=right />
+    <Column id=calibration_quartile title="Quartile" align=center />
+    <Column id=test_beta title="2022–23 beta" align=right />
+    <Column id=test_quartile title="Quartile" align=center />
 </DataTable>
 
-Each hypothesis below was formed after the result was seen, and only State Street's has
-been tested.
+Each hypothesis was formed after the result was seen, and only State Street's has been
+tested.
 
-- **State Street.** A custody bank holds much of its deposits in other currencies, and euro
-  policy rates stayed negative through 2015–2019 while the dollar rate rose. Tested against
-  the Call Report split between domestic and foreign offices, the mechanism is there but
-  does not explain the move: measured on its domestic offices alone, State Street moves
-  further. Its deviation is open.
-- **Zions.** A commercially funded regional with a large uninsured deposit base, exposed to
-  the 2023 regional bank deposit flight in a way it was not in 2015–2019.
-- **Wells Fargo.** Under the Federal Reserve's asset cap throughout the test cycle, it had
-  little use for deposits it could not deploy and so little reason to pay for them. The cap
-  was imposed in February 2018, late in the calibration cycle.
+- **State Street.** A custody bank with much of its deposits in other currencies, while euro
+  rates stayed negative through 2015–2019. Tested against the Call Report split between
+  domestic and foreign offices, the mechanism is there but does not explain the move: on its
+  domestic offices alone State Street moves further. Its deviation is open.
+- **Zions.** A commercially funded regional with a large uninsured base, exposed to the
+  2023 regional bank deposit flight in a way it was not in 2015–2019.
+- **Wells Fargo.** Under the Federal Reserve's asset cap throughout the test cycle, with
+  little reason to pay for deposits it could not deploy. The cap came in February 2018, late
+  in the calibration cycle.
 
 ## Is it the banks, or the tagging?
 
-Every cost of deposits here is built from XBRL tags, and filers tag differently. Each
-bank-quarter is therefore checked against the cost computed from the same group's Call
-Reports by the same arithmetic. At tier 1, across <Value data={validation} column=pairs fmt=num0 /> bank-quarters and <Value data={validation} column=filers /> filers, the median gap is <Value data={validation} column=median_gap_bp fmt='0.0' /> basis points and <Value data={validation} column=within_10bp fmt=pct1 /> agree within 10. Recomputed
-entirely on Call Report betas, and again on the Call Reports' own average balances in place
-of the endpoint averages the XBRL metric has to use, the headline barely moves
+Every cost of deposits here is built from XBRL tags, and banks tag differently. So each one
+is checked against the cost computed from the same bank's Call Reports. Each dot below is a
+bank-quarter at tier 1: {validation[0].pairs_text} of them across {validation[0].banks}
+banks. The median gap is **{validation[0].median_gap_text} basis points**, and
+{validation[0].within_text} agree within 10.
+
+<ECharts config={validationConfig} height="440px" />
+
+Recomputed entirely on Call Report betas, and again on the Call Reports' own average
+balances, the headline barely moves
 ([methodology 7.5 and 7.6](https://github.com/Aaron-Darcy/MarketScope/blob/main/docs/methodology.md#7-validation-completed-so-far)).
-The persistence belongs to the banks' reported deposit costs, not to how their filings are
-tagged.
+The persistence belongs to the banks, not to how their filings are tagged.
 
-## What the result does not show
+## What it does not show
 
-- It is an association across <Value data={headline} column=filers /> banks, not a
-  forecast for any one of them, and nothing here predicts failure or distress.
-- Its interval is wide. The data are consistent with a correlation as modest as <Value data={headline} column=interval_low fmt='0.00' /> or as strong as <Value data={headline} column=interval_high fmt='0.00' />.
-- Three of the headline betas rest on an interest-bearing base that cannot be reconciled
-  at one endpoint, and the explanation for State Street's move is open. The
+- A forecast for any one bank. The interval runs {headline[0].low_text} to
+  {headline[0].high_text}.
+- Anything about failure or distress.
+- Three headline betas rest on an interest-bearing base that cannot be reconciled at one
+  endpoint, and State Street's move is unexplained. The
   [methodology](https://github.com/Aaron-Darcy/MarketScope/blob/main/docs/methodology.md)
   lists every limitation, including those resolved unsatisfactorily.
