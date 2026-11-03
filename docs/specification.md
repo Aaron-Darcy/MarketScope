@@ -431,7 +431,9 @@ Seven pages:
 6. **Data health** — pipeline status, test results, coverage, freshness.
 7. **Methodology** — harmonisation, approximations, exclusions, validation error rates.
 
-Built with Evidence.dev, deployed as a static site at no running cost.
+Built with Evidence.dev, deployed as a static site at no running cost. The site uses the
+last release of Evidence's original framework, 40.1.8, pinned, since its successor serves
+from a running server rather than as static files (decision 0045).
 
 ---
 
@@ -509,6 +511,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-11-03 | Section 8 records that the site is built on Evidence 40.1.8, pinned, rather than on Evidence Core, which does not build static sites. See decision 0045. |
 | 2026-11-02 | Section 7.1 records that the site builds from a committed Parquet export of the tables it reads rather than from the warehouse. See decision 0044. |
 | 2026-11-02 | `mart_persistence_result` and `mart_recovered_beta` added to 7.1: the headline, each robustness variant and the survivorship comparison as the site states them, and the two failed banks the comparison page shows, computed through the persistence library. See decision 0043. |
 | 2026-11-02 | `mart_cross_bank_comparison` marked in 7.1 as a dbt Python model: it places members in the pre-registered samples through the persistence library rather than a second implementation of the rules in SQL. See decision 0042. |

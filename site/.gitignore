@@ -1,0 +1,8 @@
+.evidence/template
+.svelte-kit
+build
+node_modules
+static/data
+*.options.yaml
+.env
+.evidence/meta

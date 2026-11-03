@@ -1,0 +1,6 @@
+# The site reads the committed export in data/site/ rather than the warehouse, which is not
+# committed (decision 0044). Paths in the queries resolve from site/, where Evidence runs.
+name: marketscope
+type: duckdb
+options:
+  filename: ":memory:"

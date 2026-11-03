@@ -113,3 +113,12 @@ def test_every_exported_table_is_a_dbt_model() -> None:
     models = {path.stem for path in MODELS.rglob("*") if path.suffix in {".sql", ".py"}}
 
     assert set(SITE_TABLES) <= models
+
+
+def test_the_site_reads_every_exported_table_and_nothing_else() -> None:
+    sources = Path(__file__).resolve().parents[1] / "site" / "sources" / "marketscope"
+    queries = {path.stem: path.read_text(encoding="utf-8") for path in sources.glob("*.sql")}
+
+    assert set(queries) == set(SITE_TABLES)
+    for table, query in queries.items():
+        assert f"'../data/site/{table}.parquet'" in query

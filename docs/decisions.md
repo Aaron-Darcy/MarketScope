@@ -1889,3 +1889,36 @@ readable, so that commit's message has to say what moved; the export prints row 
 help. The export has to be rerun after every `dbt build` that should reach the site, and
 nothing yet checks that it was. Milestone 6's scheduled refresh is where that check
 belongs.
+
+---
+
+## 0045 — Build the site on Evidence 40, pinned, rather than on Evidence Core
+
+**Date** 2026-11-03
+**Status** Accepted
+
+**Context.** Specification 8 names Evidence.dev and a static site at no running cost. In
+August 2026 Evidence replaced the open-source framework the specification assumed with
+Evidence Core: a new CLI, Markdoc components and ClickHouse SQL. Core self-hosts as a Docker
+server with basic authentication, documents no source for local DuckDB or Parquet files,
+and drops templated pages, so it has no page per bank and no static output. The previous
+framework's last release, `@evidence-dev/evidence` 40.1.8, dates from February 2026 and is
+not deprecated on npm.
+
+**Decision.** Build on Evidence 40.1.8 with its DuckDB connector, every Evidence package
+pinned to an exact version and the lockfile committed. The connector reads the committed
+export of 0044 through an in-memory database. CI builds the site on Node 26, the version it
+was checked on, and deploys it to GitHub Pages under `/MarketScope`.
+
+**Alternatives.** Evidence Core, on Docker or on Evidence Studio: a running server and a
+login in front of a public site, against specification 8 and 0006. Another static
+generator reading the export through DuckDB-WASM, such as Observable Framework: workable,
+and the export of 0044 would carry over unchanged, but it replaces the framework the
+specification names for no gain the site needs yet.
+
+**Consequences.** The framework receives no further fixes upstream. What is deployed is
+static files, so nothing unmaintained runs where the public can reach it; the exposure is
+in the build. If Evidence 40 stops building on a supported Node, the pages are rewritten
+for another static generator and the data layer is untouched. Specification 10 defers a
+custom frontend until Evidence constrains a feature users need; that condition is
+unchanged by this entry.

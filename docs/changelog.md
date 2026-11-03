@@ -160,6 +160,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- The site, in `site/`, on Evidence 40.1.8 pinned (decision 0045): an overview with the
+  finding, the survivorship comparison and what is and is not claimed; a bank explorer with
+  a page per member showing its cost of deposits against the policy rate and its Call
+  Reports, beta by cycle, tier by quarter, deposits and entity events; the cross-bank
+  comparison with the cycle-on-cycle scatter, distributions, quartile transitions and
+  sample membership; and the persistence case study. Every figure is read from the export,
+  including the Call Report agreement, which the pages compute from `fct_bank_quarter`
+  and which matches methodology 7.4. A test holds the site's source queries to the
+  exported tables.
 - `python -m marketscope.site_data`, which exports the nine tables the site reads to
   Parquet in `data/site/`, committed so the site can be built without the warehouse
   (decision 0044). It refuses an empty table or a repeated key, checks each file against

@@ -1,0 +1,12 @@
+appearance:
+  default: light
+  switcher: true
+
+deployment:
+  basePath: /MarketScope
+
+plugins:
+  components:
+    "@evidence-dev/core-components": {}
+  datasources:
+    "@evidence-dev/duckdb": {}
