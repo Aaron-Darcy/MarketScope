@@ -160,6 +160,35 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `.github/workflows/site.yml`, which builds the site in strict mode on every change to
+  `site/` or `data/site/` and deploys `main` to GitHub Pages.
+- The site, in `site/`, on Evidence 40.1.8 pinned (decision 0045): an overview with the
+  finding, the survivorship comparison and what is and is not claimed; a bank explorer with
+  a page per member showing its cost of deposits against the policy rate and its Call
+  Reports, beta by cycle, tier by quarter, deposits and entity events; the cross-bank
+  comparison with the cycle-on-cycle scatter, distributions, quartile transitions and
+  sample membership; and the persistence case study. Every figure is read from the export,
+  including the Call Report agreement, which the pages compute from `fct_bank_quarter`
+  and which matches methodology 7.4. A test holds the site's source queries to the
+  exported tables. Each page leads with charts: a headline panel, the cycle-on-cycle
+  scatter, an interval plot of every pre-registered sample, a rank slope chart, a dumbbell
+  of both cycles' betas, the survivorship scatter, XBRL against Call Report cost of
+  deposits, and per bank its peer position and tier history. Charts Evidence's components
+  cannot draw use its ECharts escape hatch, on a palette checked for colour-blind
+  separation. Banks are labelled by a display name derived from the SEC registrant name.
+- `python -m marketscope.site_data`, which exports the nine tables the site reads to
+  Parquet in `data/site/`, committed so the site can be built without the warehouse
+  (decision 0044). It refuses an empty table or a repeated key, checks each file against
+  its table's columns, types and row count, and replaces the published files only once all
+  have passed. An unchanged warehouse reproduces the same bytes.
+- `mart_persistence_result`, a dbt Python model with the Spearman correlation, permutation
+  p-value and bootstrap interval of the headline, each robustness variant and R4 with
+  First Republic and Signature, computed through `marketscope.persistence` (decision
+  0043). It matches methodology 6.1 to the reported digit, and a test holds each sample's
+  size to the comparison mart. Reading the recovered banks moves from the analysis script
+  into the library; the script's outputs are unchanged. `mart_recovered_beta` carries
+  First Republic's and Signature's cycle betas from their Call Reports for the comparison
+  page. dbt build: 194 pass, 2 warn by design.
 - Four tests on the site marts: every headline filer has tier 1 coverage of at least 80
   percent in each cycle, the remaining coverage test of specification 7.2; the comparison
   mart's betas equal the fact table's; headline ranks form a complete set and no other

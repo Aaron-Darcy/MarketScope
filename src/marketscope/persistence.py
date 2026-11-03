@@ -13,7 +13,7 @@ from datetime import date
 import duckdb
 import pandas as pd
 
-from marketscope.cycles import STUDY_CYCLES, RateCycle
+from marketscope.cycles import STUDY_CYCLES, RateCycle, read_policy_rate, read_study_cycles
 from marketscope.metrics import cumulative_beta
 from marketscope.ranking import (
     Interval,
@@ -23,6 +23,7 @@ from marketscope.ranking import (
     quartiles,
     spearman,
 )
+from marketscope.regulatory import REFERENCE_MAP
 
 SEED = 20261010
 PERMUTATIONS = 100_000
@@ -35,6 +36,11 @@ COVERAGE_FLOOR = 0.80
 DEVIATION = 2
 
 CALIBRATION, TEST = STUDY_CYCLES
+
+# Decision 0034 adds these two to R4 once recovered from regulatory data. Neither filed with
+# the SEC, so their betas come from Call Reports, which methodology 7.5 shows order banks as
+# the XBRL figures do.
+RECOVERED: tuple[str, ...] = ("BANK:59017", "BANK:57053")
 
 
 @dataclass(frozen=True)
@@ -317,3 +323,110 @@ def recovered_beta(
     if test_end is None:
         return None
     return RecoveredBeta(calibration=betas[CALIBRATION], test=betas[TEST], test_end=test_end)
+
+
+def read_recovered(connection: duckdb.DuckDBPyConnection) -> dict[str, RecoveredBeta]:
+    """Cycle betas of the banks decision 0034 recovers into R4, keyed by name.
+
+    Raises where a bank does not qualify, since the recovered sample is pre-registered with
+    both and leaving one out would report a different sample under the same name.
+    """
+    cycles = read_study_cycles(connection)
+    policy = read_policy_rate(connection)
+    recovered: dict[str, RecoveredBeta] = {}
+    for key in RECOVERED:
+        rows = connection.execute(
+            "select quarter_end, cost_of_deposits from int_regulatory_deposit_cost "
+            "where group_key = ?",
+            [key],
+        ).fetchall()
+        beta = recovered_beta(dict(rows), policy, cycles)
+        if beta is None:
+            raise ValueError(f"{REFERENCE_MAP[key].name} does not qualify for R4")
+        recovered[REFERENCE_MAP[key].name] = beta
+    return recovered
+
+
+def supported(result: Result) -> bool:
+    """The pre-registered reading: a positive correlation with p below the significance level."""
+    return result.spearman > 0 and result.p_value < SIGNIFICANCE
+
+
+HEADLINE_SAMPLE = "headline"
+RECOVERED_SAMPLE = "R4+recovered"
+
+RESULT_COLUMNS: tuple[str, ...] = (
+    "sample",
+    "description",
+    "filers",
+    "spearman",
+    "p_value",
+    "interval_low",
+    "interval_high",
+    "undefined_resamples",
+    "supported",
+)
+
+
+def result_frame(filers: list[Filer], recovered: dict[str, RecoveredBeta]) -> pd.DataFrame:
+    """The pre-registered statistic, test and interval for each sample, in reporting order:
+    the headline, the four variants, and R4 with the banks recovered from Call Reports.
+    """
+    if not recovered:
+        raise ValueError("The recovered sample needs the banks decision 0034 names")
+
+    samples: list[tuple[str, str, Result]] = [
+        (
+            HEADLINE_SAMPLE,
+            "headline sample",
+            assess([filer for filer in filers if eligible(filer, HEADLINE)]),
+        )
+    ]
+    for name, (description, rules) in VARIANTS.items():
+        samples.append(
+            (name, description, assess([filer for filer in filers if eligible(filer, rules)]))
+        )
+
+    survivors = [filer for filer in filers if eligible(filer, VARIANTS["R4"][1])]
+    samples.append(
+        (
+            RECOVERED_SAMPLE,
+            f"R4 with {' and '.join(recovered)} recovered from Call Reports",
+            assess_pairs(
+                [filer.beta(CALIBRATION) for filer in survivors]
+                + [beta.calibration for beta in recovered.values()],
+                [filer.beta(TEST) for filer in survivors]
+                + [beta.test for beta in recovered.values()],
+            ),
+        )
+    )
+
+    rows = [
+        (
+            name,
+            description,
+            result.filers,
+            result.spearman,
+            result.p_value,
+            result.interval.low,
+            result.interval.high,
+            result.interval.undefined,
+            supported(result),
+        )
+        for name, description, result in samples
+    ]
+    return pd.DataFrame(rows, columns=list(RESULT_COLUMNS))
+
+
+RECOVERED_COLUMNS: tuple[str, ...] = ("bank", "calibration_beta", "test_beta", "test_end")
+
+
+def recovered_frame(recovered: dict[str, RecoveredBeta]) -> pd.DataFrame:
+    """One row per bank recovered from Call Reports, with each cycle's beta and the quarter
+    its test beta is measured to."""
+    if not recovered:
+        raise ValueError("The recovered sample needs the banks decision 0034 names")
+    return pd.DataFrame(
+        [(name, beta.calibration, beta.test, beta.test_end) for name, beta in recovered.items()],
+        columns=list(RECOVERED_COLUMNS),
+    )

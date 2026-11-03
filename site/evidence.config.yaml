@@ -1,0 +1,38 @@
+appearance:
+  default: light
+  switcher: true
+
+deployment:
+  basePath: /MarketScope
+
+theme:
+  colorPalettes:
+    default:
+      light:
+        - "#1f3a5f"
+        - "#d9822b"
+        - "#9aa5b1"
+        - "#2a9d8f"
+        - "#c0392b"
+        - "#6c5b7b"
+      dark:
+        - "#7fa7d9"
+        - "#f0a35e"
+        - "#9aa5b1"
+        - "#4fc1b2"
+        - "#e57368"
+        - "#b39cc9"
+  colorScales:
+    default:
+      light:
+        - "#eef2f7"
+        - "#1f3a5f"
+      dark:
+        - "#1b2533"
+        - "#7fa7d9"
+
+plugins:
+  components:
+    "@evidence-dev/core-components": {}
+  datasources:
+    "@evidence-dev/duckdb": {}

@@ -1818,3 +1818,107 @@ reports them. It reads the marts it depends on by name on the session, so they a
 referenced explicitly for dbt to order the build. First Republic and Signature, recovered
 from Call Reports into R4, are not members and do not appear; the comparison page must
 state them beside the result, as the methodology does.
+
+---
+
+## 0043 — State the persistence result on the site from the warehouse
+
+**Date** 2026-11-02
+**Status** Accepted. Extends 0042.
+
+**Context.** The site's overview leads with the headline correlation, its p-value and
+interval, the four robustness variants and the survivorship comparison with First Republic
+and Signature. The persistence analysis computes them and writes them to a text report.
+0042 put the sample each filer enters into the warehouse so the site and the analysis
+cannot disagree about membership; the figures computed on those samples were still only in
+the report.
+
+**Decision.** `mart_persistence_result` is a dbt Python model with one row per sample: the
+headline, R1 to R4, and R4 with the two recovered banks. It computes each through
+`marketscope.persistence` on the pre-registered seed, permutation count and resample count.
+Reading the two recovered banks moves from the analysis script into the library beside the
+sample rules, as the deviator threshold did in 0042. A dbt test holds each sample's size to
+the filers the comparison mart admits to it. `mart_recovered_beta` carries First
+Republic's and Signature's cycle betas, which 0042 requires the comparison page to state
+and which no other mart holds, since neither bank is a member.
+
+**Alternatives.** Write the figures into the page text. They are fixed by a pre-registered
+plan, but a page that states +0.59 beside a comparison table rebuilt on a later load would
+not show the two had parted. Compute the correlation in the page's SQL from the comparison
+mart's ranks. That reproduces the statistic but not the permutation test or the bootstrap
+interval, which would then come from somewhere else.
+
+**Consequences.** The mart reproduces methodology 6.1 to the last digit reported: +0.590,
+p 0.0020, +0.154 to +0.836 across 22 filers, and +0.640, p 0.0005, across 25 with the
+recovered banks. It adds about 15 seconds to a build, nearly all of it the 600,000
+permutations. The analysis script's outputs are unchanged.
+
+---
+
+## 0044 — Build the site from a committed Parquet export of the tables it reads
+
+**Date** 2026-11-02
+**Status** Accepted
+
+**Context.** Specification 8 calls for a static site at no running cost, and Milestone 4
+exits when it deploys publicly. A static build needs its data when it runs. The warehouse
+is gitignored and cannot be rebuilt unattended: the FFIEC bulk
+archives are downloaded by hand (0038), and the SEC load takes a contact-bearing user agent
+that a public workflow would have to hold as a secret.
+
+**Decision.** `python -m marketscope.site_data` writes the nine tables the site reads to
+`data/site/` as Parquet, one file per table, rows in key order, and the files are
+committed. The export refuses an empty table or a repeated key, checks every written file
+against its table's columns, types and row count, and replaces the published set only once
+every file has passed. The site builds from these files and nothing else.
+
+**Alternatives.** CSV, which a diff can be read in. Tried against the warehouse: reading
+the files back by type inference turned `dim_bank.sic` into an integer and the 8-K item
+`2.01` into a float, and columns such as the metric tier survive only because of the values
+they happen to hold today. Parquet carries the types with the data. Commit the warehouse
+itself: an 80 megabyte binary, rewritten by every load, for 160 kilobytes of published
+tables. Rebuild
+the warehouse in CI: blocked by the hand-downloaded archives, and a deploy would then
+depend on the SEC, FRED and FDIC all answering. Build the site locally and push only its
+output: the published pages would then have no committed source a reader could rebuild
+them from.
+
+**Consequences.** A change to a published figure arrives as a commit of the export, so the
+site cannot move without a reviewable change to the repository. Parquet diffs are not
+readable, so that commit's message has to say what moved; the export prints row counts to
+help. The export has to be rerun after every `dbt build` that should reach the site, and
+nothing yet checks that it was. Milestone 6's scheduled refresh is where that check
+belongs.
+
+---
+
+## 0045 — Build the site on Evidence 40, pinned, rather than on Evidence Core
+
+**Date** 2026-11-03
+**Status** Accepted
+
+**Context.** Specification 8 names Evidence.dev and a static site at no running cost. In
+August 2026 Evidence replaced the open-source framework the specification assumed with
+Evidence Core: a new CLI, Markdoc components and ClickHouse SQL. Core self-hosts as a Docker
+server with basic authentication, documents no source for local DuckDB or Parquet files,
+and drops templated pages, so it has no page per bank and no static output. The previous
+framework's last release, `@evidence-dev/evidence` 40.1.8, dates from February 2026 and is
+not deprecated on npm.
+
+**Decision.** Build on Evidence 40.1.8 with its DuckDB connector, every Evidence package
+pinned to an exact version and the lockfile committed. The connector reads the committed
+export of 0044 through an in-memory database. CI builds the site on Node 26, the version it
+was checked on, and deploys it to GitHub Pages under `/MarketScope`.
+
+**Alternatives.** Evidence Core, on Docker or on Evidence Studio: a running server and a
+login in front of a public site, against specification 8 and 0006. Another static
+generator reading the export through DuckDB-WASM, such as Observable Framework: workable,
+and the export of 0044 would carry over unchanged, but it replaces the framework the
+specification names for no gain the site needs yet.
+
+**Consequences.** The framework receives no further fixes upstream. What is deployed is
+static files, so nothing unmaintained runs where the public can reach it; the exposure is
+in the build. If Evidence 40 stops building on a supported Node, the pages are rewritten
+for another static generator and the data layer is untouched. Specification 10 defers a
+custom frontend until Evidence constrains a feature users need; that condition is
+unchanged by this entry.

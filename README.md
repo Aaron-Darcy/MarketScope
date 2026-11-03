@@ -15,9 +15,10 @@ project measures deposit beta for US bank holding companies directly from XBRL f
 data, calibrates it over the 2015–2019 tightening cycle, and tests whether the resulting
 cross-bank ordering holds during the far faster 2022–2023 cycle.
 
-**Status: Milestone 4, the site.** Milestone 3 closed on 30 October 2026, and the tables
-the site's first pages read are built: `fct_bank_quarter` and the bank overview and
-cross-bank comparison marts. The Evidence.dev site itself is not. Cost of deposits is
+**Status: Milestone 4, the site.** Milestone 3 closed on 30 October 2026. The site's four
+Milestone 4 pages are built in `site/` (overview, bank explorer, cross-bank comparison and
+the persistence case study) and read every figure from the warehouse through a committed
+export; the milestone closes when the site deploys publicly. Cost of deposits is
 resolved for 3,066 bank-quarters across the largest fifty deposit-taking US filers and
 one pinned terminal filer, each at a stated comparability tier,
 and `fct_deposit_beta` carries a tiered beta for every member in both study cycles, with a
@@ -121,6 +122,7 @@ src/marketscope/       ingestion clients, universe construction, DuckDB load
 analysis/feasibility/  Milestone 0 profiling and validation
 analysis/universe/     universe construction and EDGAR coverage audit
 data/seeds/            the committed universe
+data/site/             the tables the site reads, exported from the warehouse
 transform/dbt/         warehouse models
 site/                  Evidence.dev application (from Milestone 4)
 docs/                  specification, methodology, decision record
@@ -168,6 +170,26 @@ Size what EDGAR cannot reach, against FDIC data:
 ```
 python analysis/universe/reference_audit.py
 ```
+
+The site builds from an export of the tables it reads, committed under `data/site/`, not
+from the warehouse. Refresh it after a build whose results should reach the site:
+
+```
+python -m marketscope.site_data
+```
+
+The site needs Node 26. It is built on Evidence 40.1.8, pinned (decision 0045):
+
+```
+cd site
+npm ci
+npm run sources
+npm run dev
+```
+
+`.github/workflows/site.yml` builds it on every change to `site/` or `data/site/` and
+deploys `main` to GitHub Pages, which has to be enabled once in the repository's settings
+with GitHub Actions as the source.
 
 Responses are cached under `data/cache`, so repeated runs during development do not
 re-request from the SEC.
