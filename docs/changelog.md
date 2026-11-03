@@ -160,6 +160,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Added
 
+- `.github/workflows/site.yml`, which builds the site in strict mode on every change to
+  `site/` or `data/site/` and deploys `main` to GitHub Pages.
 - The site, in `site/`, on Evidence 40.1.8 pinned (decision 0045): an overview with the
   finding, the survivorship comparison and what is and is not claimed; a bank explorer with
   a page per member showing its cost of deposits against the policy rate and its Call

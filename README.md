@@ -187,6 +187,10 @@ npm run sources
 npm run dev
 ```
 
+`.github/workflows/site.yml` builds it on every change to `site/` or `data/site/` and
+deploys `main` to GitHub Pages, which has to be enabled once in the repository's settings
+with GitHub Actions as the source.
+
 Responses are cached under `data/cache`, so repeated runs during development do not
 re-request from the SEC.
 
