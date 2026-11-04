@@ -1922,3 +1922,48 @@ in the build. If Evidence 40 stops building on a supported Node, the pages are r
 for another static generator and the data layer is untouched. Specification 10 defers a
 custom frontend until Evidence constrains a feature users need; that condition is
 unchanged by this entry.
+
+---
+
+## 0046 — Replace Evidence with a React site that reads the export in the browser
+
+**Date** 2026-11-04
+**Status** Accepted. Supersedes 0045.
+
+**Context.** The Milestone 4 pages on Evidence 40 read as a report rather than a website:
+markdown pages with SQL blocks, a documentation sidebar, and charts that, beyond a line
+and a bar, already went through Evidence's raw ECharts escape hatch. What a reader of the
+site needs and Evidence does not provide without custom Svelte inside an unmaintained
+framework (0045) is ordinary site behaviour: a navigation bar, a searchable and filterable
+bank list, charts whose marks open the bank they stand for, one bank highlighted across
+several charts, a sample selector that rescopes a table. That is the condition
+specification 10 set for building a custom frontend.
+
+**Decision.** `site/` is a static single-page application on Vite, React and TypeScript,
+every package pinned to an exact version with the lockfile committed. It fetches the nine
+Parquet files of 0044 and reads them in the browser with hyparquet. Each table is decoded
+against a typed column spec that refuses a missing column, an empty table, a null in a
+required column or a value of the wrong type, and the pages compute their figures from the
+decoded rows in TypeScript rather than in SQL. Charts are Apache ECharts 6, the library
+the Evidence pages already drew most of their charts with. GitHub Pages has no rewrite
+rules, so the build copies `index.html` to `404.html` and the router takes a deep link
+from there. CI type-checks, lints, checks formatting and runs the site's tests before it
+builds.
+
+**Alternatives.** Restyle Evidence through its layout component: the pages stay markdown
+and SQL on a framework that receives no fixes. Observable Framework, named in 0045: static
+and close to Evidence's model, but its pages are notebook documents too. DuckDB-WASM in
+the browser to keep the SQL: several megabytes of WebAssembly to query 170 kilobytes, and
+moving the logic out of page-embedded SQL is part of the point. Astro or another
+generator that renders a page per bank at build time: better for search engines, at the
+cost of a second rendering path no reader needs yet.
+
+**Consequences.** The export of 0044 is unchanged and nothing in the warehouse or dbt
+moves; `tests/test_site_data.py` now holds the site's loader, rather than its SQL sources,
+to the exported tables. The figures the Evidence pages computed in SQL, including the Call
+Report agreement, the headline sample summary and the bank display names, are
+reimplemented in TypeScript and tested against the values the SQL gave on the same
+export. The pages render only with JavaScript. A deep link is answered with HTTP status
+404 before the app draws it: browsers show the page, but a crawler may treat bank pages as
+missing. The script is about 370 kilobytes compressed, most of it ECharts and React.
+Specification 10's deferred custom frontend is taken up by this entry.

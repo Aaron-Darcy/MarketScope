@@ -44,6 +44,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Newest 
 
 ### Changed
 
+- The site is rebuilt as a static React application in place of Evidence 40 (decision
+  0046). It reads the nine exported Parquet files in the browser with hyparquet, decodes
+  each against a typed column spec that refuses a missing column, an empty table, a stray
+  null or a value of the wrong type, and computes every figure in TypeScript. The
+  figures match those the Evidence pages computed in SQL from the same export, and tests
+  hold them to it. The pages are the same four, now with a navigation bar, a hero and
+  stat strip on the overview, a searchable and filterable bank explorer with a card per
+  bank carrying its cost of deposits against the Fed, a table view with sortable columns,
+  bank pages with a zoomable cost chart against the middle half of all banks, a bank
+  selector and links to the previous and next bank, a comparison page that highlights one
+  bank across its charts and rescopes the membership table to any registered sample, and a
+  case study with a contents sidebar. A click on any mark that stands for a bank opens its
+  page. Light and dark themes take their chart colours from a palette checked for
+  colour-blind separation in both. `tests/test_site_data.py` holds the site's loader,
+  rather than its SQL sources, to the exported tables. The site workflow type-checks,
+  lints, checks formatting and runs the site's tests before it builds.
+
 - The README and methodology record Milestone 4 as in progress, with the tables the
   site reads built and the site not. The specification marks the comparison mart as a
   Python model (decision 0042). The methodology dates the FFIEC archives by the FFIEC's

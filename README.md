@@ -124,7 +124,7 @@ analysis/universe/     universe construction and EDGAR coverage audit
 data/seeds/            the committed universe
 data/site/             the tables the site reads, exported from the warehouse
 transform/dbt/         warehouse models
-site/                  Evidence.dev application (from Milestone 4)
+site/                  static React site (from Milestone 4)
 docs/                  specification, methodology, decision record
 tests/
 ```
@@ -178,13 +178,15 @@ from the warehouse. Refresh it after a build whose results should reach the site
 python -m marketscope.site_data
 ```
 
-The site needs Node 26. It is built on Evidence 40.1.8, pinned (decision 0045):
+The site is a static React application that reads the export in the browser (decision
+0046). It needs Node 22.12 or later; CI builds it on Node 26:
 
 ```
 cd site
 npm ci
-npm run sources
-npm run dev
+npm run dev        # http://localhost:5173/MarketScope/
+npm run check      # types, lint, formatting and tests
+npm run build      # static files in site/build
 ```
 
 `.github/workflows/site.yml` builds it on every change to `site/` or `data/site/` and

@@ -337,7 +337,7 @@ SEC EDGAR (company facts, submissions)     FRED (FEDFUNDS, DGS2, DGS10)
                     staging → intermediate → marts
                                       │
                     ┌─────────────────┴─────────────────┐
-              Evidence.dev site              FFIEC/FDIC validation
+               static site                   FFIEC/FDIC validation
 ```
 
 Orchestration is GitHub Actions on a weekly schedule. Filings are quarterly, so weekly
@@ -431,9 +431,10 @@ Seven pages:
 6. **Data health** — pipeline status, test results, coverage, freshness.
 7. **Methodology** — harmonisation, approximations, exclusions, validation error rates.
 
-Built with Evidence.dev, deployed as a static site at no running cost. The site uses the
-last release of Evidence's original framework, 40.1.8, pinned, since its successor serves
-from a running server rather than as static files (decision 0045).
+Built as a static React application with Apache ECharts, which reads the committed export
+in the browser and computes its figures there, deployed at no running cost. It replaced the
+Evidence 40 pages, which read as a report rather than a site a reader could navigate,
+search and filter (decision 0046).
 
 ---
 
@@ -502,8 +503,7 @@ Snowflake rebuild with marts materialised down for serving · broader company co
 comparator · Power BI layer distributed as a `.pbix` with screenshots and a recorded
 walkthrough rather than hosted live · market risk analytics, which is the point at which a
 paid data licence first becomes necessary · anomaly detection, capped at a z-score
-baseline and one isolation forest with honest evaluation · a custom frontend, only if
-Evidence.dev demonstrably constrains a feature users need.
+baseline and one isolation forest with honest evaluation.
 
 ---
 
@@ -511,6 +511,7 @@ Evidence.dev demonstrably constrains a feature users need.
 
 | Date | Change |
 |---|---|
+| 2026-11-04 | Section 8 records that the site is a static React application reading the export in the browser, replacing Evidence 40; section 7 follows, and the custom frontend leaves the deferred list in section 10. See decision 0046. |
 | 2026-11-03 | Section 8 records that the site is built on Evidence 40.1.8, pinned, rather than on Evidence Core, which does not build static sites. See decision 0045. |
 | 2026-11-02 | Section 7.1 records that the site builds from a committed Parquet export of the tables it reads rather than from the warehouse. See decision 0044. |
 | 2026-11-02 | `mart_persistence_result` and `mart_recovered_beta` added to 7.1: the headline, each robustness variant and the survivorship comparison as the site states them, and the two failed banks the comparison page shows, computed through the persistence library. See decision 0043. |

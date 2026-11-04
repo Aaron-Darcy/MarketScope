@@ -24,7 +24,6 @@ transform/dbt/target/
 transform/dbt/dbt_packages/
 transform/dbt/logs/
 
-site/.evidence/
 site/node_modules/
 
 .ipynb_checkpoints/

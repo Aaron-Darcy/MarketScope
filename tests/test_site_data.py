@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import date
 from pathlib import Path
 
@@ -116,14 +117,10 @@ def test_every_exported_table_is_a_dbt_model() -> None:
 
 
 def test_the_site_reads_every_exported_table_and_nothing_else() -> None:
-    sources = Path(__file__).resolve().parents[1] / "site" / "sources" / "marketscope"
-    queries = {
-        path.stem: path.read_text(encoding="utf-8")
-        for path in sources.glob("*.sql")
-        if path.name != "initialize.sql"
-    }
+    loader = Path(__file__).resolve().parents[1] / "site" / "src" / "data" / "load.ts"
+    imported = re.findall(
+        r"from '\.\./\.\./\.\./data/site/(\w+)\.parquet\?url'",
+        loader.read_text(encoding="utf-8"),
+    )
 
-    assert set(queries) == set(SITE_TABLES)
-    for table, query in queries.items():
-        assert f"read_parquet('{table}.parquet')" in query
-    assert "../data/site" in (sources / "initialize.sql").read_text(encoding="utf-8")
+    assert sorted(imported) == sorted(SITE_TABLES)
