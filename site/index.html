@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Do US banks reprice deposits the same way twice? Deposit betas for the largest US banks across two tightening cycles, built from SEC filings and checked against Call Reports."
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>MarketScope</title>
+    <script>
+      // Set before first paint so a dark-mode reader never sees a white flash.
+      (function () {
+        var stored = localStorage.getItem('marketscope-theme');
+        var dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

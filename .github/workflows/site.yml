@@ -27,8 +27,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # The version the site was built and checked on. Evidence 40 is no longer developed
-      # upstream, so a newer Node is a reviewed change rather than one that arrives unasked.
+      # The version the site was built and checked on, pinned so a newer Node is a reviewed
+      # change rather than one that arrives unasked.
       - uses: actions/setup-node@v7
         with:
           node-version: "26"
@@ -38,12 +38,13 @@ jobs:
       - name: Install
         run: npm ci
 
-      # Reads the committed export in data/site/, not the warehouse (decision 0044).
-      - name: Sources
-        run: npm run sources -- --strict
+      # Types, lint, formatting and tests, including the tests that read the committed
+      # export in data/site/ and hold the pages' figures to it (decisions 0044 and 0046).
+      - name: Check
+        run: npm run check
 
       - name: Build
-        run: npm run build:strict
+        run: npm run build
 
       - uses: actions/upload-pages-artifact@v5
         if: github.event_name != 'pull_request'
